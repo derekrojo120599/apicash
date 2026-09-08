@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useDeudas, useCrearDeuda, useRegistrarPagoDeuda, Deuda } from '@/hooks/useDeudas'
+import { useDeudas, useCrearDeuda, useRegistrarPagoDeuda, useEliminarDeuda, Deuda } from '@/hooks/useDeudas'
 import { useCuentas } from '@/hooks/useCuentas'
-import { Receipt, Plus, X, Loader2, ArrowDownCircle } from 'lucide-react'
+import { Receipt, Plus, X, Loader2, ArrowDownCircle, Trash2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +13,7 @@ export default function DeudasPage() {
   
   const { mutateAsync: crearDeuda, isPending: isCreating } = useCrearDeuda()
   const { mutateAsync: registrarPago, isPending: isPaying } = useRegistrarPagoDeuda()
+  const { mutateAsync: eliminarDeuda, isPending: isDeleting } = useEliminarDeuda()
 
   const [modalMode, setModalMode] = useState<'create' | 'pago' | null>(null)
   const [deudaActual, setDeudaActual] = useState<Deuda | null>(null)
@@ -75,6 +76,16 @@ export default function DeudasPage() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    if (confirm('¿Seguro que quieres eliminar esta deuda? Esta acción no se puede deshacer.')) {
+      try {
+        await eliminarDeuda(id)
+      } catch (err: any) {
+        alert(err.message || 'Error al eliminar la deuda')
+      }
+    }
+  }
+
   const formatMoney = (val: number, mon: string) => new Intl.NumberFormat(mon === 'USD' ? 'en-US' : 'es-VE', { style: 'currency', currency: mon }).format(val)
 
   return (
@@ -109,9 +120,17 @@ export default function DeudasPage() {
             const completado = deuda.saldo_pendiente <= 0
 
             return (
-              <div key={deuda.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between transition-colors">
+              <div key={deuda.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between transition-colors group relative">
+                <button
+                  onClick={() => handleDelete(deuda.id)}
+                  disabled={isDeleting}
+                  className="absolute top-4 right-4 p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 z-10"
+                  title="Eliminar deuda"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
                 <div>
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mb-4 pr-8">
                     <div>
                       <h3 className="font-bold text-lg text-slate-900 dark:text-slate-200">{deuda.nombre}</h3>
                       {deuda.fecha_limite && (

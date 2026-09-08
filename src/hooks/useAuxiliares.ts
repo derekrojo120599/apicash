@@ -61,7 +61,12 @@ export function useEliminarCategoria() {
         .delete()
         .eq('id', id)
       
-      if (error) throw error
+      if (error) {
+        if (error.code === '23503') {
+          throw new Error('No se puede eliminar: esta categoría tiene movimientos o presupuestos asociados.')
+        }
+        throw error
+      }
       return true
     },
     onSuccess: () => {

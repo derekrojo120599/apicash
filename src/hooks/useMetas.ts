@@ -5,7 +5,7 @@ export interface Meta {
   id: string
   user_id: string
   nombre: string
-  monto_objetivo: number
+  monto_objetivo: number | null
   monto_actual: number
   moneda: string
   fecha_objetivo: string | null
@@ -92,6 +92,26 @@ export function useAgregarAporte() {
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
       queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
       queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+    }
+  })
+}
+
+export function useEliminarMeta() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('metas')
+        .delete()
+        .eq('id', id)
+      
+      if (error) throw error
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['metas'] })
     }
   })
 }

@@ -86,7 +86,7 @@ CREATE TABLE metas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id),
   nombre TEXT NOT NULL,
-  monto_objetivo NUMERIC(18,2) NOT NULL,
+  monto_objetivo NUMERIC(18,2),
   monto_actual NUMERIC(18,2) NOT NULL DEFAULT 0,
   moneda moneda_enum NOT NULL,
   fecha_objetivo DATE

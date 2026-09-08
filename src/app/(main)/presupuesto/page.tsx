@@ -85,20 +85,20 @@ export default function PresupuestoPage() {
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Planea tus gastos mensuales en USD</p>
         </div>
         
-        <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
+        <div className="flex items-center gap-2 overflow-x-auto flex-nowrap bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-colors scrollbar-hide">
           <button 
             onClick={() => handleMoverMes(-1)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
+            className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
           >
             &larr;
           </button>
-          <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
+          <div className="flex items-center gap-2 shrink-0 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
             <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <span className="capitalize">{mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
           </div>
           <button 
             onClick={() => handleMoverMes(1)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
+            className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
           >
             &rarr;
           </button>

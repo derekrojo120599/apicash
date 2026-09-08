@@ -64,6 +64,11 @@ export default function TransaccionesPage() {
       return
     }
 
+    if (!formData.categoria_id) {
+      setError('Seleccione una categoría')
+      return
+    }
+
     try {
       await crearTransaccion({
         cuenta_id: formData.cuenta_id,
@@ -122,9 +127,9 @@ export default function TransaccionesPage() {
 
       {/* Filtros */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between transition-colors">
-        <div className="flex items-center gap-4 w-full md:w-auto">
+        <div className="flex items-center gap-2 overflow-x-auto flex-nowrap w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
           <button 
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
+            className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
             onClick={() => {
               const d = new Date(mesActual)
               d.setMonth(d.getMonth() - 1)
@@ -133,12 +138,12 @@ export default function TransaccionesPage() {
           >
             &larr;
           </button>
-          <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
+          <div className="flex items-center gap-2 shrink-0 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
             <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             {mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
           </div>
           <button 
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
+            className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
             onClick={() => {
               const d = new Date(mesActual)
               d.setMonth(d.getMonth() + 1)
@@ -250,11 +255,11 @@ export default function TransaccionesPage() {
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4 mb-2">
+              <div className="flex flex-wrap gap-2 mb-4">
                 <button
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'gasto'})}
-                  className={`py-2 rounded-lg font-medium border-2 transition-all ${
+                  className={`flex-1 min-w-[120px] py-2 rounded-lg font-medium border-2 transition-all ${
                     formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -263,7 +268,7 @@ export default function TransaccionesPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'ingreso'})}
-                  className={`py-2 rounded-lg font-medium border-2 transition-all ${
+                  className={`flex-1 min-w-[120px] py-2 rounded-lg font-medium border-2 transition-all ${
                     formData.tipo === 'ingreso' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -319,19 +324,27 @@ export default function TransaccionesPage() {
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
-                <select
-                  required
-                  value={formData.categoria_id}
-                  onChange={e => setFormData({...formData, categoria_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
-                >
-                  <option value="" disabled>Seleccione una categoría</option>
+                <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-2 scrollbar-hide">
+                  {categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').length === 0 && (
+                    <span className="text-sm text-slate-500 dark:text-slate-400 italic">No hay categorías para este tipo</span>
+                  )}
                   {categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setFormData({...formData, categoria_id: c.id})}
+                      className={`shrink-0 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                        formData.categoria_id === c.id
+                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      {c.nombre}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               <div className="space-y-1">
