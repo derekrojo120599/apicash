@@ -1,5 +1,13 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
+
+export interface Categoria {
+  id: string
+  user_id: string
+  nombre: string
+  tipo: 'gasto' | 'ingreso' | 'ahorro' | 'deuda'
+  icono?: string
+}
 
 export function useCategorias() {
   const supabase = createClient()
@@ -13,7 +21,51 @@ export function useCategorias() {
         .order('nombre')
       
       if (error) throw error
+      return data as Categoria[]
+    }
+  })
+}
+
+export function useCrearCategoria() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (nuevaCategoria: Omit<Categoria, 'id' | 'user_id'>) => {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) throw new Error('No user found')
+
+      const { data, error } = await supabase
+        .from('categorias')
+        .insert([{ ...nuevaCategoria, user_id: userData.user.id }])
+        .select()
+        .single()
+      
+      if (error) throw error
       return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categorias'] })
+    }
+  })
+}
+
+export function useEliminarCategoria() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('categorias')
+        .delete()
+        .eq('id', id)
+      
+      if (error) throw error
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categorias'] })
     }
   })
 }

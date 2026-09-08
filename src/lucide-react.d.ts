@@ -28,4 +28,6 @@ declare module 'lucide-react' {
   export const Moon: any;
   export const Sun: any;
   export const RefreshCw: any;
+  export const FolderOpen: any;
+  export const Trash2: any;
 }

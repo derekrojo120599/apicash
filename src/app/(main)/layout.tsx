@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut } from 'lucide-react'
+import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen } from 'lucide-react'
 import { logout } from '../(auth)/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
@@ -11,6 +11,7 @@ const navItems = [
   { name: 'Cuentas', href: '/cuentas', icon: WalletCards },
   { name: 'Movimientos', href: '/transacciones', icon: ArrowRightLeft },
   { name: 'Presupuesto', href: '/presupuesto', icon: Target },
+  { name: 'Categorías', href: '/categorias', icon: FolderOpen },
   { name: 'Ahorros', href: '/ahorros', icon: PiggyBank },
   { name: 'Deudas', href: '/deudas', icon: Receipt },
   { name: 'Perfil', href: '/perfil', icon: User },
