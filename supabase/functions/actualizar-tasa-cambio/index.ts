@@ -3,10 +3,14 @@ import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 Deno.serve(async (req) => {
   try {
-    // 1. Validar autorización del cron job
+    // 1. Validar autorización del cron job usando nuestro secreto explícito
     const authHeader = req.headers.get("Authorization");
-    const expectedKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const expectedKey = Deno.env.get("CRON_SECRET");
     
+    if (!expectedKey) {
+      throw new Error("El secreto CRON_SECRET no está configurado en las variables de entorno de Supabase.");
+    }
+
     if (!authHeader || authHeader !== `Bearer ${expectedKey}`) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { 
         status: 401,
@@ -18,7 +22,7 @@ Deno.serve(async (req) => {
     const cotizaveApiKey = Deno.env.get("COTIZAVE_API_KEY");
     
     if (!cotizaveApiKey) {
-      throw new Error("Falta la variable de entorno COTIZAVE_API_KEY. Créate una cuenta gratis en cotizave.com para obtenerla.");
+      throw new Error("Falta la variable de entorno COTIZAVE_API_KEY.");
     }
 
     const response = await fetch("https://api.cotizave.com/v1/fx/rates", {
@@ -35,8 +39,8 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
     
-    // Buscamos la tasa del BCV en la respuesta
-    const bcvRateObj = data.rates?.find((r: any) => r.market === 'bcv');
+    // Buscamos la tasa del BCV en la respuesta (Cotizave usa el nombre 'reference' para el BCV oficial)
+    const bcvRateObj = data.rates?.find((r: any) => r.market === 'reference');
     
     if (!bcvRateObj || !bcvRateObj.mid) {
       throw new Error("La API de Cotizave no retornó la tasa del BCV esperada.");
@@ -48,9 +52,10 @@ Deno.serve(async (req) => {
       throw new Error("La tasa obtenida no es válida: " + tasaBCV);
     }
 
-    // 3. Conectar a Supabase usando Service Role para ignorar RLS e insertar
+    // 3. Conectar a Supabase usando Service Role
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabase = createClient(supabaseUrl!, expectedKey!);
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
     const { error: dbError } = await supabase
       .from('tasas_cambio')
