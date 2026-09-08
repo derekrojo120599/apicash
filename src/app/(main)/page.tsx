@@ -3,6 +3,8 @@
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 export default function DashboardPage() {
   const { data: balance, isLoading: loadingBalance } = useBalanceNeto()
   const { data: resumen, isLoading: loadingResumen } = useResumenMes()

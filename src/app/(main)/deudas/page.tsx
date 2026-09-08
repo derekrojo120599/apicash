@@ -5,6 +5,8 @@ import { useDeudas, useCrearDeuda, useRegistrarPagoDeuda, Deuda } from '@/hooks/
 import { useCuentas } from '@/hooks/useCuentas'
 import { Receipt, Plus, X, Loader2, ArrowDownCircle } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 export default function DeudasPage() {
   const { data: deudas, isLoading } = useDeudas()
   const { data: cuentas } = useCuentas()

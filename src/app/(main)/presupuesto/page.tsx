@@ -5,6 +5,8 @@ import { useProgresoPresupuesto, useGuardarPresupuesto, useCopiarPresupuestosAnt
 import { useCategorias } from '@/hooks/useAuxiliares'
 import { Target, Calendar as CalendarIcon, Copy, Plus, X, Loader2, AlertCircle } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 export default function PresupuestoPage() {
   const [mesActual, setMesActual] = useState(new Date())
   const [modalOpen, setModalOpen] = useState(false)

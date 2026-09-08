@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useCuentas, useCrearCuenta, useActualizarCuenta, Cuenta } from '@/hooks/useCuentas'
 import { WalletCards, Plus, MoreVertical, Building2, Coins, Landmark, Smartphone, Loader2, X } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 type ModalMode = 'create' | 'edit' | null
 
 export default function CuentasPage() {

@@ -6,6 +6,8 @@ import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 type ModalMode = 'create' | null
 
 export default function TransaccionesPage() {

@@ -5,6 +5,8 @@ import { useMetas, useCrearMeta, useAgregarAporte, Meta } from '@/hooks/useMetas
 import { useCuentas } from '@/hooks/useCuentas'
 import { PiggyBank, Plus, X, Loader2, ArrowUpCircle } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 export default function AhorrosPage() {
   const { data: metas, isLoading } = useMetas()
   const { data: cuentas } = useCuentas()

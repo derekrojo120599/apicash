@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { signup } from '../actions'
 import { Wallet, Loader2 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic';
+
 const initialState = { error: '' }
 
 export default function RegisterPage() {
