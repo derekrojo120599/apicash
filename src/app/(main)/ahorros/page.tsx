@@ -81,8 +81,8 @@ export default function AhorrosPage() {
     <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto pb-24 md:pb-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Metas de Ahorro</h1>
-          <p className="text-slate-500 text-sm mt-1">Registra y sigue tu progreso para alcanzar tus objetivos</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Metas de Ahorro</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y sigue tu progreso para alcanzar tus objetivos</p>
         </div>
         <button
           onClick={openCreate}
@@ -94,11 +94,11 @@ export default function AhorrosPage() {
       </header>
 
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-600" /></div>
+        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" /></div>
       ) : metas?.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500 shadow-sm flex flex-col items-center">
-          <PiggyBank className="w-16 h-16 text-slate-300 mb-4" />
-          <p className="text-lg font-medium text-slate-900">No hay metas de ahorro</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center transition-colors">
+          <PiggyBank className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+          <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay metas de ahorro</p>
           <p className="text-sm mt-1 mb-6">Establece un objetivo para empezar a ahorrar.</p>
         </div>
       ) : (
@@ -108,28 +108,28 @@ export default function AhorrosPage() {
             const completado = progreso >= 100
 
             return (
-              <div key={meta.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+              <div key={meta.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between transition-colors">
                 <div>
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="font-bold text-lg text-slate-900">{meta.nombre}</h3>
+                      <h3 className="font-bold text-lg text-slate-900 dark:text-slate-200">{meta.nombre}</h3>
                       {meta.fecha_objetivo && (
-                        <p className="text-xs text-slate-500 mt-1">Objetivo: {new Date(meta.fecha_objetivo).toLocaleDateString()}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Objetivo: {new Date(meta.fecha_objetivo).toLocaleDateString()}</p>
                       )}
                     </div>
-                    <div className="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded-full text-sm">
+                    <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold px-3 py-1 rounded-full text-sm">
                       {Math.round(progreso)}%
                     </div>
                   </div>
 
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-slate-600 font-medium">{formatMoney(meta.monto_actual, meta.moneda)}</span>
-                    <span className="text-slate-400">/ {formatMoney(meta.monto_objetivo, meta.moneda)}</span>
+                    <span className="text-slate-600 dark:text-slate-300 font-medium">{formatMoney(meta.monto_actual, meta.moneda)}</span>
+                    <span className="text-slate-400 dark:text-slate-500">/ {formatMoney(meta.monto_objetivo, meta.moneda)}</span>
                   </div>
                   
-                  <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden mb-6">
+                  <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
                     <div 
-                      className={`h-full transition-all duration-1000 rounded-full ${completado ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                      className={`h-full transition-all duration-1000 rounded-full ${completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-blue-500 dark:bg-blue-400'}`}
                       style={{ width: `${progreso}%` }}
                     />
                   </div>
@@ -140,15 +140,15 @@ export default function AhorrosPage() {
                   disabled={completado}
                   className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
                     completado 
-                    ? 'bg-emerald-50 text-emerald-600 cursor-default' 
-                    : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default' 
+                    : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   {completado ? (
                     '¡Meta Completada!'
                   ) : (
                     <>
-                      <ArrowUpCircle className="w-5 h-5 text-emerald-600" />
+                      <ArrowUpCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                       Agregar Aporte
                     </>
                   )}
@@ -161,37 +161,37 @@ export default function AhorrosPage() {
 
       {/* Modal Crear Meta */}
       {modalMode === 'create' && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-            <div className="flex justify-between items-center p-5 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-slate-900">Nueva Meta de Ahorro</h2>
-              <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Nueva Meta de Ahorro</h2>
+              <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Nombre de la meta</label>
-                <input required type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} className="w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none" placeholder="Ej: Viaje, Fondo de Emergencia" />
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nombre de la meta</label>
+                <input required type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg focus:ring-2 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" placeholder="Ej: Viaje, Fondo de Emergencia" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Objetivo</label>
-                  <input required type="number" step="0.01" min="1" value={formData.monto_objetivo} onChange={e => setFormData({...formData, monto_objetivo: e.target.value})} className="w-full px-4 py-2 font-bold border rounded-lg outline-none" placeholder="0.00" />
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Objetivo</label>
+                  <input required type="number" step="0.01" min="1" value={formData.monto_objetivo} onChange={e => setFormData({...formData, monto_objetivo: e.target.value})} className="w-full px-4 py-2 font-bold border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" placeholder="0.00" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Moneda</label>
-                  <select value={formData.moneda} onChange={e => setFormData({...formData, moneda: e.target.value})} className="w-full px-4 py-2 border rounded-lg bg-white outline-none">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Moneda</label>
+                  <select value={formData.moneda} onChange={e => setFormData({...formData, moneda: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none text-slate-900 dark:text-slate-100 transition-colors">
                     <option value="USD">USD</option>
                     <option value="VES">VES</option>
                   </select>
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Fecha Límite (Opcional)</label>
-                <input type="date" value={formData.fecha_objetivo} onChange={e => setFormData({...formData, fecha_objetivo: e.target.value})} className="w-full px-4 py-2 border rounded-lg outline-none" />
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Fecha Límite (Opcional)</label>
+                <input type="date" value={formData.fecha_objetivo} onChange={e => setFormData({...formData, fecha_objetivo: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" />
               </div>
-              <button type="submit" disabled={isCreating} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
+              <button type="submit" disabled={isCreating} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
             </form>
           </div>
         </div>
@@ -199,32 +199,32 @@ export default function AhorrosPage() {
 
       {/* Modal Agregar Aporte */}
       {modalMode === 'aporte' && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950 transition-colors">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Agregar Aporte</h2>
-                <p className="text-sm text-slate-500">{metaActual?.nombre}</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Agregar Aporte</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{metaActual?.nombre}</p>
               </div>
-              <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+              <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleAporteSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Cuenta de origen (De dónde sale el dinero)</label>
-                <select required value={aporteData.cuenta_id} onChange={e => setAporteData({...aporteData, cuenta_id: e.target.value})} className="w-full px-4 py-2 border rounded-lg bg-white outline-none">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (De dónde sale el dinero)</label>
+                <select required value={aporteData.cuenta_id} onChange={e => setAporteData({...aporteData, cuenta_id: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none text-slate-900 dark:text-slate-100 transition-colors">
                   {cuentas?.filter(c => c.activa).map(c => (
                     <option key={c.id} value={c.id}>{c.nombre} - Disp: {formatMoney(c.saldo_cache, c.moneda)}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Monto del Aporte</label>
-                <input required type="number" step="0.01" min="0.01" value={aporteData.monto} onChange={e => setAporteData({...aporteData, monto: e.target.value})} className="w-full px-4 py-2 text-xl font-bold border rounded-lg outline-none" placeholder="0.00" />
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto del Aporte</label>
+                <input required type="number" step="0.01" min="0.01" value={aporteData.monto} onChange={e => setAporteData({...aporteData, monto: e.target.value})} className="w-full px-4 py-2 text-xl font-bold border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" placeholder="0.00" />
               </div>
-              <p className="text-xs text-slate-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                Se creará una transacción de tipo <strong>gasto</strong> en la cuenta seleccionada, categorizada como "Ahorro", y se sumará a esta meta.
+              <p className="text-xs text-slate-500 dark:text-slate-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/50 transition-colors">
+                Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como "Ahorro", y se sumará a esta meta.
               </p>
-              <button type="submit" disabled={isAdding} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
+              <button type="submit" disabled={isAdding} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
             </form>
           </div>
         </div>

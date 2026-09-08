@@ -108,8 +108,8 @@ export default function TransaccionesPage() {
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Transacciones</h1>
-          <p className="text-slate-500 text-sm mt-1">Registra y revisa tus movimientos del mes</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transacciones</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y revisa tus movimientos del mes</p>
         </div>
         <button
           onClick={openCreateModal}
@@ -121,10 +121,10 @@ export default function TransaccionesPage() {
       </header>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between transition-colors">
         <div className="flex items-center gap-4 w-full md:w-auto">
           <button 
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
             onClick={() => {
               const d = new Date(mesActual)
               d.setMonth(d.getMonth() - 1)
@@ -133,12 +133,12 @@ export default function TransaccionesPage() {
           >
             &larr;
           </button>
-          <div className="flex items-center gap-2 font-medium text-slate-700 min-w-[140px] justify-center">
-            <CalendarIcon className="w-5 h-5 text-emerald-600" />
+          <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
+            <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             {mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
           </div>
           <button 
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
             onClick={() => {
               const d = new Date(mesActual)
               d.setMonth(d.getMonth() + 1)
@@ -153,7 +153,7 @@ export default function TransaccionesPage() {
           <select 
             value={filtroCategoria}
             onChange={(e) => setFiltroCategoria(e.target.value)}
-            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-slate-900 dark:text-slate-100 transition-colors"
           >
             <option value="">Todas las categorías</option>
             {categorias?.map(c => (
@@ -164,34 +164,34 @@ export default function TransaccionesPage() {
       </div>
 
       {/* Lista */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors mt-6">
         {loadingTx ? (
           <div className="p-8 flex justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" />
           </div>
         ) : txFiltradas?.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">
-            <Search className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-            <p className="text-lg font-medium text-slate-900">No hay transacciones</p>
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400">
+            <Search className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay transacciones</p>
             <p className="text-sm mt-1">No se encontraron movimientos para este mes.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
             {txFiltradas?.map(tx => (
-              <div key={tx.id} className={`p-4 flex items-center justify-between transition-colors ${tx.anulada ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50'}`}>
+              <div key={tx.id} className={`p-4 flex items-center justify-between transition-colors ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-full ${
-                    tx.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-600' :
-                    tx.tipo === 'gasto' ? 'bg-red-100 text-red-600' :
-                    'bg-blue-100 text-blue-600'
+                    tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
+                    tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                    'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                   }`}>
                     <ArrowRightLeft className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className={`font-medium ${tx.anulada ? 'line-through text-slate-500' : 'text-slate-900'}`}>
+                    <h4 className={`font-medium ${tx.anulada ? 'line-through text-slate-500 dark:text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
                       {tx.descripcion || tx.categorias?.nombre || 'Sin categoría'}
                     </h4>
-                    <div className="flex gap-2 text-xs text-slate-500 mt-1">
+                    <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
                       <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
                       <span>•</span>
                       <span>{tx.cuentas?.nombre}</span>
@@ -207,12 +207,12 @@ export default function TransaccionesPage() {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className={`font-bold ${
-                      tx.tipo === 'ingreso' ? 'text-emerald-600' : 'text-slate-900'
+                      tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
                       {tx.tipo === 'ingreso' ? '+' : '-'}{formatMoney(tx.monto_original, tx.moneda_original)}
                     </p>
                     {tx.moneda_original === 'VES' && (
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
                         ≈ {formatMoney(tx.monto_usd_calculado, 'USD')}
                       </p>
                     )}
@@ -222,14 +222,14 @@ export default function TransaccionesPage() {
                     <button 
                       onClick={() => handleAnular(tx.id)}
                       disabled={isAnulando}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
                       title="Anular transacción"
                     >
                       <Ban className="w-4 h-4" />
                     </button>
                   )}
                   {tx.anulada && (
-                    <span className="text-xs font-bold text-red-500 bg-red-100 px-2 py-1 rounded">ANULADA</span>
+                    <span className="text-xs font-bold text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded">ANULADA</span>
                   )}
                 </div>
               </div>
@@ -240,11 +240,11 @@ export default function TransaccionesPage() {
 
       {/* Modal Crear */}
       {modalMode === 'create' && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden my-8">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-bold text-slate-900">Nueva Transacción</h2>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 overflow-y-auto backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden my-8 border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 z-10 transition-colors">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Nueva Transacción</h2>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -255,7 +255,7 @@ export default function TransaccionesPage() {
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'gasto'})}
                   className={`py-2 rounded-lg font-medium border-2 transition-all ${
-                    formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 text-red-700' : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   Gasto
@@ -264,7 +264,7 @@ export default function TransaccionesPage() {
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'ingreso'})}
                   className={`py-2 rounded-lg font-medium border-2 transition-all ${
-                    formData.tipo === 'ingreso' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    formData.tipo === 'ingreso' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   Ingreso
@@ -272,12 +272,12 @@ export default function TransaccionesPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Cuenta origen/destino</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta origen/destino</label>
                 <select
                   required
                   value={formData.cuenta_id}
                   onChange={e => setFormData({...formData, cuenta_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
                 >
                   <option value="" disabled>Seleccione una cuenta</option>
                   {cuentas?.filter(c => c.activa).map(c => (
@@ -287,26 +287,26 @@ export default function TransaccionesPage() {
                 
                 {/* AVISO IMPORTANTE SOBRE LA TASA DE CAMBIO */}
                 {cuentaSeleccionada?.moneda === 'VES' && (
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800 flex flex-col gap-1">
+                  <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-lg text-sm text-blue-800 dark:text-blue-300 flex flex-col gap-1 transition-colors">
                     <span className="font-semibold">Información de conversión:</span>
                     {tasaActual ? (
                       <>
-                        <span>Tasa actual: <strong className="text-blue-900 font-bold">{tasaActual} VES/USD</strong>.</span>
+                        <span>Tasa actual: <strong className="text-blue-900 dark:text-blue-200 font-bold">{tasaActual} VES/USD</strong>.</span>
                         {formData.monto_original && Number(formData.monto_original) > 0 && (
-                          <span className="mt-1 bg-white/50 px-2 py-1 rounded inline-block w-max">
-                            Equivalente estimado: <strong className="text-emerald-700">≈ ${(Number(formData.monto_original) / tasaActual).toFixed(2)} USD</strong>
+                          <span className="mt-1 bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded inline-block w-max">
+                            Equivalente estimado: <strong className="text-emerald-700 dark:text-emerald-400">≈ ${(Number(formData.monto_original) / tasaActual).toFixed(2)} USD</strong>
                           </span>
                         )}
                       </>
                     ) : (
-                      <span className="text-red-600 font-bold">¡Atención! No hay tasa de cambio registrada en el sistema. La transacción fallará.</span>
+                      <span className="text-red-600 dark:text-red-400 font-bold">¡Atención! No hay tasa de cambio registrada en el sistema. La transacción fallará.</span>
                     )}
                   </div>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Monto ({cuentaSeleccionada?.moneda || '...'})</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto ({cuentaSeleccionada?.moneda || '...'})</label>
                 <input
                   type="number"
                   required
@@ -314,18 +314,18 @@ export default function TransaccionesPage() {
                   min="0.01"
                   value={formData.monto_original}
                   onChange={e => setFormData({...formData, monto_original: e.target.value})}
-                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="0.00"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Categoría</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
                 <select
                   required
                   value={formData.categoria_id}
                   onChange={e => setFormData({...formData, categoria_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
                 >
                   <option value="" disabled>Seleccione una categoría</option>
                   {categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').map(c => (
@@ -335,18 +335,18 @@ export default function TransaccionesPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Descripción (Opcional)</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Descripción (Opcional)</label>
                 <input
                   type="text"
                   value={formData.descripcion}
                   onChange={e => setFormData({...formData, descripcion: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="Ej: Mercado quincenal"
                 />
               </div>
 
               {error && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-100 dark:border-red-900/50">
                   {error}
                 </div>
               )}
@@ -355,7 +355,7 @@ export default function TransaccionesPage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                  className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
                 >
                   Cancelar
                 </button>

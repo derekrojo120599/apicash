@@ -20,8 +20,8 @@ export default function DashboardPage() {
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Resumen Financiero</h1>
-        <p className="text-slate-500 text-sm mt-1">Control de tus finanzas en USD y VES</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Resumen Financiero</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control de tus finanzas en USD y VES</p>
       </header>
 
       {/* Main Balance Card */}
@@ -70,62 +70,62 @@ export default function DashboardPage() {
       {/* Grid of smaller cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Ingresos del Mes */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-emerald-100 p-2 rounded-full">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
+            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-full">
+              <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Ingresos del mes</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ingresos del mes</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 rounded animate-pulse" />
+            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900">{formatUSD(resumen?.ingresos || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.ingresos || 0)}</p>
           )}
         </div>
 
         {/* Gastos del Mes */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-red-100 p-2 rounded-full">
-              <TrendingDown className="w-5 h-5 text-red-600" />
+            <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full">
+              <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Gastos del mes</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Gastos del mes</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 rounded animate-pulse" />
+            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900">{formatUSD(resumen?.gastos || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.gastos || 0)}</p>
           )}
         </div>
 
         {/* Ahorros */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-blue-100 p-2 rounded-full">
-              <PiggyBank className="w-5 h-5 text-blue-600" />
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full">
+              <PiggyBank className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Ahorros</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ahorros</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 rounded animate-pulse" />
+            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900">{formatUSD(resumen?.ahorros || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.ahorros || 0)}</p>
           )}
         </div>
 
         {/* Deuda */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-orange-100 p-2 rounded-full">
-              <Receipt className="w-5 h-5 text-orange-600" />
+            <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-full">
+              <Receipt className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Deuda actual</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Deuda actual</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 rounded animate-pulse" />
+            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900">{formatUSD(resumen?.deuda || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.deuda || 0)}</p>
           )}
         </div>
       </div>
@@ -133,11 +133,11 @@ export default function DashboardPage() {
       {/* Próximas acciones o placeholders (V1) */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-slate-900">Transacciones Recientes</h3>
-          <button className="text-sm text-emerald-600 font-medium hover:underline">Ver todas</button>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Transacciones Recientes</h3>
+          <button className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline">Ver todas</button>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-sm">
-          <ArrowRightLeft className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center text-slate-500 dark:text-slate-400 shadow-sm transition-colors">
+          <ArrowRightLeft className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
           <p>Aún no hay transacciones para mostrar.</p>
           <p className="text-sm mt-1">Registra tu primer movimiento para ver el historial aquí.</p>
         </div>

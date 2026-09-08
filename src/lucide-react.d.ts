@@ -1,0 +1,31 @@
+declare module 'lucide-react' {
+  export const Wallet: any;
+  export const Loader2: any;
+  export const TrendingUp: any;
+  export const TrendingDown: any;
+  export const PiggyBank: any;
+  export const Receipt: any;
+  export const ArrowRightLeft: any;
+  export const Plus: any;
+  export const X: any;
+  export const Search: any;
+  export const Calendar: any;
+  export const Ban: any;
+  export const Target: any;
+  export const Copy: any;
+  export const AlertCircle: any;
+  export const ArrowDownCircle: any;
+  export const WalletCards: any;
+  export const MoreVertical: any;
+  export const Building2: any;
+  export const Coins: any;
+  export const Landmark: any;
+  export const Smartphone: any;
+  export const ArrowUpCircle: any;
+  export const LayoutDashboard: any;
+  export const User: any;
+  export const LogOut: any;
+  export const Moon: any;
+  export const Sun: any;
+  export const RefreshCw: any;
+}
