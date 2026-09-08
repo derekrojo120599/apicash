@@ -170,7 +170,9 @@ export default function PresupuestoPage() {
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium text-slate-900">{p.categoria_nombre}</h3>
                       {alertaMascota && (
-                        <AlertCircle className={`w-4 h-4 ${p.porcentaje_usado >= 100 ? 'text-red-500' : 'text-orange-500'}`} title="Presupuesto casi excedido o excedido" />
+                        <div title="Presupuesto casi excedido o excedido">
+                          <AlertCircle className={`w-4 h-4 ${p.porcentaje_usado >= 100 ? 'text-red-500' : 'text-orange-500'}`} />
+                        </div>
                       )}
                     </div>
                     <div className="text-right">

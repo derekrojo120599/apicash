@@ -30,7 +30,7 @@ export function useProgresoPresupuesto(mes: Date) {
       
       if (error) throw error
       
-      return (data || []).map(row => ({
+      return (data || []).map((row: any) => ({
         ...row,
         monto_planeado: Number(row.monto_planeado),
         monto_gastado: Number(row.monto_gastado),
