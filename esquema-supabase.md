@@ -202,12 +202,15 @@ CREATE POLICY "solo_service_role_inserta_tasas" ON tasas_cambio FOR INSERT WITH 
 
 ```sql
 CREATE OR REPLACE FUNCTION crear_perfil_nuevo_usuario()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO perfiles (id) VALUES (NEW.id);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_crear_perfil
 AFTER INSERT ON auth.users
@@ -277,7 +280,10 @@ FOR EACH ROW EXECUTE FUNCTION actualizar_saldo_cuenta();
 
 ```sql
 CREATE OR REPLACE FUNCTION seed_categorias_default(p_user_id UUID)
-RETURNS VOID AS $$
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO categorias (user_id, nombre, tipo) VALUES
     (p_user_id, 'Comida', 'gasto'),
@@ -287,7 +293,7 @@ BEGIN
     (p_user_id, 'Ahorro', 'ahorro'),
     (p_user_id, 'Deuda', 'deuda');
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 ```
 
 ## 11. Función RPC: balance neto en vivo
@@ -301,7 +307,10 @@ RETURNS TABLE(
   balance_neto NUMERIC,
   tasa_usada NUMERIC,
   tasa_fecha TIMESTAMPTZ
-) AS $$
+)
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_tasa NUMERIC(18,4);
   v_tasa_fecha TIMESTAMPTZ;
@@ -325,7 +334,7 @@ BEGIN
     v_tasa,
     v_tasa_fecha;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 ```
 
 ## 12. Función RPC: progreso de presupuesto por categoría
@@ -339,7 +348,10 @@ RETURNS TABLE(
   monto_gastado NUMERIC,
   porcentaje_usado NUMERIC,
   restante NUMERIC
-) AS $$
+)
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   RETURN QUERY
   SELECT
@@ -360,14 +372,17 @@ BEGIN
   WHERE p.user_id = p_user_id AND p.mes = p_mes
   GROUP BY p.categoria_id, c.nombre, p.monto_planeado;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 ```
 
 ## 13. Función RPC: cierre de mes (snapshot)
 
 ```sql
 CREATE OR REPLACE FUNCTION cerrar_mes(p_user_id UUID, p_mes DATE)
-RETURNS VOID AS $$
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_balance NUMERIC;
   v_tasa NUMERIC;
@@ -391,7 +406,180 @@ BEGIN
         deuda_acumulada_usd = EXCLUDED.deuda_acumulada_usd,
         tasa_cierre = EXCLUDED.tasa_cierre;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
+```
+
+## 14. Función RPC: Copiar presupuesto del mes anterior
+
+```sql
+CREATE OR REPLACE FUNCTION copiar_presupuesto_anterior(p_mes_origen DATE, p_mes_destino DATE)
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  INSERT INTO presupuestos (user_id, categoria_id, monto_planeado, moneda, mes)
+  SELECT user_id, categoria_id, monto_planeado, moneda, p_mes_destino
+  FROM presupuestos
+  WHERE user_id = v_user_id AND mes = p_mes_origen
+  ON CONFLICT (user_id, categoria_id, mes) DO NOTHING;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 15. Función RPC: Registrar aporte a meta
+
+```sql
+CREATE OR REPLACE FUNCTION registrar_aporte_meta(
+  p_meta_id UUID,
+  p_cuenta_id UUID,
+  p_categoria_id UUID,
+  p_monto NUMERIC,
+  p_moneda_original moneda_enum,
+  p_fecha TIMESTAMPTZ
+)
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+  v_meta RECORD;
+  v_cuenta_owner UUID;
+  v_tasa NUMERIC(18,4);
+  v_monto_convertido NUMERIC;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  SELECT * INTO v_meta FROM metas WHERE id = p_meta_id;
+  IF v_meta IS NULL OR v_meta.user_id != v_user_id THEN
+    RAISE EXCEPTION 'Meta no encontrada o sin permiso';
+  END IF;
+
+  SELECT user_id INTO v_cuenta_owner FROM cuentas WHERE id = p_cuenta_id;
+  IF v_cuenta_owner IS NULL OR v_cuenta_owner != v_user_id THEN
+    RAISE EXCEPTION 'Cuenta no encontrada o sin permiso';
+  END IF;
+
+  IF p_moneda_original = v_meta.moneda THEN
+    v_monto_convertido := p_monto;
+  ELSE
+    SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    IF v_tasa IS NULL THEN
+      RAISE EXCEPTION 'No hay tasa de cambio disponible para la conversión';
+    END IF;
+    
+    IF p_moneda_original = 'USD' AND v_meta.moneda = 'VES' THEN
+      v_monto_convertido := p_monto * v_tasa;
+    ELSIF p_moneda_original = 'VES' AND v_meta.moneda = 'USD' THEN
+      v_monto_convertido := p_monto / v_tasa;
+    END IF;
+  END IF;
+
+  UPDATE metas
+  SET monto_actual = monto_actual + v_monto_convertido
+  WHERE id = p_meta_id;
+
+  INSERT INTO transacciones (
+    user_id, cuenta_id, categoria_id, tipo, monto_original, moneda_original, fecha, descripcion
+  ) VALUES (
+    v_user_id, p_cuenta_id, p_categoria_id, 'gasto', p_monto, p_moneda_original, p_fecha, 'Aporte a meta de ahorro'
+  );
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 16. Función RPC: Registrar pago de deuda
+
+```sql
+CREATE OR REPLACE FUNCTION registrar_pago_deuda(
+  p_deuda_id UUID,
+  p_cuenta_id UUID,
+  p_categoria_id UUID,
+  p_monto NUMERIC,
+  p_moneda_original moneda_enum,
+  p_fecha TIMESTAMPTZ
+)
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+  v_deuda RECORD;
+  v_cuenta_owner UUID;
+  v_tasa NUMERIC(18,4);
+  v_monto_convertido NUMERIC;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  SELECT * INTO v_deuda FROM deudas WHERE id = p_deuda_id;
+  IF v_deuda IS NULL OR v_deuda.user_id != v_user_id THEN
+    RAISE EXCEPTION 'Deuda no encontrada o sin permiso';
+  END IF;
+
+  SELECT user_id INTO v_cuenta_owner FROM cuentas WHERE id = p_cuenta_id;
+  IF v_cuenta_owner IS NULL OR v_cuenta_owner != v_user_id THEN
+    RAISE EXCEPTION 'Cuenta no encontrada o sin permiso';
+  END IF;
+
+  IF p_moneda_original = v_deuda.moneda THEN
+    v_monto_convertido := p_monto;
+  ELSE
+    SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    IF v_tasa IS NULL THEN
+      RAISE EXCEPTION 'No hay tasa de cambio disponible para la conversión';
+    END IF;
+    
+    IF p_moneda_original = 'USD' AND v_deuda.moneda = 'VES' THEN
+      v_monto_convertido := p_monto * v_tasa;
+    ELSIF p_moneda_original = 'VES' AND v_deuda.moneda = 'USD' THEN
+      v_monto_convertido := p_monto / v_tasa;
+    END IF;
+  END IF;
+
+  UPDATE deudas
+  SET saldo_pendiente = GREATEST(saldo_pendiente - v_monto_convertido, 0)
+  WHERE id = p_deuda_id;
+
+  INSERT INTO transacciones (
+    user_id, cuenta_id, categoria_id, tipo, monto_original, moneda_original, fecha, descripcion
+  ) VALUES (
+    v_user_id, p_cuenta_id, p_categoria_id, 'gasto', p_monto, p_moneda_original, p_fecha, 'Pago de deuda'
+  );
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 17. Función RPC: Cerrar mes a todos los usuarios (Cron)
+
+```sql
+CREATE OR REPLACE FUNCTION cerrar_mes_todos_los_usuarios()
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  r RECORD;
+  v_mes DATE;
+BEGIN
+  v_mes := DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 day')::DATE;
+
+  FOR r IN SELECT id FROM perfiles LOOP
+    PERFORM cerrar_mes(r.id, v_mes);
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
 ```
 
 ## Nota importante
