@@ -39,17 +39,17 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
     
-    // Buscamos la tasa del BCV en la respuesta (Cotizave usa el nombre 'reference' para el BCV oficial)
-    const bcvRateObj = data.rates?.find((r: any) => r.market === 'reference');
+    // Extraemos directamente la Mediana P2P que Cotizave provee en su índice
+    const p2pMedian = data.index?.p2p_median;
     
-    if (!bcvRateObj || !bcvRateObj.mid) {
-      throw new Error("La API de Cotizave no retornó la tasa del BCV esperada.");
+    if (!p2pMedian) {
+      throw new Error("La API de Cotizave no retornó la mediana P2P esperada.");
     }
 
-    const tasaBCV = Number(bcvRateObj.mid);
+    const tasaFinal = Number(p2pMedian);
 
-    if (isNaN(tasaBCV) || tasaBCV <= 0) {
-      throw new Error("La tasa obtenida no es válida: " + tasaBCV);
+    if (isNaN(tasaFinal) || tasaFinal <= 0) {
+      throw new Error("La tasa obtenida no es válida: " + tasaFinal);
     }
 
     // 3. Conectar a Supabase usando Service Role
@@ -61,14 +61,14 @@ Deno.serve(async (req) => {
       .from('tasas_cambio')
       .insert([
         { 
-          tasa: tasaBCV, 
-          fuente: 'Cotizave API - BCV' 
+          tasa: tasaFinal, 
+          fuente: 'Cotizave API - Mediana P2P' 
         }
       ]);
 
     if (dbError) throw dbError;
 
-    return new Response(JSON.stringify({ success: true, tasa: tasaBCV, provider: 'Cotizave' }), { 
+    return new Response(JSON.stringify({ success: true, tasa: tasaFinal, provider: 'Cotizave' }), { 
       status: 200, 
       headers: { "Content-Type": "application/json" } 
     });
