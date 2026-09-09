@@ -33,9 +33,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </div>
             <span className="font-bold text-xl text-slate-900 dark:text-white">Control</span>
           </div>
-          <div className="md:hidden">
-            <ThemeToggle />
-          </div>
         </div>
 
         <nav className="flex-1 px-4 space-y-1 mt-4">
@@ -90,7 +87,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             >
               <Menu className="w-6 h-6" />
             </button>
-            <ThemeToggle />
           </div>
         </div>
         {children}
@@ -141,7 +137,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               })}
             </nav>
 
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+              <div className="px-3 py-2">
+                <ThemeToggle />
+              </div>
               <button
                 onClick={() => {
                   setMobileSidebarOpen(false)
