@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useDeudas, useCrearDeuda, useRegistrarPagoDeuda, useEliminarDeuda, Deuda } from '@/hooks/useDeudas'
 import { useCuentas } from '@/hooks/useCuentas'
 import { Receipt, Plus, X, Loader2, ArrowDownCircle, Trash2 } from 'lucide-react'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -90,37 +91,40 @@ export default function DeudasPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto pb-24 md:pb-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Gestión de Deudas</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y amortiza tus obligaciones financieras</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-        >
+        <AnimatedButton onClick={openCreate} className="!bg-orange-600 hover:!bg-orange-700">
           <Plus className="w-5 h-5" />
           Registrar Deuda
-        </button>
-      </header>
+        </AnimatedButton>
+      </FadeIn>
 
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-orange-600 dark:text-orange-400" /></div>
+        <div className="flex justify-center p-12"><AnimatedLoader size={40} color="#f97316" /></div>
       ) : deudas?.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center transition-colors">
-          <Receipt className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-          <p className="text-lg font-medium text-slate-900 dark:text-slate-200">Estás libre de deudas</p>
-          <p className="text-sm mt-1 mb-6">No tienes deudas activas registradas en el sistema.</p>
-        </div>
+        <FadeIn>
+          <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
+            <Receipt className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">Estás libre de deudas</p>
+            <p className="text-sm mt-1 mb-6">No tienes deudas activas registradas en el sistema.</p>
+          </AnimatedCard>
+        </FadeIn>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6" staggerDelay={120}>
           {deudas?.map(deuda => {
             const montoPagado = deuda.monto_total - deuda.saldo_pendiente
             const progreso = Math.max(0, Math.min((montoPagado / deuda.monto_total) * 100, 100))
             const completado = deuda.saldo_pendiente <= 0
 
             return (
-              <div key={deuda.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between transition-colors group relative">
+              <AnimatedCard
+                data-anime
+                key={deuda.id}
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between cursor-default group relative"
+              >
                 <button
                   onClick={() => handleDelete(deuda.id)}
                   disabled={isDeleting}
@@ -145,24 +149,32 @@ export default function DeudasPage() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row justify-between text-sm mb-2 gap-1">
-                    <span className="text-slate-600 dark:text-slate-300">Pendiente: <strong className="text-slate-900 dark:text-slate-100">{formatMoney(deuda.saldo_pendiente, deuda.moneda)}</strong></span>
-                    <span className="text-slate-400 dark:text-slate-500">Total: {formatMoney(deuda.monto_total, deuda.moneda)}</span>
+                    <span className="text-slate-600 dark:text-slate-300">
+                      Pendiente:{' '}
+                      <strong className="text-slate-900 dark:text-slate-100">
+                        <AnimatedNumber value={deuda.saldo_pendiente} formatter={(v) => formatMoney(v, deuda.moneda)} duration={1000} />
+                      </strong>
+                    </span>
+                    <span className="text-slate-400 dark:text-slate-500">
+                      Total: <AnimatedNumber value={deuda.monto_total} formatter={(v) => formatMoney(v, deuda.moneda)} duration={1000} delay={100} />
+                    </span>
                   </div>
-                  
-                  <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
-                    <div 
-                      className={`h-full transition-all duration-1000 rounded-full ${completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-orange-500 dark:bg-orange-400'}`}
-                      style={{ width: `${progreso}%` }}
-                    />
-                  </div>
+
+                  <AnimatedProgressBar
+                    progress={progreso}
+                    color={completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-orange-500 dark:bg-orange-400'}
+                    height={16}
+                    duration={1200}
+                    className="mb-6"
+                  />
                 </div>
 
                 <button
                   onClick={() => openPago(deuda)}
                   disabled={completado}
                   className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                    completado 
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default border border-emerald-100 dark:border-emerald-800/50' 
+                    completado
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default border border-emerald-100 dark:border-emerald-800/50'
                     : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
@@ -175,10 +187,10 @@ export default function DeudasPage() {
                     </>
                   )}
                 </button>
-              </div>
+              </AnimatedCard>
             )
           })}
-        </div>
+        </StaggerContainer>
       )}
 
       {/* Modal Crear Deuda */}

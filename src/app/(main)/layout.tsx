@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X, BookOpen } from 'lucide-react'
 import { logout } from '../(auth)/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { AnimatedNavLink, StaggerContainer, AnimatedButton } from '@/components/animations'
+import { animate } from 'animejs'
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -22,6 +23,58 @@ const navItems = [
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const drawerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!mobileSidebarOpen) return;
+
+    if (overlayRef.current) {
+      animate(overlayRef.current, {
+        opacity: [0, 1],
+        duration: 300,
+        ease: 'outQuad',
+      });
+    }
+
+    if (drawerRef.current) {
+      animate(drawerRef.current, {
+        translateX: ['-100%', '0%'],
+        duration: 350,
+        ease: 'outCubic',
+      });
+    }
+  }, [mobileSidebarOpen]);
+
+  const handleCloseMobileSidebar = () => {
+    const animations: { pause: () => void }[] = [];
+
+    if (overlayRef.current) {
+      const a = animate(overlayRef.current, {
+        opacity: [1, 0],
+        duration: 250,
+        ease: 'inQuad',
+      });
+      animations.push(a);
+    }
+
+    if (drawerRef.current) {
+      const a = animate(drawerRef.current, {
+        translateX: ['0%', '-100%'],
+        duration: 300,
+        ease: 'inCubic',
+      });
+      animations.push(a);
+    }
+
+    setTimeout(() => {
+      setMobileSidebarOpen(false);
+    }, 300);
+
+    return () => {
+      animations.forEach(a => a.pause());
+    };
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -36,37 +89,46 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 mt-4">
+        <StaggerContainer
+          as="nav"
+          className="flex-1 px-4 space-y-1 mt-4"
+          staggerDelay={60}
+          duration={400}
+          direction="right"
+          distance={16}
+        >
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link
+              <AnimatedNavLink
+                data-anime
                 key={item.name}
                 href={item.href}
+                icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                label={item.name}
+                isActive={isActive}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   isActive
                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
                 }`}
-              >
-                <item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />
-                {item.name}
-              </Link>
+              />
             )
           })}
-        </nav>
+        </StaggerContainer>
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
-          <button
+          <AnimatedButton
+            variant="ghost"
             onClick={() => logout()}
-            className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+            className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start"
           >
             <LogOut className="w-5 h-5 text-slate-400" />
             <span>Cerrar sesión</span>
-          </button>
+          </AnimatedButton>
         </div>
       </aside>
 
@@ -96,11 +158,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       {/* Mobile Sidebar Drawer */}
       {mobileSidebarOpen && (
         <>
-          <div 
-            className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 z-40 transition-opacity md:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
+          <div
+            ref={overlayRef}
+            className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 z-40 md:hidden"
+            style={{ opacity: 0 }}
+            onClick={handleCloseMobileSidebar}
           />
-          <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden transition-colors">
+          <aside
+            ref={drawerRef}
+            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden"
+            style={{ transform: 'translateX(-100%)' }}
+          >
             <div className="p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
@@ -109,7 +177,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <span className="font-bold text-xl text-slate-900 dark:text-white">Apicash</span>
               </div>
               <button
-                onClick={() => setMobileSidebarOpen(false)}
+                onClick={handleCloseMobileSidebar}
                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
                 aria-label="Cerrar menú"
               >
@@ -117,39 +185,48 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               </button>
             </div>
 
-            <nav className="flex-1 px-4 space-y-1 mt-4">
+            <StaggerContainer
+              as="nav"
+              className="flex-1 px-4 space-y-1 mt-4"
+              staggerDelay={60}
+              duration={350}
+              direction="right"
+              distance={16}
+            >
               {navItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
-                  <Link
+                  <AnimatedNavLink
+                    data-anime
                     key={item.name}
                     href={item.href}
-                    onClick={() => setMobileSidebarOpen(false)}
+                    onClick={handleCloseMobileSidebar}
+                    icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                    label={item.name}
+                    isActive={isActive}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       isActive
                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
                     }`}
-                  >
-                    <item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />
-                    {item.name}
-                  </Link>
+                  />
                 )
               })}
-            </nav>
+            </StaggerContainer>
 
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
               <ThemeToggle />
-              <button
+              <AnimatedButton
+                variant="ghost"
                 onClick={() => {
-                  setMobileSidebarOpen(false)
-                  logout()
+                  handleCloseMobileSidebar();
+                  logout();
                 }}
-                className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+                className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start"
               >
                 <LogOut className="w-5 h-5 text-slate-400" />
                 Cerrar sesión
-              </button>
+              </AnimatedButton>
             </div>
           </aside>
         </>

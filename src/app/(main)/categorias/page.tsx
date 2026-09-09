@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCategorias, useCrearCategoria, useEliminarCategoria, useEditarCategoria, Categoria } from '@/hooks/useAuxiliares'
 import { FolderOpen, Plus, X, Loader2, Trash2, Pencil } from 'lucide-react'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -61,38 +62,38 @@ export default function CategoriasPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto pb-24 md:pb-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Categorías</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administra las clasificaciones de tus movimientos</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-        >
+        <AnimatedButton onClick={openCreate}>
           <Plus className="w-5 h-5" />
           Nueva Categoría
-        </button>
-      </header>
+        </AnimatedButton>
+      </FadeIn>
 
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" /></div>
+        <div className="flex justify-center p-12"><AnimatedLoader size={40} color="#10b981" /></div>
       ) : categorias?.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center transition-colors">
-          <FolderOpen className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-          <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay categorías</p>
-          <p className="text-sm mt-1 mb-6">Crea categorías para organizar mejor tus finanzas.</p>
-          <button
-            onClick={openCreate}
-            className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-6 py-2 rounded-lg font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
-          >
-            Crear primera categoría
-          </button>
-        </div>
+        <FadeIn>
+          <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
+            <FolderOpen className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay categorías</p>
+            <p className="text-sm mt-1 mb-6">Crea categorías para organizar mejor tus finanzas.</p>
+            <AnimatedButton variant="secondary" onClick={openCreate}>
+              Crear primera categoría
+            </AnimatedButton>
+          </AnimatedCard>
+        </FadeIn>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" staggerDelay={80}>
           {categorias?.map(cat => (
-            <div key={cat.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex justify-between items-center transition-colors group">
+            <AnimatedCard
+              data-anime
+              key={cat.id}
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex justify-between items-center cursor-default group"
+            >
               <div>
                 <h3 className="font-semibold text-slate-900 dark:text-slate-200">{cat.nombre}</h3>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full mt-2 inline-block ${
@@ -120,9 +121,9 @@ export default function CategoriasPage() {
                   <Trash2 className="w-5 h-5" />
                 </button>
               </div>
-            </div>
+            </AnimatedCard>
           ))}
-        </div>
+        </StaggerContainer>
       )}
 
       {/* Modal Crear */}

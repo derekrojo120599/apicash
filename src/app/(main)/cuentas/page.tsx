@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCuentas, useCrearCuenta, useActualizarCuenta, Cuenta } from '@/hooks/useCuentas'
 import { WalletCards, Plus, MoreVertical, Building2, Coins, Landmark, Smartphone, Loader2, X } from 'lucide-react'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -82,44 +83,39 @@ export default function CuentasPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mis Cuentas</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administra tus billeteras y cuentas bancarias</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-        >
+        <AnimatedButton onClick={openCreateModal}>
           <Plus className="w-5 h-5" />
           Nueva cuenta
-        </button>
-      </header>
+        </AnimatedButton>
+      </FadeIn>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => (
-            <div key={i} className="h-32 bg-slate-100 dark:bg-slate-800 rounded-2xl animate-pulse" />
-          ))}
+        <div className="flex justify-center p-12">
+          <AnimatedLoader size={48} color="#10b981" />
         </div>
       ) : cuentas?.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center transition-colors">
-          <WalletCards className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-          <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No tienes cuentas registradas</p>
-          <p className="text-sm mt-1 mb-6">Crea tu primera cuenta para empezar a registrar transacciones.</p>
-          <button
-            onClick={openCreateModal}
-            className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-6 py-2 rounded-lg font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
-          >
-            Crear primera cuenta
-          </button>
-        </div>
+        <FadeIn>
+          <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
+            <WalletCards className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No tienes cuentas registradas</p>
+            <p className="text-sm mt-1 mb-6">Crea tu primera cuenta para empezar a registrar transacciones.</p>
+            <AnimatedButton variant="secondary" onClick={openCreateModal}>
+              Crear primera cuenta
+            </AnimatedButton>
+          </AnimatedCard>
+        </FadeIn>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" staggerDelay={100}>
           {cuentas?.map(cuenta => (
-            <div 
-              key={cuenta.id} 
-              className={`bg-white dark:bg-slate-900 rounded-2xl border ${cuenta.activa ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800 opacity-60'} p-5 shadow-sm relative overflow-hidden transition-all`}
+            <AnimatedCard
+              data-anime
+              key={cuenta.id}
+              className={`bg-white dark:bg-slate-900 rounded-2xl border ${cuenta.activa ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800 opacity-60'} p-5 shadow-sm relative overflow-hidden cursor-default`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
@@ -131,16 +127,16 @@ export default function CuentasPage() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{cuenta.tipo.replace('_', ' ')} • {cuenta.moneda}</p>
                   </div>
                 </div>
-                
+
                 {/* Opciones */}
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => openEditModal(cuenta)}
                     className="text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium px-2 py-1"
                   >
                     Editar
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleToggleActiva(cuenta)}
                     className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${cuenta.activa ? 'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'}`}
                   >
@@ -152,18 +148,22 @@ export default function CuentasPage() {
               <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Saldo actual</p>
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {new Intl.NumberFormat(cuenta.moneda === 'USD' ? 'en-US' : 'es-VE', { style: 'currency', currency: cuenta.moneda }).format(cuenta.saldo_cache)}
+                  <AnimatedNumber
+                    value={cuenta.saldo_cache}
+                    formatter={(v) => new Intl.NumberFormat(cuenta.moneda === 'USD' ? 'en-US' : 'es-VE', { style: 'currency', currency: cuenta.moneda }).format(v)}
+                    duration={1200}
+                  />
                 </p>
               </div>
-              
+
               {!cuenta.activa && (
                 <div className="absolute top-0 right-0 bg-slate-800 dark:bg-slate-700 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">
                   INACTIVA
                 </div>
               )}
-            </div>
+            </AnimatedCard>
           ))}
-        </div>
+        </StaggerContainer>
       )}
 
       {/* Modal */}

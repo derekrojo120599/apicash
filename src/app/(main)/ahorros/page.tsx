@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useMetas, useCrearMeta, useAgregarAporte, useEliminarMeta, Meta } from '@/hooks/useMetas'
 import { useCuentas } from '@/hooks/useCuentas'
 import { PiggyBank, Plus, X, Loader2, ArrowUpCircle, Trash2 } from 'lucide-react'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -105,37 +106,40 @@ export default function AhorrosPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto pb-24 md:pb-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Metas de Ahorro</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y sigue tu progreso para alcanzar tus objetivos</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-        >
+        <AnimatedButton onClick={openCreate}>
           <Plus className="w-5 h-5" />
           Nueva Meta
-        </button>
-      </header>
+        </AnimatedButton>
+      </FadeIn>
 
       {isLoading ? (
-        <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" /></div>
+        <div className="flex justify-center p-12"><AnimatedLoader size={40} color="#10b981" /></div>
       ) : metas?.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center transition-colors">
-          <PiggyBank className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-          <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay metas de ahorro</p>
-          <p className="text-sm mt-1 mb-6">Establece un objetivo para empezar a ahorrar.</p>
-        </div>
+        <FadeIn>
+          <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
+            <PiggyBank className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay metas de ahorro</p>
+            <p className="text-sm mt-1 mb-6">Establece un objetivo para empezar a ahorrar.</p>
+          </AnimatedCard>
+        </FadeIn>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6" staggerDelay={120}>
           {metas?.map(meta => {
             const tieneObjetivo = meta.monto_objetivo !== null && meta.monto_objetivo > 0
             const progreso = tieneObjetivo ? Math.min((meta.monto_actual / meta.monto_objetivo!) * 100, 100) : 0
             const completado = tieneObjetivo ? progreso >= 100 : false
 
             return (
-              <div key={meta.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between transition-colors group relative">
+              <AnimatedCard
+                data-anime
+                key={meta.id}
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between cursor-default group relative"
+              >
                 <button
                   onClick={() => handleDelete(meta.id)}
                   disabled={isDeleting}
@@ -165,20 +169,27 @@ export default function AhorrosPage() {
 
                   <div className="flex flex-col sm:flex-row justify-between text-sm mb-2 gap-1">
                     <span className="text-slate-600 dark:text-slate-300 font-medium">
-                      {tieneObjetivo ? formatMoney(meta.monto_actual, meta.moneda) : `Llevas ahorrado: ${formatMoney(meta.monto_actual, meta.moneda)}`}
+                      {tieneObjetivo ? (
+                        <AnimatedNumber value={meta.monto_actual} formatter={(v) => formatMoney(v, meta.moneda)} duration={1000} />
+                      ) : (
+                        <>Llevas ahorrado: <AnimatedNumber value={meta.monto_actual} formatter={(v) => formatMoney(v, meta.moneda)} duration={1000} /></>
+                      )}
                     </span>
                     {tieneObjetivo && (
-                      <span className="text-slate-400 dark:text-slate-500">/ {formatMoney(meta.monto_objetivo!, meta.moneda)}</span>
+                      <span className="text-slate-400 dark:text-slate-500">
+                        / <AnimatedNumber value={meta.monto_objetivo!} formatter={(v) => formatMoney(v, meta.moneda)} duration={1000} delay={100} />
+                      </span>
                     )}
                   </div>
-                  
+
                   {tieneObjetivo ? (
-                    <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
-                      <div 
-                        className={`h-full transition-all duration-1000 rounded-full ${completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-blue-500 dark:bg-blue-400'}`}
-                        style={{ width: `${progreso}%` }}
-                      />
-                    </div>
+                    <AnimatedProgressBar
+                      progress={progreso}
+                      color={completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-blue-500 dark:bg-blue-400'}
+                      height={16}
+                      duration={1200}
+                      className="mb-6"
+                    />
                   ) : (
                     <div className="mb-6" /> // Spacing for consistency
                   )}
@@ -188,8 +199,8 @@ export default function AhorrosPage() {
                   onClick={() => openAporte(meta)}
                   disabled={completado}
                   className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                    completado 
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default' 
+                    completado
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default'
                     : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
@@ -202,10 +213,10 @@ export default function AhorrosPage() {
                     </>
                   )}
                 </button>
-              </div>
+              </AnimatedCard>
             )
           })}
-        </div>
+        </StaggerContainer>
       )}
 
       {/* Modal Crear Meta */}

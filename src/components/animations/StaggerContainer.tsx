@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ElementType } from 'react';
 import { animate, stagger } from 'animejs';
 
 interface StaggerContainerProps {
@@ -10,6 +10,7 @@ interface StaggerContainerProps {
   duration?: number;
   direction?: 'up' | 'down' | 'left' | 'right';
   distance?: number;
+  as?: ElementType;
 }
 
 export function StaggerContainer({
@@ -19,6 +20,7 @@ export function StaggerContainer({
   duration = 600,
   direction = 'up',
   distance = 24,
+  as: Component = 'div',
 }: StaggerContainerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -65,9 +67,10 @@ export function StaggerContainer({
     return () => { animation.pause(); };
   }, [staggerDelay, duration, direction, distance]);
 
+  const Tag = Component as React.ElementType;
   return (
-    <div ref={ref} className={className}>
+    <Tag ref={ref} className={className}>
       {children}
-    </div>
+    </Tag>
   );
 }
