@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X } from 'lucide-react'
+import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X, BookOpen } from 'lucide-react'
 import { logout } from '../(auth)/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
@@ -15,6 +15,7 @@ const navItems = [
   { name: 'Categorías', href: '/categorias', icon: FolderOpen },
   { name: 'Ahorros', href: '/ahorros', icon: PiggyBank },
   { name: 'Deudas', href: '/deudas', icon: Receipt },
+  { name: 'Guía', href: '/guia', icon: BookOpen },
   { name: 'Perfil', href: '/perfil', icon: User },
 ]
 

@@ -32,4 +32,9 @@ declare module 'lucide-react' {
   export const Trash2: any;
   export const Pencil: any;
   export const Menu: any;
+  export const Sparkles: any;
+  export const Lightbulb: any;
+  export const CheckCircle2: any;
+  export const BookOpen: any;
+  export const ChevronRight: any;
 }
