@@ -197,7 +197,7 @@ export default function PresupuestoPage() {
                       </span>
                       <button 
                         onClick={() => handleOpenEdit(p)}
-                        className="opacity-0 group-hover:opacity-100 text-emerald-600 dark:text-emerald-400 font-medium hover:underline transition-opacity"
+                        className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline transition-opacity"
                       >
                         Editar
                       </button>

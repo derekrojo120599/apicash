@@ -124,7 +124,7 @@ export default function DeudasPage() {
                 <button
                   onClick={() => handleDelete(deuda.id)}
                   disabled={isDeleting}
-                  className="absolute top-4 right-4 p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 z-10"
+                  className="absolute top-4 right-4 p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all z-10"
                   title="Eliminar deuda"
                 >
                   <Trash2 className="w-5 h-5" />

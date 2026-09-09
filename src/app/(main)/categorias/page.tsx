@@ -92,7 +92,7 @@ export default function CategoriasPage() {
               <button
                 onClick={() => handleDelete(cat.id)}
                 disabled={isDeleting}
-                className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100"
+                className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
                 title="Eliminar categoría"
               >
                 <Trash2 className="w-5 h-5" />
