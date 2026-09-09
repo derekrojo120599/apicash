@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Control de Gastos Multimoneda",
-  description: "App de presupuesto USD/VES",
+  title: "Apicash",
+  description: "Apicash - Control de gastos en USD y VES",
   manifest: "/manifest.json"
 };
 

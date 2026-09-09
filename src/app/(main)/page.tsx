@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
-import { useTransacciones } from '@/hooks/useTransacciones'
+import { useUltimasTransacciones } from '@/hooks/useTransacciones'
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export default function DashboardPage() {
   const { data: balance, isLoading: loadingBalance } = useBalanceNeto()
   const { data: resumen, isLoading: loadingResumen } = useResumenMes()
-  const { data: transacciones, isLoading: loadingTx } = useTransacciones(new Date())
+  const { data: transacciones, isLoading: loadingTx } = useUltimasTransacciones(5)
 
   const formatUSD = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)

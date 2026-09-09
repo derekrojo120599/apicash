@@ -32,7 +32,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
               <WalletCards className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="font-bold text-xl text-slate-900 dark:text-white">Control</span>
+            <span className="font-bold text-xl text-slate-900 dark:text-white">Apicash</span>
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <div className="bg-emerald-100 dark:bg-emerald-900/30 p-1.5 rounded-lg">
               <WalletCards className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="font-bold text-lg text-slate-900 dark:text-white">Control</span>
+            <span className="font-bold text-lg text-slate-900 dark:text-white">Apicash</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -106,7 +106,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
                   <WalletCards className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <span className="font-bold text-xl text-slate-900 dark:text-white">Control</span>
+                <span className="font-bold text-xl text-slate-900 dark:text-white">Apicash</span>
               </div>
               <button
                 onClick={() => setMobileSidebarOpen(false)}

@@ -46,6 +46,28 @@ export function useTransacciones(mes: Date) {
   })
 }
 
+export function useUltimasTransacciones(limite: number = 5) {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ['ultimasTransacciones', limite],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transacciones')
+        .select(`
+          *,
+          cuentas(nombre, moneda),
+          categorias(nombre, icono, tipo)
+        `)
+        .order('fecha', { ascending: false })
+        .limit(limite)
+
+      if (error) throw error
+      return data as Transaccion[]
+    }
+  })
+}
+
 export function useCrearTransaccion() {
   const supabase = createClient()
   const queryClient = useQueryClient()

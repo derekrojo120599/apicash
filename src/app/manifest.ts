@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Control USD/VES',
-    short_name: 'Presupuesto',
-    description: 'Control de Gastos Multimoneda en USD y VES',
+    name: 'Apicash',
+    short_name: 'Apicash',
+    description: 'Apicash - Control de gastos en USD y VES',
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',
