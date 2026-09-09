@@ -78,6 +78,30 @@ export function useEliminarCategoria() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Buscar transacciones asociadas a esta categoría
+      const { data: transacciones, error: txError } = await supabase
+        .from('transacciones')
+        .select('id, anulada')
+        .eq('categoria_id', id)
+      
+      if (txError) throw txError
+
+      const txActivas = transacciones?.filter(tx => !tx.anulada) || []
+
+      // Si hay transacciones activas, no se puede eliminar
+      if (txActivas.length > 0) {
+        throw new Error('No se puede eliminar: esta categoría tiene movimientos activos asociados.')
+      }
+
+      // Si solo hay transacciones anuladas, desvincularlas para poder borrar la categoría
+      const { error: updateError } = await supabase
+        .from('transacciones')
+        .update({ categoria_id: null })
+        .eq('categoria_id', id)
+      
+      if (updateError) throw updateError
+
+      // Eliminar la categoría
       const { error } = await supabase
         .from('categorias')
         .delete()
@@ -85,7 +109,7 @@ export function useEliminarCategoria() {
       
       if (error) {
         if (error.code === '23503') {
-          throw new Error('No se puede eliminar: esta categoría tiene movimientos asociados. Puedes editarla en su lugar.')
+          throw new Error('No se puede eliminar: esta categoría tiene movimientos o presupuestos asociados.')
         }
         throw error
       }
@@ -93,6 +117,7 @@ export function useEliminarCategoria() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
     }
   })
 }

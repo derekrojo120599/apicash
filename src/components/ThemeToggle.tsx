@@ -20,12 +20,12 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center w-full md:w-auto"
+      className="px-3 py-3 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-3 w-full"
       title="Cambiar tema"
     >
       <Sun className="h-5 w-5 hidden dark:block" />
       <Moon className="h-5 w-5 block dark:hidden" />
-      <span className="md:hidden ml-3 font-medium">Tema</span>
+      <span className="md:hidden font-medium">Tema</span>
     </button>
   )
 }

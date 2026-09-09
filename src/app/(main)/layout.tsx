@@ -55,16 +55,16 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
           <button
             onClick={() => logout()}
-            className="flex w-full items-center justify-center md:justify-start gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+            className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-700 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
           >
-            <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-600 dark:text-slate-500 dark:group-hover:text-red-400" />
-            <span className="hidden md:inline">Cerrar sesión</span>
+            <LogOut className="w-5 h-5 text-slate-400" />
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
@@ -137,10 +137,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               })}
             </nav>
 
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-              <div className="px-3 py-2">
-                <ThemeToggle />
-              </div>
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
+              <ThemeToggle />
               <button
                 onClick={() => {
                   setMobileSidebarOpen(false)
