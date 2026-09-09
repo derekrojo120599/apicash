@@ -3,7 +3,15 @@
 import Link from 'next/link'
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
 import { useUltimasTransacciones } from '@/hooks/useTransacciones'
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft } from 'lucide-react'
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft, Plus } from 'lucide-react'
+import {
+  FadeIn,
+  StaggerContainer,
+  AnimatedNumber,
+  AnimatedCard,
+  AnimatedLoader,
+  AnimatedButton,
+} from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -22,58 +30,86 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Resumen Financiero</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control de tus finanzas en USD y VES</p>
-      </header>
+      <FadeIn as="header" className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Resumen Financiero</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control de tus finanzas en USD y VES</p>
+        </div>
+        <Link href="/transacciones">
+          <AnimatedButton>
+            <Plus className="w-4 h-4" />
+            Nuevo movimiento
+          </AnimatedButton>
+        </Link>
+      </FadeIn>
 
       {/* Main Balance Card */}
-      <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Wallet className="w-32 h-32" />
-        </div>
-        <div className="relative z-10">
-          <p className="text-emerald-100 font-medium mb-1">Balance Neto (USD)</p>
-          <div className="flex items-end gap-3">
-            {loadingBalance ? (
-              <div className="h-10 w-48 bg-white/20 rounded animate-pulse" />
-            ) : (
-              <>
-                <h2 className="text-4xl font-bold">{formatUSD(balance?.balance_neto || 0)}</h2>
-              </>
-            )}
+      <FadeIn delay={100}>
+        <AnimatedCard className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Wallet className="w-32 h-32" />
           </div>
+          <div className="relative z-10">
+            <p className="text-emerald-100 font-medium mb-1">Balance Neto (USD)</p>
+            <div className="flex items-end gap-3">
+              {loadingBalance ? (
+                <AnimatedLoader size={36} color="rgba(255,255,255,0.7)" />
+              ) : (
+                <h2 className="text-4xl font-bold">
+                  <AnimatedNumber
+                    value={balance?.balance_neto || 0}
+                    formatter={formatUSD}
+                    duration={1500}
+                  />
+                </h2>
+              )}
+            </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/20">
-            <div>
-              <p className="text-emerald-100 text-sm mb-1">Total USD Fijo</p>
-              {loadingBalance ? (
-                <div className="h-6 w-24 bg-white/20 rounded animate-pulse" />
-              ) : (
-                <p className="text-xl font-semibold">{formatUSD(balance?.usd_fijo || 0)}</p>
-              )}
-            </div>
-            <div>
-              <p className="text-emerald-100 text-sm mb-1">Total VES</p>
-              {loadingBalance ? (
-                <div className="h-6 w-24 bg-white/20 rounded animate-pulse" />
-              ) : (
-                <div className="flex flex-col">
-                  <p className="text-xl font-semibold">{formatVES(balance?.ves_total || 0)}</p>
-                  <p className="text-xs text-emerald-200">
-                    ≈ {formatUSD(balance?.ves_en_usd || 0)} a tasa de {balance?.tasa_usada || 0}
+            <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/20">
+              <div>
+                <p className="text-emerald-100 text-sm mb-1">Total USD Fijo</p>
+                {loadingBalance ? (
+                  <AnimatedLoader size={24} color="rgba(255,255,255,0.7)" />
+                ) : (
+                  <p className="text-xl font-semibold">
+                    <AnimatedNumber
+                      value={balance?.usd_fijo || 0}
+                      formatter={formatUSD}
+                      duration={1200}
+                      delay={200}
+                    />
                   </p>
-                </div>
-              )}
+                )}
+              </div>
+              <div>
+                <p className="text-emerald-100 text-sm mb-1">Total VES</p>
+                {loadingBalance ? (
+                  <AnimatedLoader size={24} color="rgba(255,255,255,0.7)" />
+                ) : (
+                  <div className="flex flex-col">
+                    <p className="text-xl font-semibold">
+                      <AnimatedNumber
+                        value={balance?.ves_total || 0}
+                        formatter={formatVES}
+                        duration={1200}
+                        delay={300}
+                      />
+                    </p>
+                    <p className="text-xs text-emerald-200">
+                      ≈ <AnimatedNumber value={balance?.ves_en_usd || 0} formatter={formatUSD} duration={1200} delay={400} /> a tasa de {balance?.tasa_usada || 0}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </AnimatedCard>
+      </FadeIn>
 
       {/* Grid of smaller cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-4" staggerDelay={120}>
         {/* Ingresos del Mes */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
+        <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-full">
               <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -81,14 +117,16 @@ export default function DashboardPage() {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ingresos del mes</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <AnimatedLoader size={28} color="#10b981" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.ingresos || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              <AnimatedNumber value={resumen?.ingresos || 0} formatter={formatUSD} duration={1200} />
+            </p>
           )}
-        </div>
+        </AnimatedCard>
 
         {/* Gastos del Mes */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
+        <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full">
               <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -96,14 +134,16 @@ export default function DashboardPage() {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Gastos del mes</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <AnimatedLoader size={28} color="#ef4444" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.gastos || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              <AnimatedNumber value={resumen?.gastos || 0} formatter={formatUSD} duration={1200} />
+            </p>
           )}
-        </div>
+        </AnimatedCard>
 
         {/* Ahorros */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
+        <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full">
               <PiggyBank className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -111,14 +151,16 @@ export default function DashboardPage() {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ahorros</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <AnimatedLoader size={28} color="#3b82f6" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.ahorros || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              <AnimatedNumber value={resumen?.ahorros || 0} formatter={formatUSD} duration={1200} />
+            </p>
           )}
-        </div>
+        </AnimatedCard>
 
         {/* Deuda */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-colors">
+        <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-full">
               <Receipt className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -126,15 +168,17 @@ export default function DashboardPage() {
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Deuda actual</p>
           </div>
           {loadingResumen ? (
-            <div className="h-7 w-24 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            <AnimatedLoader size={28} color="#f97316" />
           ) : (
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatUSD(resumen?.deuda || 0)}</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              <AnimatedNumber value={resumen?.deuda || 0} formatter={formatUSD} duration={1200} />
+            </p>
           )}
-        </div>
-      </div>
+        </AnimatedCard>
+      </StaggerContainer>
 
       {/* Transacciones Recientes */}
-      <div className="mt-8">
+      <FadeIn delay={400} className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Transacciones Recientes</h3>
           <Link href="/transacciones" className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline">Ver todas</Link>
@@ -142,6 +186,7 @@ export default function DashboardPage() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
           {loadingTx ? (
             <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+              <AnimatedLoader size={40} color="#10b981" className="mb-3" />
               <p>Cargando transacciones...</p>
             </div>
           ) : !transacciones || transacciones.length === 0 ? (
@@ -151,9 +196,17 @@ export default function DashboardPage() {
               <p className="text-sm mt-1">Registra tu primer movimiento para ver el historial aquí.</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+            <StaggerContainer
+              className="divide-y divide-slate-100 dark:divide-slate-800/50"
+              staggerDelay={80}
+              duration={500}
+            >
               {transacciones.slice(0, 5).map(tx => (
-                <div key={tx.id} className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+                <AnimatedCard
+                  data-anime
+                  key={tx.id}
+                  className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-default ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
+                >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className={`shrink-0 p-3 rounded-full ${
                       tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
@@ -185,12 +238,12 @@ export default function DashboardPage() {
                       </p>
                     )}
                   </div>
-                </div>
+                </AnimatedCard>
               ))}
-            </div>
+            </StaggerContainer>
           )}
         </div>
-      </div>
+      </FadeIn>
     </div>
   )
 }
