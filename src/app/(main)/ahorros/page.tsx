@@ -132,25 +132,25 @@ export default function AhorrosPage() {
                   <Trash2 className="w-5 h-5" />
                 </button>
                 <div>
-                  <div className="flex justify-between items-start mb-4 pr-8">
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900 dark:text-slate-200">{meta.nombre}</h3>
+                  <div className="flex justify-between items-start mb-4 pr-8 gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg text-slate-900 dark:text-slate-200 truncate">{meta.nombre}</h3>
                       {meta.fecha_objetivo && (
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Objetivo: {new Date(meta.fecha_objetivo).toLocaleDateString()}</p>
                       )}
                     </div>
                     {tieneObjetivo ? (
-                      <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold px-3 py-1 rounded-full text-sm">
+                      <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold px-3 py-1 rounded-full text-sm shrink-0">
                         {Math.round(progreso)}%
                       </div>
                     ) : (
-                      <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1 rounded-full text-sm">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1 rounded-full text-sm shrink-0">
                         Ahorro Libre
                       </div>
                     )}
                   </div>
 
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="flex flex-col sm:flex-row justify-between text-sm mb-2 gap-1">
                     <span className="text-slate-600 dark:text-slate-300 font-medium">
                       {tieneObjetivo ? formatMoney(meta.monto_actual, meta.moneda) : `Llevas ahorrado: ${formatMoney(meta.monto_actual, meta.moneda)}`}
                     </span>

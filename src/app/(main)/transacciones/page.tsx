@@ -183,20 +183,20 @@ export default function TransaccionesPage() {
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
             {txFiltradas?.map(tx => (
-              <div key={tx.id} className={`p-4 flex items-center justify-between transition-colors ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-full ${
+              <div key={tx.id} className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className={`shrink-0 p-3 rounded-full ${
                     tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
                     tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
                     'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                   }`}>
                     <ArrowRightLeft className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h4 className={`font-medium ${tx.anulada ? 'line-through text-slate-500 dark:text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
+                  <div className="min-w-0">
+                    <h4 className={`font-medium truncate ${tx.anulada ? 'line-through text-slate-500 dark:text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
                       {tx.descripcion || tx.categorias?.nombre || 'Sin categoría'}
                     </h4>
-                    <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
                       <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
                       <span>•</span>
                       <span>{tx.cuentas?.nombre}</span>
@@ -209,8 +209,8 @@ export default function TransaccionesPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
+                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 sm:pl-4">
+                  <div className="text-left sm:text-right flex-1 sm:flex-none">
                     <p className={`font-bold ${
                       tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>

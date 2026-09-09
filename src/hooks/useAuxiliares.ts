@@ -50,6 +50,28 @@ export function useCrearCategoria() {
   })
 }
 
+export function useEditarCategoria() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string, updates: Partial<Omit<Categoria, 'id' | 'user_id'>> }) => {
+      const { data, error } = await supabase
+        .from('categorias')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categorias'] })
+    }
+  })
+}
+
 export function useEliminarCategoria() {
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -63,7 +85,7 @@ export function useEliminarCategoria() {
       
       if (error) {
         if (error.code === '23503') {
-          throw new Error('No se puede eliminar: esta categoría tiene movimientos o presupuestos asociados.')
+          throw new Error('No se puede eliminar: esta categoría tiene movimientos asociados. Puedes editarla en su lugar.')
         }
         throw error
       }

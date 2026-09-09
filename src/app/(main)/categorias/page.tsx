@@ -1,17 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { useCategorias, useCrearCategoria, useEliminarCategoria } from '@/hooks/useAuxiliares'
-import { FolderOpen, Plus, X, Loader2, Trash2 } from 'lucide-react'
+import { useCategorias, useCrearCategoria, useEliminarCategoria, useEditarCategoria, Categoria } from '@/hooks/useAuxiliares'
+import { FolderOpen, Plus, X, Loader2, Trash2, Pencil } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
 
 export default function CategoriasPage() {
   const { data: categorias, isLoading } = useCategorias()
   const { mutateAsync: crearCategoria, isPending: isCreating } = useCrearCategoria()
+  const { mutateAsync: editarCategoria, isPending: isEditing } = useEditarCategoria()
   const { mutateAsync: eliminarCategoria, isPending: isDeleting } = useEliminarCategoria()
 
   const [modalOpen, setModalOpen] = useState(false)
+  const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     nombre: '',
@@ -19,7 +21,15 @@ export default function CategoriasPage() {
   })
 
   const openCreate = () => {
+    setCategoriaEditando(null)
     setFormData({ nombre: '', tipo: 'gasto' })
+    setError('')
+    setModalOpen(true)
+  }
+
+  const openEdit = (cat: Categoria) => {
+    setCategoriaEditando(cat)
+    setFormData({ nombre: cat.nombre, tipo: cat.tipo })
     setError('')
     setModalOpen(true)
   }
@@ -28,10 +38,14 @@ export default function CategoriasPage() {
     e.preventDefault()
     setError('')
     try {
-      await crearCategoria(formData)
+      if (categoriaEditando) {
+        await editarCategoria({ id: categoriaEditando.id, updates: { nombre: formData.nombre } })
+      } else {
+        await crearCategoria(formData)
+      }
       setModalOpen(false)
     } catch (err: any) {
-      setError(err.message || 'Error al crear la categoría')
+      setError(err.message || (categoriaEditando ? 'Error al editar la categoría' : 'Error al crear la categoría'))
     }
   }
 
@@ -89,14 +103,23 @@ export default function CategoriasPage() {
                   {cat.tipo.charAt(0).toUpperCase() + cat.tipo.slice(1)}
                 </span>
               </div>
-              <button
-                onClick={() => handleDelete(cat.id)}
-                disabled={isDeleting}
-                className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
-                title="Eliminar categoría"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => openEdit(cat)}
+                  className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                  title="Editar categoría"
+                >
+                  <Pencil className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(cat.id)}
+                  disabled={isDeleting}
+                  className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                  title="Eliminar categoría"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -107,7 +130,9 @@ export default function CategoriasPage() {
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Nueva Categoría</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                {categoriaEditando ? 'Editar Categoría' : 'Nueva Categoría'}
+              </h2>
               <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <X className="w-6 h-6" />
               </button>
@@ -129,9 +154,10 @@ export default function CategoriasPage() {
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tipo</label>
                 <select
+                  disabled={!!categoriaEditando}
                   value={formData.tipo}
                   onChange={e => setFormData({...formData, tipo: e.target.value as any})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="gasto">Gasto</option>
                   <option value="ingreso">Ingreso</option>
@@ -156,10 +182,10 @@ export default function CategoriasPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCreating}
+                  disabled={isCreating || isEditing}
                   className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center"
                 >
-                  {isCreating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Crear'}
+                  {isCreating || isEditing ? <Loader2 className="w-5 h-5 animate-spin" /> : (categoriaEditando ? 'Guardar' : 'Crear')}
                 </button>
               </div>
             </form>

@@ -130,21 +130,21 @@ export default function DeudasPage() {
                   <Trash2 className="w-5 h-5" />
                 </button>
                 <div>
-                  <div className="flex justify-between items-start mb-4 pr-8">
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900 dark:text-slate-200">{deuda.nombre}</h3>
+                  <div className="flex justify-between items-start mb-4 pr-8 gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg text-slate-900 dark:text-slate-200 truncate">{deuda.nombre}</h3>
                       {deuda.fecha_limite && (
                         <p className={`text-xs mt-1 font-medium ${new Date(deuda.fecha_limite) < new Date() && !completado ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
                           Límite: {new Date(deuda.fecha_limite).toLocaleDateString()}
                         </p>
                       )}
                     </div>
-                    <div className={`${completado ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'} font-bold px-3 py-1 rounded-full text-sm transition-colors`}>
+                    <div className={`${completado ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'} font-bold px-3 py-1 rounded-full text-sm transition-colors shrink-0`}>
                       {Math.round(progreso)}% Pagado
                     </div>
                   </div>
 
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="flex flex-col sm:flex-row justify-between text-sm mb-2 gap-1">
                     <span className="text-slate-600 dark:text-slate-300">Pendiente: <strong className="text-slate-900 dark:text-slate-100">{formatMoney(deuda.saldo_pendiente, deuda.moneda)}</strong></span>
                     <span className="text-slate-400 dark:text-slate-500">Total: {formatMoney(deuda.monto_total, deuda.moneda)}</span>
                   </div>
