@@ -1,6 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
+import { useTransacciones } from '@/hooks/useTransacciones'
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export default function DashboardPage() {
   const { data: balance, isLoading: loadingBalance } = useBalanceNeto()
   const { data: resumen, isLoading: loadingResumen } = useResumenMes()
+  const { data: transacciones, isLoading: loadingTx } = useTransacciones(new Date())
 
   const formatUSD = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
@@ -130,16 +133,62 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Próximas acciones o placeholders (V1) */}
+      {/* Transacciones Recientes */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Transacciones Recientes</h3>
-          <button className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline">Ver todas</button>
+          <Link href="/transacciones" className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline">Ver todas</Link>
         </div>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center text-slate-500 dark:text-slate-400 shadow-sm transition-colors">
-          <ArrowRightLeft className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-          <p>Aún no hay transacciones para mostrar.</p>
-          <p className="text-sm mt-1">Registra tu primer movimiento para ver el historial aquí.</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
+          {loadingTx ? (
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+              <p>Cargando transacciones...</p>
+            </div>
+          ) : !transacciones || transacciones.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+              <ArrowRightLeft className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+              <p>Aún no hay transacciones para mostrar.</p>
+              <p className="text-sm mt-1">Registra tu primer movimiento para ver el historial aquí.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              {transacciones.slice(0, 5).map(tx => (
+                <div key={tx.id} className={`p-4 flex items-center justify-between transition-colors ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-full ${
+                      tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
+                      tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                      'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    }`}>
+                      <ArrowRightLeft className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className={`font-medium ${tx.anulada ? 'line-through text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
+                        {tx.descripcion || tx.categorias?.nombre || 'Sin categoría'}
+                      </h4>
+                      <div className="flex gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
+                        <span>•</span>
+                        <span>{tx.cuentas?.nombre}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-bold ${
+                      tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
+                    } ${tx.anulada ? 'line-through' : ''}`}>
+                      {tx.tipo === 'ingreso' ? '+' : '-'}{tx.moneda_original === 'USD' ? formatUSD(tx.monto_original) : formatVES(tx.monto_original)}
+                    </p>
+                    {tx.moneda_original === 'VES' && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        ≈ {formatUSD(tx.monto_usd_calculado)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
