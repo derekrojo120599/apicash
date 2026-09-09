@@ -57,10 +57,35 @@ export function useAgregarAporte() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ meta_id, cuenta_id, monto, moneda_cuenta, fecha }: { meta_id: string, cuenta_id: string, monto: number, moneda_cuenta: string, fecha: Date }) => {
+    mutationFn: async ({ meta_id, cuenta_id, monto, moneda_cuenta, fecha }: { meta_id: string, cuenta_id: string | null, monto: number, moneda_cuenta: string, fecha: Date }) => {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No auth user')
 
+      // Si no hay cuenta, asumimos que es una fuente externa y simplemente sumamos a la meta
+      if (!cuenta_id) {
+        // Primero obtenemos el estado actual de la meta para saber cuánto sumarle
+        const { data: metaActual, error: fetchError } = await supabase
+          .from('metas')
+          .select('monto_actual, moneda')
+          .eq('id', meta_id)
+          .single()
+        
+        if (fetchError) throw fetchError
+
+        // Hacemos el update sumando el nuevo monto
+        // Nota: en este escenario, asumimos que el usuario introduce el monto en la moneda de la meta
+        const nuevoMonto = metaActual.monto_actual + monto
+
+        const { error: updateError } = await supabase
+          .from('metas')
+          .update({ monto_actual: nuevoMonto })
+          .eq('id', meta_id)
+
+        if (updateError) throw updateError
+        return true
+      }
+
+      // LÓGICA ORIGINAL SI HAY CUENTA SELECCIONADA
       // Buscamos la categoria de tipo 'ahorro'
       const { data: cat } = await supabase
         .from('categorias')

@@ -28,7 +28,8 @@ export default function AhorrosPage() {
   
   const [aporteData, setAporteData] = useState({
     cuenta_id: '',
-    monto: ''
+    monto: '',
+    esFuenteExterna: false
   })
 
   const openCreate = () => {
@@ -39,7 +40,11 @@ export default function AhorrosPage() {
 
   const openAporte = (meta: Meta) => {
     setMetaActual(meta)
-    setAporteData({ cuenta_id: cuentas?.find(c => c.activa)?.id || '', monto: '' })
+    setAporteData({ 
+      cuenta_id: cuentas?.find(c => c.activa)?.id || '', 
+      monto: '',
+      esFuenteExterna: false
+    })
     setModalMode('aporte')
   }
 
@@ -61,15 +66,23 @@ export default function AhorrosPage() {
   const handleAporteSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!metaActual) return
-    const cuenta = cuentas?.find(c => c.id === aporteData.cuenta_id)
-    if (!cuenta) return
+
+    // Si NO es fuente externa, validar que haya cuenta
+    let cuenta = null;
+    if (!aporteData.esFuenteExterna) {
+      cuenta = cuentas?.find(c => c.id === aporteData.cuenta_id)
+      if (!cuenta) {
+        alert('Seleccione una cuenta origen')
+        return
+      }
+    }
 
     try {
       await agregarAporte({
         meta_id: metaActual.id,
-        cuenta_id: cuenta.id,
+        cuenta_id: aporteData.esFuenteExterna ? null : cuenta!.id,
         monto: Number(aporteData.monto),
-        moneda_cuenta: cuenta.moneda,
+        moneda_cuenta: aporteData.esFuenteExterna ? metaActual.moneda : cuenta!.moneda,
         fecha: new Date()
       })
       setModalMode(null)
@@ -259,21 +272,47 @@ export default function AhorrosPage() {
               <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleAporteSubmit} className="p-5 space-y-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (De dónde sale el dinero)</label>
-                <select required value={aporteData.cuenta_id} onChange={e => setAporteData({...aporteData, cuenta_id: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none text-slate-900 dark:text-slate-100 transition-colors">
-                  {cuentas?.filter(c => c.activa).map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre} - Disp: {formatMoney(c.saldo_cache, c.moneda)}</option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-2 mb-2">
+                <input 
+                  type="checkbox" 
+                  id="fuenteExterna"
+                  checked={aporteData.esFuenteExterna} 
+                  onChange={e => setAporteData({...aporteData, esFuenteExterna: e.target.checked})}
+                  className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+                <label htmlFor="fuenteExterna" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                  El dinero proviene de una fuente externa (no descontar de mis cuentas)
+                </label>
               </div>
+
+              {!aporteData.esFuenteExterna && (
+                <div className="space-y-1 transition-all">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (De dónde sale el dinero)</label>
+                  <select required={!aporteData.esFuenteExterna} value={aporteData.cuenta_id} onChange={e => setAporteData({...aporteData, cuenta_id: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none text-slate-900 dark:text-slate-100 transition-colors">
+                    {cuentas?.filter(c => c.activa).map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre} - Disp: {formatMoney(c.saldo_cache, c.moneda)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto del Aporte</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Monto del Aporte {aporteData.esFuenteExterna ? `(en ${metaActual?.moneda})` : ''}
+                </label>
                 <input required type="number" step="0.01" min="0.01" value={aporteData.monto} onChange={e => setAporteData({...aporteData, monto: e.target.value})} className="w-full px-4 py-2 text-xl font-bold border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" placeholder="0.00" />
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/50 transition-colors">
-                Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como "Ahorro", y se sumará a esta meta.
-              </p>
+
+              {!aporteData.esFuenteExterna ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/50 transition-colors">
+                  Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como "Ahorro", y se sumará a esta meta.
+                </p>
+              ) : (
+                <p className="text-xs text-slate-500 dark:text-slate-400 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900/50 transition-colors">
+                  El monto se sumará directamente a tu ahorro <strong className="dark:text-slate-300">sin crear una transacción de gasto</strong> ni alterar tus balances.
+                </p>
+              )}
+              
               <button type="submit" disabled={isAdding} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
             </form>
           </div>
