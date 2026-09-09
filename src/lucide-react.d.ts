@@ -30,4 +30,6 @@ declare module 'lucide-react' {
   export const RefreshCw: any;
   export const FolderOpen: any;
   export const Trash2: any;
+  export const Pencil: any;
+  export const Menu: any;
 }
