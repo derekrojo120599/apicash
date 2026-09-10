@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useMetas, useCrearMeta, useAgregarAporte, useEliminarMeta, Meta } from '@/hooks/useMetas'
 import { useCuentas } from '@/hooks/useCuentas'
 import { PiggyBank, Plus, X, Loader2, ArrowUpCircle, Trash2 } from 'lucide-react'
-import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar } from '@/components/animations'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect, AnimatedDatePicker } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -255,15 +255,23 @@ export default function AhorrosPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Moneda</label>
-                  <select value={formData.moneda} onChange={e => setFormData({...formData, moneda: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none text-slate-900 dark:text-slate-100 transition-colors">
-                    <option value="USD">USD</option>
-                    <option value="VES">VES</option>
-                  </select>
+                  <AnimatedSelect
+                    value={formData.moneda}
+                    onChange={(v) => setFormData({...formData, moneda: v})}
+                    options={[
+                      { value: 'USD', label: 'USD' },
+                      { value: 'VES', label: 'VES' },
+                    ]}
+                    placeholder="Seleccione moneda"
+                  />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Fecha Límite (Opcional)</label>
-                <input type="date" value={formData.fecha_objetivo} onChange={e => setFormData({...formData, fecha_objetivo: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" />
+                <AnimatedDatePicker
+                  label="Fecha Límite (Opcional)"
+                  value={formData.fecha_objetivo}
+                  onChange={(v) => setFormData({...formData, fecha_objetivo: v})}
+                />
               </div>
               <button type="submit" disabled={isCreating} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
             </form>
@@ -299,11 +307,19 @@ export default function AhorrosPage() {
               {!aporteData.esFuenteExterna && (
                 <div className="space-y-1 transition-all">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (De dónde sale el dinero)</label>
-                  <select required={!aporteData.esFuenteExterna} value={aporteData.cuenta_id} onChange={e => setAporteData({...aporteData, cuenta_id: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none text-slate-900 dark:text-slate-100 transition-colors">
-                    {cuentas?.filter(c => c.activa).map(c => (
-                      <option key={c.id} value={c.id}>{c.nombre} - Disp: {formatMoney(c.saldo_cache, c.moneda)}</option>
-                    ))}
-                  </select>
+                  <AnimatedSelect
+                    value={aporteData.cuenta_id}
+                    onChange={(v) => setAporteData({...aporteData, cuenta_id: v})}
+                    options={[
+                      { value: '', label: 'Seleccione una cuenta', disabled: true },
+                      ...(cuentas?.filter(c => c.activa).map(c => ({
+                        value: c.id,
+                        label: `${c.nombre} - Disp: ${formatMoney(c.saldo_cache, c.moneda)}`
+                      })) || [])
+                    ]}
+                    placeholder="Seleccione una cuenta"
+                    required={!aporteData.esFuenteExterna}
+                  />
                 </div>
               )}
 

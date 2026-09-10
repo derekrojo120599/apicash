@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useDeudas, useCrearDeuda, useRegistrarPagoDeuda, useEliminarDeuda, Deuda } from '@/hooks/useDeudas'
 import { useCuentas } from '@/hooks/useCuentas'
 import { Receipt, Plus, X, Loader2, ArrowDownCircle, Trash2 } from 'lucide-react'
-import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar } from '@/components/animations'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect, AnimatedDatePicker } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -215,15 +215,23 @@ export default function DeudasPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Moneda</label>
-                  <select value={formData.moneda} onChange={e => setFormData({...formData, moneda: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none focus:ring-2 focus:ring-orange-500 text-slate-900 dark:text-slate-100 transition-colors">
-                    <option value="USD">USD</option>
-                    <option value="VES">VES</option>
-                  </select>
+                  <AnimatedSelect
+                    value={formData.moneda}
+                    onChange={(v) => setFormData({...formData, moneda: v})}
+                    options={[
+                      { value: 'USD', label: 'USD' },
+                      { value: 'VES', label: 'VES' },
+                    ]}
+                    placeholder="Seleccione moneda"
+                  />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Fecha Límite de Pago (Opcional)</label>
-                <input type="date" value={formData.fecha_limite} onChange={e => setFormData({...formData, fecha_limite: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 bg-transparent text-slate-900 dark:text-slate-100 transition-colors" />
+                <AnimatedDatePicker
+                  label="Fecha Límite de Pago (Opcional)"
+                  value={formData.fecha_limite}
+                  onChange={(v) => setFormData({...formData, fecha_limite: v})}
+                />
               </div>
               <button type="submit" disabled={isCreating} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 rounded-lg flex justify-center transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Guardar Deuda'}</button>
             </form>
@@ -245,11 +253,19 @@ export default function DeudasPage() {
             <form onSubmit={handlePagoSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (Con qué vas a pagar)</label>
-                <select required value={pagoData.cuenta_id} onChange={e => setPagoData({...pagoData, cuenta_id: e.target.value})} className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 outline-none focus:ring-2 focus:ring-orange-500 text-slate-900 dark:text-slate-100 transition-colors">
-                  {cuentas?.filter(c => c.activa).map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre} - Disp: {formatMoney(c.saldo_cache, c.moneda)}</option>
-                  ))}
-                </select>
+                <AnimatedSelect
+                  value={pagoData.cuenta_id}
+                  onChange={(v) => setPagoData({...pagoData, cuenta_id: v})}
+                  options={[
+                    { value: '', label: 'Seleccione una cuenta', disabled: true },
+                    ...(cuentas?.filter(c => c.activa).map(c => ({
+                      value: c.id,
+                      label: `${c.nombre} - Disp: ${formatMoney(c.saldo_cache, c.moneda)}`
+                    })) || [])
+                  ]}
+                  placeholder="Seleccione una cuenta"
+                  required
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto del Pago</label>

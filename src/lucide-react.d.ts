@@ -37,4 +37,6 @@ declare module 'lucide-react' {
   export const CheckCircle2: any;
   export const BookOpen: any;
   export const ChevronRight: any;
+  export const ChevronDown: any;
+  export const Check: any;
 }

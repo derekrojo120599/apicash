@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useCategorias, useCrearCategoria, useEliminarCategoria, useEditarCategoria, Categoria } from '@/hooks/useAuxiliares'
 import { FolderOpen, Plus, X, Loader2, Trash2, Pencil } from 'lucide-react'
-import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader } from '@/components/animations'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedSelect } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -154,17 +154,18 @@ export default function CategoriasPage() {
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tipo</label>
-                <select
-                  disabled={!!categoriaEditando}
+                <AnimatedSelect
                   value={formData.tipo}
-                  onChange={e => setFormData({...formData, tipo: e.target.value as any})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="gasto">Gasto</option>
-                  <option value="ingreso">Ingreso</option>
-                  <option value="ahorro">Ahorro</option>
-                  <option value="deuda">Deuda</option>
-                </select>
+                  onChange={(v) => setFormData({...formData, tipo: v as typeof formData.tipo})}
+                  options={[
+                    { value: 'gasto', label: 'Gasto' },
+                    { value: 'ingreso', label: 'Ingreso' },
+                    { value: 'ahorro', label: 'Ahorro' },
+                    { value: 'deuda', label: 'Deuda' },
+                  ]}
+                  placeholder="Seleccione un tipo"
+                  disabled={!!categoriaEditando}
+                />
               </div>
 
               {error && (

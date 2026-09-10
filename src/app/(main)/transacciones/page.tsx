@@ -5,7 +5,7 @@ import { useTransacciones, useCrearTransaccion, useAnularTransaccion, Transaccio
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban } from 'lucide-react'
-import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber } from '@/components/animations'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -154,16 +154,15 @@ export default function TransaccionesPage() {
         </div>
         
         <div className="w-full md:w-auto flex-1 md:max-w-xs">
-          <select 
+          <AnimatedSelect
             value={filtroCategoria}
-            onChange={(e) => setFiltroCategoria(e.target.value)}
-            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-slate-900 dark:text-slate-100 transition-colors"
-          >
-            <option value="">Todas las categorías</option>
-            {categorias?.map(c => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
-          </select>
+            onChange={setFiltroCategoria}
+            options={[
+              { value: '', label: 'Todas las categorías' },
+              ...(categorias?.map(c => ({ value: c.id, label: c.nombre })) || [])
+            ]}
+            placeholder="Todas las categorías"
+          />
         </div>
         </div>
       </FadeIn>
@@ -287,17 +286,19 @@ export default function TransaccionesPage() {
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta origen/destino</label>
-                <select
-                  required
+                <AnimatedSelect
                   value={formData.cuenta_id}
-                  onChange={e => setFormData({...formData, cuenta_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
-                >
-                  <option value="" disabled>Seleccione una cuenta</option>
-                  {cuentas?.filter(c => c.activa).map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre} ({c.moneda}) - {formatMoney(c.saldo_cache, c.moneda)}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setFormData({...formData, cuenta_id: v})}
+                  options={[
+                    { value: '', label: 'Seleccione una cuenta', disabled: true },
+                    ...(cuentas?.filter(c => c.activa).map(c => ({
+                      value: c.id,
+                      label: `${c.nombre} (${c.moneda}) - ${formatMoney(c.saldo_cache, c.moneda)}`
+                    })) || [])
+                  ]}
+                  placeholder="Seleccione una cuenta"
+                  required
+                />
                 
                 {/* AVISO IMPORTANTE SOBRE LA TASA DE CAMBIO */}
                 {cuentaSeleccionada?.moneda === 'VES' && (

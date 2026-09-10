@@ -6,3 +6,5 @@ export { AnimatedButton } from './AnimatedButton';
 export { AnimatedLoader } from './AnimatedLoader';
 export { AnimatedProgressBar } from './AnimatedProgressBar';
 export { AnimatedNavLink } from './AnimatedNavLink';
+export { AnimatedSelect } from './AnimatedSelect';
+export { AnimatedDatePicker } from './AnimatedDatePicker';

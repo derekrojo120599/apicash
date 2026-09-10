@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useProgresoPresupuesto, useGuardarPresupuesto, useCopiarPresupuestosAnterior, ProgresoPresupuesto } from '@/hooks/usePresupuestos'
 import { useCategorias } from '@/hooks/useAuxiliares'
 import { Target, Calendar as CalendarIcon, Copy, Plus, X, Loader2, AlertCircle } from 'lucide-react'
-import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar } from '@/components/animations'
+import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
 
@@ -239,17 +239,16 @@ export default function PresupuestoPage() {
                   </div>
                 ) : (
                   // Si estamos creando uno nuevo
-                  <select
-                    required
+                  <AnimatedSelect
                     value={presupuestoEdit?.categoria_id || ''}
-                    onChange={e => setPresupuestoEdit(prev => ({...prev!, categoria_id: e.target.value}))}
-                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors"
-                  >
-                    <option value="" disabled>Selecciona una categoría</option>
-                    {categoriasDisponibles.map(c => (
-                      <option key={c.id} value={c.id}>{c.nombre}</option>
-                    ))}
-                  </select>
+                    onChange={(v) => setPresupuestoEdit(prev => ({...prev!, categoria_id: v}))}
+                    options={[
+                      { value: '', label: 'Selecciona una categoría', disabled: true },
+                      ...categoriasDisponibles.map(c => ({ value: c.id, label: c.nombre }))
+                    ]}
+                    placeholder="Selecciona una categoría"
+                    required
+                  />
                 )}
               </div>
 
