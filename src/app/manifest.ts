@@ -6,6 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Apicash',
     description: 'Apicash - Control de gastos en USD y VES',
     start_url: '/',
+    scope: '/',
     display: 'standalone',
     orientation: 'portrait',
     background_color: '#f8fafc', // slate-50 (fondo de la app)

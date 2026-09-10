@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "Apicash",
   description: "Apicash - Control de gastos en USD y VES",
   manifest: "/manifest.json",
+  icons: {
+    apple: "/icon-192x192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
