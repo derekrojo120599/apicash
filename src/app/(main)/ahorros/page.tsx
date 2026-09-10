@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useMetas, useCrearMeta, useAgregarAporte, useEliminarMeta, Meta } from '@/hooks/useMetas'
+import { useMetas, useCrearMeta, useAgregarAporte, useEliminarMeta, useRetirarAhorro, Meta } from '@/hooks/useMetas'
 import { useCuentas } from '@/hooks/useCuentas'
-import { PiggyBank, Plus, X, Loader2, ArrowUpCircle, Trash2 } from 'lucide-react'
+import { useTasaActual } from '@/hooks/useAuxiliares'
+import { PiggyBank, Plus, X, Loader2, ArrowUpCircle, Trash2, ArrowDownCircle } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect, AnimatedDatePicker } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
@@ -11,12 +12,14 @@ export const dynamic = 'force-dynamic';
 export default function AhorrosPage() {
   const { data: metas, isLoading } = useMetas()
   const { data: cuentas } = useCuentas()
+  const { data: tasaActual } = useTasaActual()
   
   const { mutateAsync: crearMeta, isPending: isCreating } = useCrearMeta()
   const { mutateAsync: agregarAporte, isPending: isAdding } = useAgregarAporte()
   const { mutateAsync: eliminarMeta, isPending: isDeleting } = useEliminarMeta()
+  const { mutateAsync: retirarAhorro, isPending: isRetirando } = useRetirarAhorro()
 
-  const [modalMode, setModalMode] = useState<'create' | 'aporte' | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'aporte' | 'retiro' | null>(null)
   const [metaActual, setMetaActual] = useState<Meta | null>(null)
   
   const [formData, setFormData] = useState({
@@ -33,6 +36,12 @@ export default function AhorrosPage() {
     esFuenteExterna: false
   })
 
+  const [retiroData, setRetiroData] = useState({
+    cuenta_id: '',
+    monto: '',
+    descripcion: ''
+  })
+
   const openCreate = () => {
     setFormData({ nombre: '', monto_objetivo: '', moneda: 'USD', fecha_objetivo: '' })
     setSinMetaFija(false)
@@ -47,6 +56,16 @@ export default function AhorrosPage() {
       esFuenteExterna: false
     })
     setModalMode('aporte')
+  }
+
+  const openRetiro = (meta: Meta) => {
+    setMetaActual(meta)
+    setRetiroData({
+      cuenta_id: cuentas?.find(c => c.activa)?.id || '',
+      monto: '',
+      descripcion: ''
+    })
+    setModalMode('retiro')
   }
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -68,7 +87,6 @@ export default function AhorrosPage() {
     e.preventDefault()
     if (!metaActual) return
 
-    // Si NO es fuente externa, validar que haya cuenta
     let cuenta = null;
     if (!aporteData.esFuenteExterna) {
       cuenta = cuentas?.find(c => c.id === aporteData.cuenta_id)
@@ -89,6 +107,57 @@ export default function AhorrosPage() {
       setModalMode(null)
     } catch (err: any) {
       alert(err.message || 'Error al registrar aporte')
+    }
+  }
+
+  const calcularMaximoRetirable = (meta: Meta, cuentaMoneda: string) => {
+    const montoActual = meta.monto_actual || 0
+    if (!tasaActual || tasaActual <= 0 || meta.moneda === cuentaMoneda) {
+      return montoActual
+    }
+    if (meta.moneda === 'USD' && cuentaMoneda === 'VES') {
+      return montoActual * tasaActual
+    }
+    if (meta.moneda === 'VES' && cuentaMoneda === 'USD') {
+      return montoActual / tasaActual
+    }
+    return montoActual
+  }
+
+  const handleRetiroSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!metaActual) return
+
+    const cuenta = cuentas?.find(c => c.id === retiroData.cuenta_id)
+    if (!cuenta) {
+      alert('Seleccione una cuenta destino')
+      return
+    }
+
+    const monto = Number(retiroData.monto)
+    if (!monto || monto <= 0) {
+      alert('Ingrese un monto válido')
+      return
+    }
+
+    const maximoRetirable = calcularMaximoRetirable(metaActual, cuenta.moneda)
+    if (monto > maximoRetirable + 0.001) {
+      alert(`El monto máximo retirable es ${formatMoney(maximoRetirable, cuenta.moneda)}`)
+      return
+    }
+
+    try {
+      await retirarAhorro({
+        meta_id: metaActual.id,
+        cuenta_id: cuenta.id,
+        monto: monto,
+        moneda_cuenta: cuenta.moneda,
+        fecha: new Date(),
+        descripcion: retiroData.descripcion.trim() || undefined
+      })
+      setModalMode(null)
+    } catch (err: any) {
+      alert(err.message || 'Error al registrar retiro')
     }
   }
 
@@ -133,6 +202,7 @@ export default function AhorrosPage() {
             const tieneObjetivo = meta.monto_objetivo !== null && meta.monto_objetivo > 0
             const progreso = tieneObjetivo ? Math.min((meta.monto_actual / meta.monto_objetivo!) * 100, 100) : 0
             const completado = tieneObjetivo ? progreso >= 100 : false
+            const puedeRetirar = (meta.monto_actual || 0) > 0
 
             return (
               <AnimatedCard
@@ -191,28 +261,40 @@ export default function AhorrosPage() {
                       className="mb-6"
                     />
                   ) : (
-                    <div className="mb-6" /> // Spacing for consistency
+                    <div className="mb-6" />
                   )}
                 </div>
 
-                <button
-                  onClick={() => openAporte(meta)}
-                  disabled={completado}
-                  className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-                    completado
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default'
-                    : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  {completado ? (
-                    '¡Meta Completada!'
-                  ) : (
-                    <>
-                      <ArrowUpCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      Agregar Aporte
-                    </>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={() => openAporte(meta)}
+                    disabled={completado}
+                    className={`flex-1 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                      completado
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default'
+                      : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {completado ? (
+                      '¡Meta Completada!'
+                    ) : (
+                      <>
+                        <ArrowUpCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        Agregar Aporte
+                      </>
+                    )}
+                  </button>
+
+                  {puedeRetirar && (
+                    <button
+                      onClick={() => openRetiro(meta)}
+                      className="flex-1 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900/40 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30"
+                    >
+                      <ArrowDownCircle className="w-5 h-5" />
+                      Retirar
+                    </button>
                   )}
-                </button>
+                </div>
               </AnimatedCard>
             )
           })}
@@ -335,7 +417,7 @@ export default function AhorrosPage() {
 
               {!aporteData.esFuenteExterna ? (
                 <p className="text-xs text-slate-500 dark:text-slate-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-900/50 transition-colors">
-                  Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como "Ahorro", y se sumará a esta meta.
+                  Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como &quot;Ahorro&quot;, y se sumará a esta meta.
                 </p>
               ) : (
                 <p className="text-xs text-slate-500 dark:text-slate-400 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900/50 transition-colors">
@@ -344,6 +426,89 @@ export default function AhorrosPage() {
               )}
               
               <button type="submit" disabled={isAdding} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Retiro de Emergencia */}
+      {modalMode === 'retiro' && metaActual && (
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 bg-orange-50 dark:bg-orange-950 transition-colors">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Retiro de Emergencia</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{metaActual.nombre}</p>
+              </div>
+              <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleRetiroSubmit} className="p-5 space-y-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta destino (A dónde va el dinero)</label>
+                <AnimatedSelect
+                  value={retiroData.cuenta_id}
+                  onChange={(v) => setRetiroData({...retiroData, cuenta_id: v})}
+                  options={[
+                    { value: '', label: 'Seleccione una cuenta', disabled: true },
+                    ...(cuentas?.filter(c => c.activa).map(c => ({
+                      value: c.id,
+                      label: `${c.nombre} (${c.moneda})`
+                    })) || [])
+                  ]}
+                  placeholder="Seleccione una cuenta"
+                  required
+                  accent="orange"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Monto a retirar
+                  {(() => {
+                    const cuenta = cuentas?.find(c => c.id === retiroData.cuenta_id)
+                    if (!cuenta || !metaActual) return null
+                    const maximo = calcularMaximoRetirable(metaActual, cuenta.moneda)
+                    return (
+                      <span className="block text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                        Máximo disponible: {formatMoney(maximo, cuenta.moneda)}
+                      </span>
+                    )
+                  })()}
+                </label>
+                <input 
+                  required 
+                  type="number" 
+                  step="0.01" 
+                  min="0.01" 
+                  value={retiroData.monto} 
+                  onChange={e => setRetiroData({...retiroData, monto: e.target.value})} 
+                  className="w-full px-4 py-2 text-xl font-bold border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" 
+                  placeholder="0.00" 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Motivo de la emergencia (opcional)</label>
+                <input 
+                  type="text" 
+                  value={retiroData.descripcion} 
+                  onChange={e => setRetiroData({...retiroData, descripcion: e.target.value})} 
+                  className="w-full px-4 py-2 border dark:border-slate-700 rounded-lg outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors" 
+                  placeholder="Retiro de ahorro" 
+                />
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-100 dark:border-orange-900/50 transition-colors">
+                Se descontará el monto de esta meta y se acreditará en la cuenta destino como un ajuste interno. No contará como ingreso del mes.
+              </p>
+              
+              <button 
+                type="submit" 
+                disabled={isRetirando} 
+                className="w-full bg-orange-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-orange-700 transition-colors"
+              >
+                {isRetirando ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Confirmar Retiro'}
+              </button>
             </form>
           </div>
         </div>

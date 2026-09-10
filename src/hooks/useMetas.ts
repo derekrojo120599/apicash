@@ -121,6 +121,62 @@ export function useAgregarAporte() {
   })
 }
 
+export function useRetirarAhorro() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ meta_id, cuenta_id, monto, moneda_cuenta, fecha, descripcion }: { 
+      meta_id: string, 
+      cuenta_id: string, 
+      monto: number, 
+      moneda_cuenta: string, 
+      fecha: Date,
+      descripcion?: string 
+    }) => {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) throw new Error('No auth user')
+
+      // Buscamos la categoria de tipo 'ahorro'
+      const { data: cat } = await supabase
+        .from('categorias')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .eq('tipo', 'ahorro')
+        .limit(1)
+        .single()
+
+      const categoria_id = cat?.id
+
+      const { error } = await supabase
+        .rpc('retirar_ahorro', {
+          p_meta_id: meta_id,
+          p_cuenta_id: cuenta_id,
+          p_categoria_id: categoria_id || null,
+          p_monto: monto,
+          p_moneda_original: moneda_cuenta,
+          p_fecha: fecha.toISOString(),
+          p_descripcion: descripcion || null
+        })
+
+      if (error) {
+        if (error.message && error.message.includes('Fondos insuficientes')) {
+          throw new Error('Fondos insuficientes en la meta')
+        }
+        throw error
+      }
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['metas'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+    }
+  })
+}
+
 export function useEliminarMeta() {
   const supabase = createClient()
   const queryClient = useQueryClient()
