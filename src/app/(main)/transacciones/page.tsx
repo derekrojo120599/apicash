@@ -186,7 +186,7 @@ export default function TransaccionesPage() {
               <AnimatedCard
                 data-anime
                 key={tx.id}
-                className={`p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4 cursor-default ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
+                className={`p-4 flex flex-row items-start justify-between gap-4 cursor-default ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
               >
                 <div className="flex items-start gap-4 min-w-0">
                   <div className={`shrink-0 p-3 rounded-full ${
@@ -214,8 +214,8 @@ export default function TransaccionesPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start justify-between sm:justify-end gap-4 shrink-0 sm:pl-4">
-                  <div className="text-left sm:text-right flex-1 sm:flex-none">
+                <div className="flex items-start justify-end gap-4 shrink-0 pl-4">
+                  <div className="text-right flex-none">
                     <p className={`font-bold ${
                       tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
