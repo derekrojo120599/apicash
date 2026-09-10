@@ -205,9 +205,9 @@ export default function DashboardPage() {
                 <AnimatedCard
                   data-anime
                   key={tx.id}
-                  className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-default ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
+                  className={`p-4 flex flex-row items-start justify-between gap-4 cursor-default ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
                 >
-                  <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-start gap-4 min-w-0">
                     <div className={`shrink-0 p-3 rounded-full ${
                       tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
                       tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
@@ -219,14 +219,16 @@ export default function DashboardPage() {
                       <h4 className={`font-medium truncate ${tx.anulada ? 'line-through text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
                         {tx.descripcion || tx.categorias?.nombre || 'Sin categoría'}
                       </h4>
-                      <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
-                        <span>•</span>
-                        <span>{tx.cuentas?.nombre}</span>
+                      <div className="flex flex-col text-xs text-slate-500 dark:text-slate-400 mt-1 gap-y-0.5">
+                        <span className="font-medium text-slate-600 dark:text-slate-300">{tx.cuentas?.nombre}</span>
+                        <div className="flex gap-x-2">
+                          <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="text-left sm:text-right shrink-0">
+                  <div className="flex items-start justify-end gap-4 shrink-0 pl-4">
+                    <div className="text-right flex-none">
                     <p className={`font-bold ${
                       tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
@@ -237,6 +239,7 @@ export default function DashboardPage() {
                         ≈ {formatUSD(tx.monto_usd_calculado)}
                       </p>
                     )}
+                    </div>
                   </div>
                 </AnimatedCard>
               ))}

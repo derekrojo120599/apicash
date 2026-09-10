@@ -205,10 +205,10 @@ export default function TransaccionesPage() {
                       <div className="flex gap-x-2">
                         <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
                         {tx.tasa_al_momento && (
-                          <>
+                          <span className="hidden sm:inline-flex sm:items-center sm:gap-x-2">
                             <span>•</span>
                             <span title="Tasa usada al momento de la transacción">Tasa: {tx.tasa_al_momento}</span>
-                          </>
+                          </span>
                         )}
                       </div>
                     </div>
