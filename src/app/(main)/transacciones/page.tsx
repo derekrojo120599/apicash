@@ -200,16 +200,17 @@ export default function TransaccionesPage() {
                     <h4 className={`font-medium truncate ${tx.anulada ? 'line-through text-slate-500 dark:text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
                       {tx.descripcion || tx.categorias?.nombre || 'Sin categoría'}
                     </h4>
-                    <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
-                      <span>•</span>
-                      <span>{tx.cuentas?.nombre}</span>
-                      {tx.tasa_al_momento && (
-                        <>
-                          <span>•</span>
-                          <span title="Tasa usada al momento de la transacción">Tasa: {tx.tasa_al_momento}</span>
-                        </>
-                      )}
+                    <div className="flex flex-col text-xs text-slate-500 dark:text-slate-400 mt-1 gap-y-0.5">
+                      <span className="font-medium text-slate-600 dark:text-slate-300">{tx.cuentas?.nombre}</span>
+                      <div className="flex gap-x-2">
+                        <span>{new Date(tx.fecha).toLocaleDateString('es-ES')}</span>
+                        {tx.tasa_al_momento && (
+                          <>
+                            <span>•</span>
+                            <span title="Tasa usada al momento de la transacción">Tasa: {tx.tasa_al_momento}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
