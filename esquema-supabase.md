@@ -258,6 +258,7 @@ BEGIN
     SELECT COALESCE(SUM(
       CASE
         WHEN tipo = 'ingreso' THEN monto_original
+        WHEN tipo = 'ajuste' THEN monto_original
         WHEN tipo = 'gasto' THEN -monto_original
         ELSE 0
       END
@@ -275,6 +276,8 @@ CREATE TRIGGER trg_actualizar_saldo
 AFTER INSERT OR UPDATE OR DELETE ON transacciones
 FOR EACH ROW EXECUTE FUNCTION actualizar_saldo_cuenta();
 ```
+
+> Nota: `tipo = 'ajuste'` suma al saldo porque su único uso actual es devolver dinero de una meta de ahorro a una cuenta disponible.
 
 ## 10. Función: seed de categorías por defecto (invocar desde onboarding)
 
@@ -578,6 +581,75 @@ BEGIN
   FOR r IN SELECT id FROM perfiles LOOP
     PERFORM cerrar_mes(r.id, v_mes);
   END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 18. Función RPC: Retirar ahorro (emergencia)
+
+```sql
+CREATE OR REPLACE FUNCTION retirar_ahorro(
+  p_meta_id UUID,
+  p_cuenta_id UUID,
+  p_categoria_id UUID,
+  p_monto NUMERIC,
+  p_moneda_original moneda_enum,
+  p_fecha TIMESTAMPTZ,
+  p_descripcion TEXT DEFAULT 'Retiro de ahorro'
+)
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+  v_meta RECORD;
+  v_cuenta_owner UUID;
+  v_tasa NUMERIC(18,4);
+  v_monto_convertido NUMERIC;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  SELECT * INTO v_meta FROM metas WHERE id = p_meta_id;
+  IF v_meta IS NULL OR v_meta.user_id != v_user_id THEN
+    RAISE EXCEPTION 'Meta no encontrada o sin permiso';
+  END IF;
+
+  SELECT user_id INTO v_cuenta_owner FROM cuentas WHERE id = p_cuenta_id;
+  IF v_cuenta_owner IS NULL OR v_cuenta_owner != v_user_id THEN
+    RAISE EXCEPTION 'Cuenta no encontrada o sin permiso';
+  END IF;
+
+  IF p_moneda_original = v_meta.moneda THEN
+    v_monto_convertido := p_monto;
+  ELSE
+    SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    IF v_tasa IS NULL THEN
+      RAISE EXCEPTION 'No hay tasa de cambio disponible para la conversión';
+    END IF;
+
+    IF p_moneda_original = 'USD' AND v_meta.moneda = 'VES' THEN
+      v_monto_convertido := p_monto * v_tasa;
+    ELSIF p_moneda_original = 'VES' AND v_meta.moneda = 'USD' THEN
+      v_monto_convertido := p_monto / v_tasa;
+    END IF;
+  END IF;
+
+  IF v_meta.monto_actual < v_monto_convertido THEN
+    RAISE EXCEPTION 'Fondos insuficientes en la meta';
+  END IF;
+
+  UPDATE metas
+  SET monto_actual = GREATEST(v_meta.monto_actual - v_monto_convertido, 0)
+  WHERE id = p_meta_id;
+
+  INSERT INTO transacciones (
+    user_id, cuenta_id, categoria_id, tipo, monto_original, moneda_original, fecha, descripcion
+  ) VALUES (
+    v_user_id, p_cuenta_id, p_categoria_id, 'ajuste', p_monto, p_moneda_original, p_fecha, p_descripcion
+  );
 END;
 $$ LANGUAGE plpgsql;
 ```
