@@ -8,6 +8,8 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { AnimatedNavLink, StaggerContainer, AnimatedButton } from '@/components/animations'
 import { animate } from 'animejs'
 
+import { InstallPrompt } from '@/components/InstallPrompt'
+
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Cuentas', href: '/cuentas', icon: WalletCards },
@@ -154,6 +156,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
         {children}
       </main>
+
+      {/* Prompts and Overlays */}
+      <InstallPrompt />
 
       {/* Mobile Sidebar Drawer */}
       {mobileSidebarOpen && (
