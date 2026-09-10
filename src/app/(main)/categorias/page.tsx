@@ -165,6 +165,7 @@ export default function CategoriasPage() {
                   ]}
                   placeholder="Seleccione un tipo"
                   disabled={!!categoriaEditando}
+                  accent="emerald"
                 />
               </div>
 

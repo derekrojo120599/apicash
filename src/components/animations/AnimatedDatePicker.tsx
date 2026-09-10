@@ -3,6 +3,8 @@
 import { Calendar } from 'lucide-react';
 import { AnimatedSelect } from './AnimatedSelect';
 
+type AccentColor = 'emerald' | 'orange' | 'blue';
+
 interface AnimatedDatePickerProps {
   value: string;
   onChange: (value: string) => void;
@@ -11,6 +13,7 @@ interface AnimatedDatePickerProps {
   label?: string;
   className?: string;
   id?: string;
+  accent?: AccentColor;
 }
 
 const MESES = [
@@ -53,6 +56,7 @@ export function AnimatedDatePicker({
   label,
   className = '',
   id,
+  accent = 'emerald',
 }: AnimatedDatePickerProps) {
   const { day, month, year } = parseDate(value);
 
@@ -102,6 +106,7 @@ export function AnimatedDatePicker({
             options={dayOptions}
             placeholder="Día"
             disabled={disabled}
+            accent={accent}
           />
           <AnimatedSelect
             value={month}
@@ -109,6 +114,7 @@ export function AnimatedDatePicker({
             options={MESES}
             placeholder="Mes"
             disabled={disabled}
+            accent={accent}
           />
           <AnimatedSelect
             value={year}
@@ -116,6 +122,7 @@ export function AnimatedDatePicker({
             options={yearOptions}
             placeholder="Año"
             disabled={disabled}
+            accent={accent}
           />
         </div>
         <Calendar className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />

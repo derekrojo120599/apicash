@@ -215,15 +215,16 @@ export default function DeudasPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Moneda</label>
-                  <AnimatedSelect
-                    value={formData.moneda}
-                    onChange={(v) => setFormData({...formData, moneda: v})}
-                    options={[
-                      { value: 'USD', label: 'USD' },
-                      { value: 'VES', label: 'VES' },
-                    ]}
-                    placeholder="Seleccione moneda"
-                  />
+                <AnimatedSelect
+                  value={formData.moneda}
+                  onChange={(v) => setFormData({...formData, moneda: v})}
+                  options={[
+                    { value: 'USD', label: 'USD' },
+                    { value: 'VES', label: 'VES' },
+                  ]}
+                  placeholder="Seleccione moneda"
+                  accent="orange"
+                />
                 </div>
               </div>
               <div className="space-y-1">
@@ -231,6 +232,7 @@ export default function DeudasPage() {
                   label="Fecha Límite de Pago (Opcional)"
                   value={formData.fecha_limite}
                   onChange={(v) => setFormData({...formData, fecha_limite: v})}
+                  accent="orange"
                 />
               </div>
               <button type="submit" disabled={isCreating} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 rounded-lg flex justify-center transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Guardar Deuda'}</button>
@@ -265,6 +267,7 @@ export default function DeudasPage() {
                   ]}
                   placeholder="Seleccione una cuenta"
                   required
+                  accent="orange"
                 />
               </div>
               <div className="space-y-1">

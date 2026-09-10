@@ -255,15 +255,16 @@ export default function AhorrosPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Moneda</label>
-                  <AnimatedSelect
-                    value={formData.moneda}
-                    onChange={(v) => setFormData({...formData, moneda: v})}
-                    options={[
-                      { value: 'USD', label: 'USD' },
-                      { value: 'VES', label: 'VES' },
-                    ]}
-                    placeholder="Seleccione moneda"
-                  />
+                <AnimatedSelect
+                  value={formData.moneda}
+                  onChange={(v) => setFormData({...formData, moneda: v})}
+                  options={[
+                    { value: 'USD', label: 'USD' },
+                    { value: 'VES', label: 'VES' },
+                  ]}
+                  placeholder="Seleccione moneda"
+                  accent="emerald"
+                />
                 </div>
               </div>
               <div className="space-y-1">
@@ -271,6 +272,7 @@ export default function AhorrosPage() {
                   label="Fecha Límite (Opcional)"
                   value={formData.fecha_objetivo}
                   onChange={(v) => setFormData({...formData, fecha_objetivo: v})}
+                  accent="emerald"
                 />
               </div>
               <button type="submit" disabled={isCreating} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
@@ -319,6 +321,7 @@ export default function AhorrosPage() {
                     ]}
                     placeholder="Seleccione una cuenta"
                     required={!aporteData.esFuenteExterna}
+                    accent="emerald"
                   />
                 </div>
               )}

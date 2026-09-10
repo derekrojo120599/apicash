@@ -162,6 +162,7 @@ export default function TransaccionesPage() {
               ...(categorias?.map(c => ({ value: c.id, label: c.nombre })) || [])
             ]}
             placeholder="Todas las categorías"
+            accent="emerald"
           />
         </div>
         </div>
@@ -298,6 +299,7 @@ export default function TransaccionesPage() {
                   ]}
                   placeholder="Seleccione una cuenta"
                   required
+                  accent="emerald"
                 />
                 
                 {/* AVISO IMPORTANTE SOBRE LA TASA DE CAMBIO */}

@@ -10,6 +10,8 @@ interface SelectOption {
   disabled?: boolean;
 }
 
+type AccentColor = 'emerald' | 'orange' | 'blue';
+
 interface AnimatedSelectProps {
   value: string;
   onChange: (value: string) => void;
@@ -20,7 +22,42 @@ interface AnimatedSelectProps {
   label?: string;
   className?: string;
   id?: string;
+  accent?: AccentColor;
 }
+
+const accentStyles: Record<AccentColor, {
+  ring: string;
+  hoverBorder: string;
+  selectedBg: string;
+  selectedText: string;
+  darkSelectedBg: string;
+  darkSelectedText: string;
+}> = {
+  emerald: {
+    ring: 'focus:ring-emerald-500',
+    hoverBorder: 'hover:border-emerald-500',
+    selectedBg: 'bg-emerald-50',
+    selectedText: 'text-emerald-700',
+    darkSelectedBg: 'dark:bg-emerald-900/30',
+    darkSelectedText: 'dark:text-emerald-400',
+  },
+  orange: {
+    ring: 'focus:ring-orange-500',
+    hoverBorder: 'hover:border-orange-500',
+    selectedBg: 'bg-orange-50',
+    selectedText: 'text-orange-700',
+    darkSelectedBg: 'dark:bg-orange-900/30',
+    darkSelectedText: 'dark:text-orange-400',
+  },
+  blue: {
+    ring: 'focus:ring-blue-500',
+    hoverBorder: 'hover:border-blue-500',
+    selectedBg: 'bg-blue-50',
+    selectedText: 'text-blue-700',
+    darkSelectedBg: 'dark:bg-blue-900/30',
+    darkSelectedText: 'dark:text-blue-400',
+  },
+};
 
 export function AnimatedSelect({
   value,
@@ -32,6 +69,7 @@ export function AnimatedSelect({
   label,
   className = '',
   id,
+  accent = 'emerald',
 }: AnimatedSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -41,6 +79,7 @@ export function AnimatedSelect({
 
   const selectedOption = options.find((opt) => opt.value === value);
   const availableOptions = options.filter((opt) => !opt.disabled);
+  const accentClass = accentStyles[accent];
 
   const closeDropdown = useCallback(() => {
     if (!dropdownRef.current) {
@@ -51,6 +90,7 @@ export function AnimatedSelect({
     animate(dropdownRef.current, {
       opacity: [1, 0],
       translateY: [0, -8],
+      scale: [1, 0.96],
       duration: 200,
       ease: 'inCubic',
       onComplete: () => setIsOpen(false),
@@ -79,9 +119,10 @@ export function AnimatedSelect({
     if (dropdownRef.current) {
       animate(dropdownRef.current, {
         opacity: [0, 1],
-        translateY: [-8, 0],
-        duration: 250,
-        ease: 'outCubic',
+        translateY: [-12, 0],
+        scale: [0.96, 1],
+        duration: 280,
+        ease: 'outBack(1.5)',
       });
     }
 
@@ -90,9 +131,9 @@ export function AnimatedSelect({
       if (items.length > 0) {
         animate(items, {
           opacity: [0, 1],
-          translateX: [-8, 0],
-          duration: 250,
-          delay: stagger(30),
+          translateX: [-10, 0],
+          duration: 280,
+          delay: stagger(35),
           ease: 'outCubic',
         });
       }
@@ -176,7 +217,7 @@ export function AnimatedSelect({
         className={`w-full flex items-center justify-between gap-2 px-4 py-2 text-left border rounded-lg outline-none transition-colors ${
           disabled
             ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 cursor-not-allowed'
-            : 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 hover:border-emerald-500 focus:ring-2 focus:ring-emerald-500'
+            : `bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 ${accentClass.hoverBorder} ${accentClass.ring}`
         }`}
       >
         <span className={selectedOption ? '' : 'text-slate-400 dark:text-slate-500'}>
@@ -196,7 +237,7 @@ export function AnimatedSelect({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden"
+          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden origin-top"
           style={{ opacity: 0 }}
         >
           <div ref={optionsRef} className="max-h-60 overflow-y-auto py-1" role="listbox">
@@ -216,14 +257,14 @@ export function AnimatedSelect({
                     isDisabled
                       ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed'
                       : isSelected
-                      ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                      ? `${accentClass.selectedBg} ${accentClass.darkSelectedBg} ${accentClass.selectedText} ${accentClass.darkSelectedText}`
                       : isHighlighted
                       ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
                       : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span>{option.label}</span>
-                  {isSelected && <Check className="w-4 h-4" />}
+                  {isSelected && <Check className={`w-4 h-4 ${accentClass.selectedText} ${accentClass.darkSelectedText}`} />}
                 </div>
               );
             })}

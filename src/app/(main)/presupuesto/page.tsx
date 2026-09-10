@@ -248,6 +248,7 @@ export default function PresupuestoPage() {
                     ]}
                     placeholder="Selecciona una categoría"
                     required
+                    accent="emerald"
                   />
                 )}
               </div>

@@ -204,6 +204,7 @@ export default function CuentasPage() {
                     { value: 'billetera_digital', label: 'Billetera Digital (Ej: Zinli, Paypal)' },
                   ]}
                   placeholder="Seleccione tipo de cuenta"
+                  accent="emerald"
                 />
               </div>
 
@@ -218,6 +219,7 @@ export default function CuentasPage() {
                   ]}
                   placeholder="Seleccione moneda"
                   disabled={modalMode === 'edit'}
+                  accent="emerald"
                 />
                 {modalMode === 'edit' && (
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">La moneda no se puede cambiar una vez creada la cuenta.</p>
