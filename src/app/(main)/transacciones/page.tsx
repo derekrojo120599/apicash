@@ -344,7 +344,7 @@ export default function TransaccionesPage() {
                   onChange={(v) => setFormData({...formData, categoria_id: v})}
                   options={[
                     { value: '', label: 'Seleccione una categoría', disabled: true },
-                    ...(categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').map(c => ({
+                    ...(categorias?.filter(c => c.tipo === formData.tipo).map(c => ({
                       value: c.id,
                       label: c.nombre
                     })) || [])
