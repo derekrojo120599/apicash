@@ -765,5 +765,32 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
+## 21. Función RPC: Borrar todos los datos (mantener cuenta)
+
+```sql
+CREATE OR REPLACE FUNCTION borrar_datos_usuario()
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  DELETE FROM transacciones WHERE user_id = v_user_id;
+  DELETE FROM presupuestos WHERE user_id = v_user_id;
+  DELETE FROM snapshots_mensuales WHERE user_id = v_user_id;
+  DELETE FROM deudas WHERE user_id = v_user_id;
+  DELETE FROM metas WHERE user_id = v_user_id;
+  DELETE FROM cuentas WHERE user_id = v_user_id;
+  DELETE FROM categorias WHERE user_id = v_user_id;
+  -- No borramos perfiles para mantener la cuenta activa
+END;
+$$ LANGUAGE plpgsql;
+```
+
 ## Nota importante
 La tabla `tasas_cambio` solo debe recibir inserts desde el backend (Edge Function con `service_role`), nunca desde el cliente Next.js directamente, para evitar que un usuario manipule su balance insertando una tasa falsa.

@@ -45,4 +45,11 @@ declare module 'lucide-react' {
   export const ChevronRight: any;
   export const ChevronDown: any;
   export const Check: any;
+  export const Shield: any;
+  export const FileText: any;
+  export const BarChart3: any;
+  export const PieChart: any;
+  export const TrendingUp: any;
+  export const Activity: any;
+  export const Download: any;
 }

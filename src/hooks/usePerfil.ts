@@ -104,3 +104,22 @@ export function useEliminarCuenta() {
     }
   })
 }
+
+export function useBorrarDatos() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) throw new Error('No autenticado')
+
+      const { error } = await supabase.rpc('borrar_datos_usuario')
+      if (error) throw error
+      return true
+    },
+    onSuccess: () => {
+      queryClient.clear()
+    }
+  })
+}
