@@ -169,7 +169,7 @@ export default function CuentasPage() {
       {/* Modal */}
       {modalMode && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                 {modalMode === 'create' ? 'Nueva Cuenta' : 'Editar Cuenta'}

@@ -195,7 +195,7 @@ export function AnimatedSelect({
   };
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative ${isOpen ? 'z-50' : 'z-10'} ${className}`}>
       {label && (
         <label
           htmlFor={id}

@@ -217,7 +217,7 @@ export default function PresupuestoPage() {
       {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 transition-colors">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {presupuestoEdit?.categoria_id && !categoriasDisponibles.find(c => c.id === presupuestoEdit.categoria_id) 

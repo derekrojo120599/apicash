@@ -462,7 +462,7 @@ export default function PerfilPage() {
       {/* Modal cambiar contraseña */}
       {modalPassword && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Cambiar contraseña</h3>
               <button onClick={() => setModalPassword(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
@@ -496,8 +496,8 @@ export default function PerfilPage() {
       {/* Modal eliminar cuenta */}
       {modalEliminar && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-center p-5 border-b border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-5 border-b border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 rounded-t-2xl">
               <h3 className="text-lg font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Eliminar cuenta
@@ -554,8 +554,8 @@ export default function PerfilPage() {
       {/* Modal borrar todos los datos */}
       {modalBorrarDatos && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-center p-5 border-b border-orange-100 dark:border-orange-900/40 bg-orange-50 dark:bg-orange-900/20">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-5 border-b border-orange-100 dark:border-orange-900/40 bg-orange-50 dark:bg-orange-900/20 rounded-t-2xl">
               <h3 className="text-lg font-bold text-orange-700 dark:text-orange-400 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Borrar todos los datos

@@ -196,7 +196,7 @@ export default function DeudasPage() {
       {/* Modal Crear Deuda */}
       {modalMode === 'create' && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 transition-colors">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Registrar Deuda</h2>
               <button onClick={() => setModalMode(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
@@ -244,8 +244,8 @@ export default function DeudasPage() {
       {/* Modal Registrar Pago */}
       {modalMode === 'pago' && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950 transition-colors">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950 rounded-t-2xl transition-colors">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Amortizar Deuda</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">{deudaActual?.nombre}</p>

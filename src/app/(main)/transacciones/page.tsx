@@ -256,8 +256,8 @@ export default function TransaccionesPage() {
       {/* Modal Crear */}
       {modalMode === 'create' && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 overflow-y-auto backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-hidden my-8 border border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 z-10 transition-colors">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible my-8 border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 rounded-t-2xl z-10 transition-colors">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Nueva Transacción</h2>
               <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <X className="w-6 h-6" />
