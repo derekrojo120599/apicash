@@ -81,23 +81,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="p-6 flex items-center justify-between">
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <style dangerouslySetInnerHTML={{ __html: `aside::-webkit-scrollbar { display: none; }` }} />
+        <div className="p-4 md:p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
-              <WalletCards className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <WalletCards className="w-5 h-5 md:w-6 md:h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="font-bold text-xl text-slate-900 dark:text-white">Apicash</span>
+            <span className="font-bold text-lg md:text-xl text-slate-900 dark:text-white">Apicash</span>
           </div>
         </div>
 
         <StaggerContainer
           as="nav"
-          className="flex-1 px-4 space-y-1 mt-4"
+          className="flex-1 px-3 space-y-0.5 mt-2 overflow-y-auto"
           staggerDelay={60}
           duration={400}
           direction="right"
           distance={16}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {navItems.map((item) => {
             const isActive = pathname === item.href
@@ -106,10 +108,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 data-anime
                 key={item.name}
                 href={item.href}
-                    icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
                 label={item.name}
                 isActive={isActive}
-                className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 px-3 py-2.5 md:py-2.5 rounded-lg transition-colors text-sm md:text-base ${
                   isActive
                     ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
@@ -119,14 +121,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           })}
         </StaggerContainer>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
+        <div className="p-3 shrink-0 border-t border-slate-100 dark:border-slate-800 space-y-1">
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
           <AnimatedButton
             variant="ghost"
             onClick={() => logout()}
-            className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start"
+            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start text-sm md:text-base"
           >
             <LogOut className="w-5 h-5 text-slate-400" />
             <span>Cerrar sesión</span>
@@ -171,32 +173,33 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           />
           <aside
             ref={drawerRef}
-            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden"
-            style={{ transform: 'translateX(-100%)' }}
+            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden overflow-y-auto"
+            style={{ transform: 'translateX(-100%)', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <div className="p-6 flex items-center justify-between">
+            <div className="p-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
-                  <WalletCards className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  <WalletCards className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <span className="font-bold text-xl text-slate-900 dark:text-white">Apicash</span>
+                <span className="font-bold text-lg text-slate-900 dark:text-white">Apicash</span>
               </div>
               <button
                 onClick={handleCloseMobileSidebar}
                 className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
                 aria-label="Cerrar menú"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <StaggerContainer
               as="nav"
-              className="flex-1 px-4 space-y-1 mt-4"
+              className="flex-1 px-3 space-y-0.5 mt-2 overflow-y-auto"
               staggerDelay={60}
               duration={350}
               direction="right"
               distance={16}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {navItems.map((item) => {
                 const isActive = pathname === item.href
@@ -206,10 +209,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     key={item.name}
                     href={item.href}
                     onClick={handleCloseMobileSidebar}
-                icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                    icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
                     label={item.name}
                     isActive={isActive}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
                       isActive
                         ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
@@ -219,7 +222,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               })}
             </StaggerContainer>
 
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
+            <div className="p-3 shrink-0 border-t border-slate-100 dark:border-slate-800 space-y-1">
               <ThemeToggle />
               <AnimatedButton
                 variant="ghost"
@@ -227,7 +230,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                   handleCloseMobileSidebar();
                   logout();
                 }}
-                className="flex w-full items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start"
+                className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start text-sm"
               >
                 <LogOut className="w-5 h-5 text-slate-400" />
                 Cerrar sesión
