@@ -20,6 +20,9 @@ CREATE TABLE perfiles (
   nombre_completo TEXT,
   moneda_principal moneda_enum NOT NULL DEFAULT 'USD',
   onboarding_completado BOOLEAN NOT NULL DEFAULT false,
+  fuente_tasa_preferida TEXT DEFAULT 'Cotizave API - Mediana P2P',
+  tema TEXT DEFAULT 'emerald',
+  avatar_seed TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -650,6 +653,66 @@ BEGIN
   ) VALUES (
     v_user_id, p_cuenta_id, p_categoria_id, 'ajuste', p_monto, p_moneda_original, p_fecha, p_descripcion
   );
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 19. Función RPC: Actualizar perfil del usuario
+
+```sql
+CREATE OR REPLACE FUNCTION actualizar_perfil(
+  p_nombre_completo TEXT DEFAULT NULL,
+  p_fuente_tasa_preferida TEXT DEFAULT NULL,
+  p_tema TEXT DEFAULT NULL,
+  p_avatar_seed TEXT DEFAULT NULL
+)
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  UPDATE perfiles
+  SET
+    nombre_completo = COALESCE(p_nombre_completo, nombre_completo),
+    fuente_tasa_preferida = COALESCE(p_fuente_tasa_preferida, fuente_tasa_preferida),
+    tema = COALESCE(p_tema, tema),
+    avatar_seed = COALESCE(p_avatar_seed, avatar_seed)
+  WHERE id = v_user_id;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 20. Función RPC: Eliminar cuenta y datos públicos
+
+> Nota: esta función borra todos los datos de la aplicación del usuario en las tablas públicas. Para eliminar también el registro de `auth.users` se recomienda usar una Edge Function con `service_role` después de ejecutar esta función.
+
+```sql
+CREATE OR REPLACE FUNCTION eliminar_cuenta_publica()
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID := auth.uid();
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'No autenticado';
+  END IF;
+
+  DELETE FROM transacciones WHERE user_id = v_user_id;
+  DELETE FROM presupuestos WHERE user_id = v_user_id;
+  DELETE FROM snapshots_mensuales WHERE user_id = v_user_id;
+  DELETE FROM deudas WHERE user_id = v_user_id;
+  DELETE FROM metas WHERE user_id = v_user_id;
+  DELETE FROM cuentas WHERE user_id = v_user_id;
+  DELETE FROM categorias WHERE user_id = v_user_id;
+  DELETE FROM perfiles WHERE id = v_user_id;
 END;
 $$ LANGUAGE plpgsql;
 ```

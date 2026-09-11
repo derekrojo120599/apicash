@@ -16,6 +16,12 @@ declare module 'lucide-react' {
   export const AlertCircle: any;
   export const ArrowDownCircle: any;
   export const WalletCards: any;
+  export const Mail: any;
+  export const Lock: any;
+  export const Package: any;
+  export const HelpCircle: any;
+  export const Save: any;
+  export const AlertTriangle: any;
   export const MoreVertical: any;
   export const Building2: any;
   export const Coins: any;
