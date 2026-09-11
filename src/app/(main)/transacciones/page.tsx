@@ -339,25 +339,20 @@ export default function TransaccionesPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
-                <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-2 scrollbar-hide">
-                  {categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').length === 0 && (
-                    <span className="text-sm text-slate-500 dark:text-slate-400 italic">No hay categorías para este tipo</span>
-                  )}
-                  {categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').map(c => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setFormData({...formData, categoria_id: c.id})}
-                      className={`shrink-0 px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
-                        formData.categoria_id === c.id
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      {c.nombre}
-                    </button>
-                  ))}
-                </div>
+                <AnimatedSelect
+                  value={formData.categoria_id}
+                  onChange={(v) => setFormData({...formData, categoria_id: v})}
+                  options={[
+                    { value: '', label: 'Seleccione una categoría', disabled: true },
+                    ...(categorias?.filter(c => c.tipo === formData.tipo || c.tipo === 'ahorro' || c.tipo === 'deuda').map(c => ({
+                      value: c.id,
+                      label: c.nombre
+                    })) || [])
+                  ]}
+                  placeholder="Seleccione una categoría"
+                  required
+                  accent="emerald"
+                />
               </div>
 
               <div className="space-y-1">
