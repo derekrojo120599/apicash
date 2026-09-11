@@ -7,8 +7,11 @@ export function ThemeColorProvider({ children }: { children: React.ReactNode }) 
   const { data: perfil } = usePerfil()
 
   useEffect(() => {
-    const tema = perfil?.tema || 'emerald'
-    document.documentElement.setAttribute('data-theme', tema)
+    // Cuando el perfil cambia y tenemos un tema, actualizar html y localStorage
+    if (perfil?.tema) {
+      document.documentElement.setAttribute('data-theme', perfil.tema)
+      localStorage.setItem('apicash-theme', perfil.tema)
+    }
   }, [perfil?.tema])
 
   return <>{children}</>
