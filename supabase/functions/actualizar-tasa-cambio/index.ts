@@ -1,6 +1,35 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
+interface TasaFuente {
+  nombre: string;
+  extractor: (data: any) => number | null;
+}
+
+// Configuración de fuentes de tasa disponibles.
+// Ajustá los extractores según la respuesta real de la API de Cotizave.
+const FUENTES: TasaFuente[] = [
+  {
+    nombre: 'Cotizave API - Mediana P2P',
+    extractor: (data: any) => {
+      const valor = data.index?.p2p_median;
+      return valor ? Number(valor) : null;
+    }
+  },
+  {
+    nombre: 'Banco Central de Venezuela',
+    extractor: (data: any) => {
+      // TODO: ajustar según la estructura real de Cotizave para la tasa BCV.
+      // Ejemplos posibles:
+      // const valor = data.index?.bcv;
+      // const valor = data.rates?.bcv?.rate;
+      // const valor = data.bcv;
+      const valor = data.index?.bcv;
+      return valor ? Number(valor) : null;
+    }
+  }
+];
+
 Deno.serve(async (req) => {
   try {
     // 1. Validar autorización del cron job usando nuestro secreto explícito
@@ -38,37 +67,38 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    
-    // Extraemos directamente la Mediana P2P que Cotizave provee en su índice
-    const p2pMedian = data.index?.p2p_median;
-    
-    if (!p2pMedian) {
-      throw new Error("La API de Cotizave no retornó la mediana P2P esperada.");
+
+    // 3. Extraer todas las tasas configuradas
+    const tasasInsertar: { tasa: number; fuente: string }[] = [];
+
+    for (const fuente of FUENTES) {
+      const tasa = fuente.extractor(data);
+      if (tasa && !isNaN(tasa) && tasa > 0) {
+        tasasInsertar.push({ tasa, fuente: fuente.nombre });
+      } else {
+        console.warn(`No se pudo extraer la tasa para la fuente: ${fuente.nombre}`);
+      }
     }
 
-    const tasaFinal = Number(p2pMedian);
-
-    if (isNaN(tasaFinal) || tasaFinal <= 0) {
-      throw new Error("La tasa obtenida no es válida: " + tasaFinal);
+    if (tasasInsertar.length === 0) {
+      throw new Error("No se pudo obtener ninguna tasa válida de la API de Cotizave.");
     }
 
-    // 3. Conectar a Supabase usando Service Role
+    // 4. Conectar a Supabase usando Service Role
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
     const { error: dbError } = await supabase
       .from('tasas_cambio')
-      .insert([
-        { 
-          tasa: tasaFinal, 
-          fuente: 'Cotizave API - Mediana P2P' 
-        }
-      ]);
+      .insert(tasasInsertar);
 
     if (dbError) throw dbError;
 
-    return new Response(JSON.stringify({ success: true, tasa: tasaFinal, provider: 'Cotizave' }), { 
+    return new Response(JSON.stringify({ 
+      success: true, 
+      tasas: tasasInsertar 
+    }), { 
       status: 200, 
       headers: { "Content-Type": "application/json" } 
     });
@@ -77,7 +107,7 @@ Deno.serve(async (req) => {
     console.error("Error al actualizar la tasa:", error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" } 
     });
   }
 });

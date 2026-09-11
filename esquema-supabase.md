@@ -233,7 +233,18 @@ BEGIN
     NEW.tasa_al_momento := NULL;
   ELSE
     IF NEW.tasa_al_momento IS NULL THEN
-      SELECT tasa INTO tasa_actual FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+      -- Intentar usar la fuente preferida del usuario
+      SELECT t.tasa INTO tasa_actual
+      FROM tasas_cambio t
+      JOIN perfiles p ON p.id = NEW.user_id AND p.fuente_tasa_preferida = t.fuente
+      ORDER BY t.fecha DESC
+      LIMIT 1;
+
+      -- Fallback: cualquier tasa más reciente
+      IF tasa_actual IS NULL THEN
+        SELECT tasa INTO tasa_actual FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+      END IF;
+
       IF tasa_actual IS NULL THEN
         RAISE EXCEPTION 'No hay tasa de cambio disponible. Contacte soporte.';
       END IF;
@@ -323,8 +334,18 @@ DECLARE
   v_usd NUMERIC;
   v_ves NUMERIC;
 BEGIN
-  SELECT tasa, fecha INTO v_tasa, v_tasa_fecha
-  FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+  -- Intentar usar la fuente preferida del usuario
+  SELECT t.tasa, t.fecha INTO v_tasa, v_tasa_fecha
+  FROM tasas_cambio t
+  JOIN perfiles p ON p.id = p_user_id AND p.fuente_tasa_preferida = t.fuente
+  ORDER BY t.fecha DESC
+  LIMIT 1;
+
+  -- Fallback: cualquier tasa más reciente
+  IF v_tasa IS NULL THEN
+    SELECT tasa, fecha INTO v_tasa, v_tasa_fecha
+    FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+  END IF;
 
   SELECT COALESCE(SUM(saldo_cache), 0) INTO v_usd
   FROM cuentas WHERE user_id = p_user_id AND moneda = 'USD' AND activa = true;
@@ -478,11 +499,20 @@ BEGIN
   IF p_moneda_original = v_meta.moneda THEN
     v_monto_convertido := p_monto;
   ELSE
-    SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    SELECT t.tasa INTO v_tasa
+    FROM tasas_cambio t
+    JOIN perfiles p ON p.id = v_user_id AND p.fuente_tasa_preferida = t.fuente
+    ORDER BY t.fecha DESC
+    LIMIT 1;
+
+    IF v_tasa IS NULL THEN
+      SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    END IF;
+
     IF v_tasa IS NULL THEN
       RAISE EXCEPTION 'No hay tasa de cambio disponible para la conversión';
     END IF;
-    
+
     IF p_moneda_original = 'USD' AND v_meta.moneda = 'VES' THEN
       v_monto_convertido := p_monto * v_tasa;
     ELSIF p_moneda_original = 'VES' AND v_meta.moneda = 'USD' THEN
@@ -542,11 +572,20 @@ BEGIN
   IF p_moneda_original = v_deuda.moneda THEN
     v_monto_convertido := p_monto;
   ELSE
-    SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    SELECT t.tasa INTO v_tasa
+    FROM tasas_cambio t
+    JOIN perfiles p ON p.id = v_user_id AND p.fuente_tasa_preferida = t.fuente
+    ORDER BY t.fecha DESC
+    LIMIT 1;
+
+    IF v_tasa IS NULL THEN
+      SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    END IF;
+
     IF v_tasa IS NULL THEN
       RAISE EXCEPTION 'No hay tasa de cambio disponible para la conversión';
     END IF;
-    
+
     IF p_moneda_original = 'USD' AND v_deuda.moneda = 'VES' THEN
       v_monto_convertido := p_monto * v_tasa;
     ELSIF p_moneda_original = 'VES' AND v_deuda.moneda = 'USD' THEN
@@ -628,7 +667,16 @@ BEGIN
   IF p_moneda_original = v_meta.moneda THEN
     v_monto_convertido := p_monto;
   ELSE
-    SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    SELECT t.tasa INTO v_tasa
+    FROM tasas_cambio t
+    JOIN perfiles p ON p.id = v_user_id AND p.fuente_tasa_preferida = t.fuente
+    ORDER BY t.fecha DESC
+    LIMIT 1;
+
+    IF v_tasa IS NULL THEN
+      SELECT tasa INTO v_tasa FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+    END IF;
+
     IF v_tasa IS NULL THEN
       RAISE EXCEPTION 'No hay tasa de cambio disponible para la conversión';
     END IF;

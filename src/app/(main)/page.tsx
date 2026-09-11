@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
       {/* Main Balance Card */}
       <FadeIn delay={100}>
-        <AnimatedCard className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+        <AnimatedCard className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Wallet className="w-32 h-32" />
           </div>
@@ -181,7 +181,7 @@ export default function DashboardPage() {
       <FadeIn delay={400} className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Transacciones Recientes</h3>
-          <Link href="/transacciones" className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline">Ver todas</Link>
+          <Link href="/transacciones" className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">Ver todas</Link>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
           {loadingTx ? (

@@ -106,12 +106,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 data-anime
                 key={item.name}
                 href={item.href}
-                icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                    icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
                 label={item.name}
                 isActive={isActive}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium'
+                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
                 }`}
               />
@@ -206,12 +206,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     key={item.name}
                     href={item.href}
                     onClick={handleCloseMobileSidebar}
-                    icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
                     label={item.name}
                     isActive={isActive}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium'
+                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
                     }`}
                   />

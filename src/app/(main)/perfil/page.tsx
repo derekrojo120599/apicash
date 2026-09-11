@@ -3,15 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePerfil, useActualizarPerfil, useSolicitarCambioPassword, useEliminarCuenta } from '@/hooks/usePerfil'
+import { useTasasFuentes } from '@/hooks/useTasasFuentes'
 import { AvatarDiceBear } from '@/components/AvatarDiceBear'
-import { FadeIn, AnimatedCard, AnimatedButton, AnimatedLoader } from '@/components/animations'
-import { User, Mail, Calendar, RefreshCw, Lock, Trash2, Package, HelpCircle, Save, X, AlertTriangle, Loader2 } from 'lucide-react'
+import { ThemeSelector } from '@/components/ThemeSelector'
+import { FadeIn, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedSelect } from '@/components/animations'
+import { User, Mail, Calendar, RefreshCw, Lock, Trash2, Package, HelpCircle, Save, X, AlertTriangle, Loader2, Sparkles, TrendingUp } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
 
 export default function PerfilPage() {
   const router = useRouter()
   const { data: perfil, isLoading } = usePerfil()
+  const { data: fuentes } = useTasasFuentes()
   const { mutateAsync: actualizarPerfil, isPending: isUpdating } = useActualizarPerfil()
   const { mutateAsync: solicitarCambioPassword, isPending: isSendingReset } = useSolicitarCambioPassword()
   const { mutateAsync: eliminarCuenta, isPending: isDeleting } = useEliminarCuenta()
@@ -45,6 +48,26 @@ export default function PerfilPage() {
       await actualizarPerfil({ avatar_seed: nuevoSeed })
     } catch (err: any) {
       alert(err.message || 'Error al actualizar el avatar')
+    }
+  }
+
+  const cambiarTema = async (tema: string) => {
+    try {
+      await actualizarPerfil({ tema })
+      setMensajeExito('Tema actualizado')
+      setTimeout(() => setMensajeExito(''), 3000)
+    } catch (err: any) {
+      alert(err.message || 'Error al actualizar el tema')
+    }
+  }
+
+  const cambiarFuenteTasa = async (fuente: string) => {
+    try {
+      await actualizarPerfil({ fuente_tasa_preferida: fuente })
+      setMensajeExito('Fuente de tasa actualizada')
+      setTimeout(() => setMensajeExito(''), 3000)
+    } catch (err: any) {
+      alert(err.message || 'Error al actualizar la fuente de tasa')
     }
   }
 
@@ -91,7 +114,7 @@ export default function PerfilPage() {
 
       {mensajeExito && (
         <FadeIn>
-          <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 p-4 rounded-xl text-sm font-medium">
+          <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-900/40 text-primary-700 dark:text-primary-400 p-4 rounded-xl text-sm font-medium">
             {mensajeExito}
           </div>
         </FadeIn>
@@ -99,7 +122,7 @@ export default function PerfilPage() {
 
       {isLoading ? (
         <div className="flex justify-center p-12">
-          <AnimatedLoader size={40} color="#10b981" />
+          <AnimatedLoader size={40} color="var(--primary-500)" />
         </div>
       ) : (
         <>
@@ -107,7 +130,7 @@ export default function PerfilPage() {
           <FadeIn delay={100}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <User className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 Información del usuario
               </h2>
 
@@ -121,7 +144,7 @@ export default function PerfilPage() {
                   <button
                     onClick={regenerarAvatar}
                     disabled={isUpdating}
-                    className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors shadow-sm"
+                    className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
                     title="Regenerar avatar"
                   >
                     <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
@@ -137,13 +160,13 @@ export default function PerfilPage() {
                           type="text"
                           value={nombreEditado}
                           onChange={e => setNombreEditado(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-transparent text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
+                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-transparent text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary-500 outline-none"
                           placeholder="Tu nombre"
                         />
                         <button
                           onClick={guardarNombre}
                           disabled={isUpdating}
-                          className="p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                          className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                         >
                           {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         </button>
@@ -161,7 +184,7 @@ export default function PerfilPage() {
                         </p>
                         <button
                           onClick={iniciarEdicion}
-                          className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                          className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
                         >
                           Editar
                         </button>
@@ -189,11 +212,54 @@ export default function PerfilPage() {
             </AnimatedCard>
           </FadeIn>
 
+          {/* Preferencias de la app */}
+          <FadeIn delay={150}>
+            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                Preferencias de la app
+              </h2>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Tema de color</label>
+                  <ThemeSelector
+                    value={perfil?.tema || 'emerald'}
+                    onChange={cambiarTema}
+                    disabled={isUpdating}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4" /> Fuente de tasa de cambio
+                  </label>
+                  <AnimatedSelect
+                    value={perfil?.fuente_tasa_preferida || ''}
+                    onChange={cambiarFuenteTasa}
+                    options={[
+                      { value: '', label: 'Cargando fuentes...', disabled: true },
+                      ...(fuentes?.map(f => ({
+                        value: f.fuente,
+                        label: `${f.fuente} (${f.tasa})`
+                      })) || [])
+                    ]}
+                    placeholder="Seleccione una fuente"
+                    accent="emerald"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Se usará esta fuente para convertir montos entre USD y VES en transacciones y balance.
+                  </p>
+                </div>
+              </div>
+            </AnimatedCard>
+          </FadeIn>
+
           {/* Gestión de la cuenta */}
           <FadeIn delay={200}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Lock className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <Lock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 Gestión de la cuenta
               </h2>
 
@@ -227,7 +293,7 @@ export default function PerfilPage() {
           <FadeIn delay={300}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Package className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <Package className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 Información de la app
               </h2>
 
@@ -280,7 +346,7 @@ export default function PerfilPage() {
                 <button
                   onClick={handleCambioPassword}
                   disabled={isSendingReset}
-                  className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
                 >
                   {isSendingReset ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enviar correo'}
                 </button>
