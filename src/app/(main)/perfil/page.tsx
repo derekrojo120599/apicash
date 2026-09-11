@@ -30,6 +30,7 @@ export default function PerfilPage() {
   const [modalPassword, setModalPassword] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
   const [modalBorrarDatos, setModalBorrarDatos] = useState(false)
+  const [modalAvatar, setModalAvatar] = useState(false)
   const [confirmacionEliminar, setConfirmacionEliminar] = useState('')
   const [confirmacionBorrarDatos, setConfirmacionBorrarDatos] = useState('')
   const [mensajeExito, setMensajeExito] = useState('')
@@ -58,6 +59,24 @@ export default function PerfilPage() {
       alert(err.message || 'Error al actualizar el avatar')
     }
   }
+
+  const guardarAvatarPredefinido = async (seed: string) => {
+    try {
+      await actualizarPerfil({ avatar_seed: seed })
+      setModalAvatar(false)
+      setMensajeExito('Avatar actualizado')
+      setTimeout(() => setMensajeExito(''), 3000)
+    } catch (err: any) {
+      alert(err.message || 'Error al actualizar el avatar')
+    }
+  }
+
+  const AVATARES_PREDEFINIDOS = [
+    'bot-1', 'fox-alpha', 'ninja-99', 'happy-cloud', 
+    'cool-dog', 'space-cat', 'gamer-x', 'wizard-oz',
+    'neon-cyber', 'pixel-hero', 'coffee-mug', 'chill-panda',
+    'red-dragon', 'blue-ocean', 'star-ship', 'golden-bear'
+  ]
 
   const cambiarTema = async (tema: string) => {
     try {
@@ -212,14 +231,24 @@ export default function PerfilPage() {
                     size={96}
                     className="w-24 h-24"
                   />
-                  <button
-                    onClick={regenerarAvatar}
-                    disabled={isUpdating}
-                    className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
-                    title="Regenerar avatar"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
-                  </button>
+                  <div className="absolute -bottom-2 -right-2 flex gap-1">
+                    <button
+                      onClick={regenerarAvatar}
+                      disabled={isUpdating}
+                      className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
+                      title="Generar aleatorio"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                      onClick={() => setModalAvatar(true)}
+                      disabled={isUpdating}
+                      className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
+                      title="Elegir avatar"
+                    >
+                      <User className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 space-y-4 w-full">
@@ -445,6 +474,56 @@ export default function PerfilPage() {
             </AnimatedCard>
           </FadeIn>
         </>
+      )}
+
+      {/* Modal Selector de Avatar */}
+      {modalAvatar && (
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-xl border border-slate-200 dark:border-slate-800 my-auto">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 rounded-t-2xl z-10">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary-500" />
+                Elige tu avatar
+              </h3>
+              <button onClick={() => setModalAvatar(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="grid grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto p-1">
+                {AVATARES_PREDEFINIDOS.map((seed) => (
+                  <button
+                    key={seed}
+                    onClick={() => guardarAvatarPredefinido(seed)}
+                    disabled={isUpdating}
+                    className={`relative rounded-xl border-2 transition-all p-2 flex justify-center items-center ${
+                      perfil?.avatar_seed === seed 
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+                        : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <AvatarDiceBear seed={seed} size={64} className="w-16 h-16" />
+                    {perfil?.avatar_seed === seed && (
+                      <div className="absolute -top-2 -right-2 bg-primary-500 text-white rounded-full p-1 shadow-md">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setModalAvatar(false)}
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal cambiar contraseña */}
