@@ -81,8 +81,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style dangerouslySetInnerHTML={{ __html: `aside::-webkit-scrollbar { display: none; }` }} />
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors">
         <div className="p-4 md:p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
@@ -92,34 +91,35 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
 
-        <StaggerContainer
-          as="nav"
-          className="flex-1 px-3 space-y-0.5 mt-2 overflow-y-auto"
-          staggerDelay={60}
-          duration={400}
-          direction="right"
-          distance={16}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <AnimatedNavLink
-                data-anime
-                key={item.name}
-                href={item.href}
-                icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
-                label={item.name}
-                isActive={isActive}
-                className={`flex items-center gap-3 px-3 py-2.5 md:py-2.5 rounded-lg transition-colors text-sm md:text-base ${
-                  isActive
-                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
-                }`}
-              />
-            )
-          })}
-        </StaggerContainer>
+        <div className="flex-1 overflow-y-auto no-scrollbar px-3 mt-2">
+          <StaggerContainer
+            as="nav"
+            className="space-y-0.5"
+            staggerDelay={60}
+            duration={400}
+            direction="right"
+            distance={16}
+          >
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <AnimatedNavLink
+                  data-anime
+                  key={item.name}
+                  href={item.href}
+                  icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                  label={item.name}
+                  isActive={isActive}
+                  className={`flex items-center gap-3 px-3 py-2.5 md:py-2.5 rounded-lg transition-colors text-sm md:text-base ${
+                    isActive
+                      ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
+                  }`}
+                />
+              )
+            })}
+          </StaggerContainer>
+        </div>
 
         <div className="p-3 shrink-0 border-t border-slate-100 dark:border-slate-800 space-y-1">
           <div className="hidden md:block">
@@ -173,8 +173,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           />
           <aside
             ref={drawerRef}
-            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden overflow-y-auto"
-            style={{ transform: 'translateX(-100%)', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col md:hidden"
+            style={{ transform: 'translateX(-100%)' }}
           >
             <div className="p-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
@@ -192,35 +192,36 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               </button>
             </div>
 
-            <StaggerContainer
-              as="nav"
-              className="flex-1 px-3 space-y-0.5 mt-2 overflow-y-auto"
-              staggerDelay={60}
-              duration={350}
-              direction="right"
-              distance={16}
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {navItems.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <AnimatedNavLink
-                    data-anime
-                    key={item.name}
-                    href={item.href}
-                    onClick={handleCloseMobileSidebar}
-                    icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
-                    label={item.name}
-                    isActive={isActive}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-                      isActive
-                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
-                    }`}
-                  />
-                )
-              })}
-            </StaggerContainer>
+            <div className="flex-1 overflow-y-auto no-scrollbar px-3 mt-2">
+              <StaggerContainer
+                as="nav"
+                className="space-y-0.5"
+                staggerDelay={60}
+                duration={350}
+                direction="right"
+                distance={16}
+              >
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <AnimatedNavLink
+                      data-anime
+                      key={item.name}
+                      href={item.href}
+                      onClick={handleCloseMobileSidebar}
+                      icon={<item.icon className={`w-5 h-5 ${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'}`} />}
+                      label={item.name}
+                      isActive={isActive}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
+                        isActive
+                          ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 font-medium'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
+                      }`}
+                    />
+                  )
+                })}
+              </StaggerContainer>
+            </div>
 
             <div className="p-3 shrink-0 border-t border-slate-100 dark:border-slate-800 space-y-1">
               <ThemeToggle />
