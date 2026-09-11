@@ -326,8 +326,20 @@ export default function PerfilPage() {
             </AnimatedCard>
           </FadeIn>
 
-          {/* Gestión de la cuenta */}
+          {/* Estadísticas personales */}
           <FadeIn delay={200} className="relative z-40">
+            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                Estadísticas personales
+              </h2>
+
+              <PerfilStatsSection stats={stats} isLoading={loadingStats} />
+            </AnimatedCard>
+          </FadeIn>
+
+          {/* Gestión de la cuenta y datos */}
+          <FadeIn delay={300} className="relative z-30">
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Lock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -346,60 +358,6 @@ export default function PerfilPage() {
                   <Lock className="w-5 h-5 text-slate-400" />
                 </button>
 
-                <button
-                  onClick={() => setModalEliminar(true)}
-                  className="w-full flex items-center justify-between p-4 rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
-                >
-                  <div>
-                    <p className="font-medium text-red-700 dark:text-red-400">Eliminar cuenta</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Borra todos tus datos de forma permanente</p>
-                  </div>
-                  <Trash2 className="w-5 h-5 text-red-500" />
-                </button>
-              </div>
-            </AnimatedCard>
-          </FadeIn>
-
-          {/* Información de la app */}
-          <FadeIn delay={300} className="relative z-30">
-            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Package className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                Información de la app
-              </h2>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <div>
-                    <p className="font-medium text-slate-900 dark:text-slate-100">Versión</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{process.env.NEXT_PUBLIC_APP_VERSION}</p>
-                  </div>
-                  <Package className="w-5 h-5 text-slate-400" />
-                </div>
-
-                <a
-                  href="mailto:soporte@apicasch.com?subject=Soporte%20Apicasch"
-                  className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium text-slate-900 dark:text-slate-100">Soporte / Reportar problema</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Escríbenos por correo</p>
-                  </div>
-                  <HelpCircle className="w-5 h-5 text-slate-400" />
-                </a>
-              </div>
-            </AnimatedCard>
-          </FadeIn>
-
-          {/* Datos y Privacidad */}
-          <FadeIn delay={350} className="relative z-20">
-            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                Datos y Privacidad
-              </h2>
-
-              <div className="space-y-3">
                 <button
                   onClick={exportarDatos}
                   className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
@@ -422,6 +380,48 @@ export default function PerfilPage() {
                   <Trash2 className="w-5 h-5 text-orange-500" />
                 </button>
 
+                <button
+                  onClick={() => setModalEliminar(true)}
+                  className="w-full flex items-center justify-between p-4 rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                >
+                  <div>
+                    <p className="font-medium text-red-700 dark:text-red-400">Eliminar cuenta</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Borra todos tus datos de forma permanente</p>
+                  </div>
+                  <Trash2 className="w-5 h-5 text-red-500" />
+                </button>
+              </div>
+            </AnimatedCard>
+          </FadeIn>
+
+          {/* Información y soporte */}
+          <FadeIn delay={400} className="relative z-20">
+            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                Información y soporte
+              </h2>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-slate-100">Versión</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{process.env.NEXT_PUBLIC_APP_VERSION}</p>
+                  </div>
+                  <Package className="w-5 h-5 text-slate-400" />
+                </div>
+
+                <a
+                  href="mailto:soporte@apicasch.com?subject=Soporte%20Apicasch"
+                  className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-slate-100">Soporte / Reportar problema</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Escríbenos por correo</p>
+                  </div>
+                  <HelpCircle className="w-5 h-5 text-slate-400" />
+                </a>
+
                 <a
                   href="/privacidad"
                   className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -442,18 +442,6 @@ export default function PerfilPage() {
                   <FileText className="w-5 h-5 text-slate-400" />
                 </a>
               </div>
-            </AnimatedCard>
-          </FadeIn>
-
-          {/* Estadísticas personales */}
-          <FadeIn delay={400} className="relative z-10">
-            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                Estadísticas personales
-              </h2>
-
-              <PerfilStatsSection stats={stats} isLoading={loadingStats} />
             </AnimatedCard>
           </FadeIn>
         </>
