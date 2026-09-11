@@ -10,7 +10,7 @@ import { AvatarDiceBear } from '@/components/AvatarDiceBear'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { PerfilStatsSection } from '@/components/PerfilStatsSection'
 import { FadeIn, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedSelect } from '@/components/animations'
-import { User, Mail, Calendar, RefreshCw, Lock, Trash2, Package, HelpCircle, Save, X, AlertTriangle, Loader2, Sparkles, TrendingUp, Download, FileText, Shield, BarChart3 } from 'lucide-react'
+import { User, Mail, Calendar, RefreshCw, Lock, Trash2, Package, HelpCircle, Save, X, AlertTriangle, Loader2, Sparkles, TrendingUp, Download, FileText, Shield, BarChart3, Pencil } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
 
@@ -266,13 +266,15 @@ export default function PerfilPage() {
                         <button
                           onClick={guardarNombre}
                           disabled={isUpdating}
-                          className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                          className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+                          title="Guardar"
                         >
                           {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => setModoEdicion(false)}
-                          className="p-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                          className="p-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                          title="Cancelar"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -284,9 +286,11 @@ export default function PerfilPage() {
                         </p>
                         <button
                           onClick={iniciarEdicion}
-                          className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                          className="p-2 flex items-center gap-2 text-sm bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/40 rounded-lg transition-colors font-medium shadow-sm"
+                          title="Editar nombre"
                         >
-                          Editar
+                          <Pencil className="w-4 h-4" />
+                          <span className="hidden sm:inline">Editar</span>
                         </button>
                       </div>
                     )}

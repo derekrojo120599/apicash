@@ -1,9 +1,6 @@
 import { AnimatedCard, AnimatedLoader } from '@/components/animations'
-import { BarChart3, PieChart, Activity } from 'lucide-react'
+import { BarChart3, Activity } from 'lucide-react'
 import {
-  PieChart as RePieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -13,7 +10,8 @@ import {
   Tooltip,
   Legend,
   LineChart,
-  Line
+  Line,
+  Cell
 } from 'recharts'
 import type { StatsPerfil } from '@/hooks/useStatsPerfil'
 
@@ -61,32 +59,25 @@ export function PerfilStatsSection({ stats, isLoading }: PerfilStatsSectionProps
       {stats.gastosPorCategoria.length > 0 && (
         <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <PieChart className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <BarChart3 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             Gastos por categoría (mes actual)
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <RePieChart>
-                <Pie
-                  data={stats.gastosPorCategoria}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="monto"
-                  nameKey="nombre"
-                >
-                  {stats.gastosPorCategoria.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
+              <BarChart data={stats.gastosPorCategoria} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} horizontal={false} />
+                <XAxis type="number" stroke="#64748b" fontSize={12} />
+                <YAxis dataKey="nombre" type="category" stroke="#64748b" fontSize={12} width={90} />
                 <Tooltip
                   formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Monto']}
                   contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', borderRadius: '8px', color: '#fff' }}
                 />
-                <Legend />
-              </RePieChart>
+                <Bar dataKey="monto" name="Gastos" radius={[0, 4, 4, 0]}>
+                  {stats.gastosPorCategoria.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </AnimatedCard>
