@@ -16,8 +16,6 @@ import {
   ChevronRight
 } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
-
 const secciones = [
   {
     id: 'dashboard',

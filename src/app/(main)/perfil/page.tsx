@@ -217,7 +217,7 @@ export default function PerfilPage() {
       ) : (
         <>
           {/* Información del usuario */}
-          <FadeIn delay={100} className="relative z-10">
+          <FadeIn delay={100}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <User className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -317,7 +317,7 @@ export default function PerfilPage() {
           </FadeIn>
 
           {/* Preferencias de la app */}
-          <FadeIn delay={150} className="relative z-10">
+          <FadeIn delay={150}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -360,19 +360,19 @@ export default function PerfilPage() {
           </FadeIn>
 
           {/* Estadísticas personales */}
-          <FadeIn delay={200} className="relative z-10">
-            <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <FadeIn delay={200}>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 px-1">
                 <BarChart3 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 Estadísticas personales
               </h2>
 
               <PerfilStatsSection stats={stats} isLoading={loadingStats} />
-            </AnimatedCard>
+            </div>
           </FadeIn>
 
           {/* Gestión de la cuenta y datos */}
-          <FadeIn delay={300} className="relative z-10">
+          <FadeIn delay={300}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Lock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
@@ -428,7 +428,7 @@ export default function PerfilPage() {
           </FadeIn>
 
           {/* Información y soporte */}
-          <FadeIn delay={400} className="relative z-10">
+          <FadeIn delay={400}>
             <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Package className="w-5 h-5 text-primary-600 dark:text-primary-400" />
