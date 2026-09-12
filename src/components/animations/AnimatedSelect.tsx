@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { animate, stagger } from 'animejs';
 
@@ -73,7 +74,10 @@ export function AnimatedSelect({
 }: AnimatedSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
 
@@ -97,9 +101,24 @@ export function AnimatedSelect({
     });
   }, []);
 
+  const positionDropdown = useCallback(() => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isOutsideButton = !buttonRef.current?.contains(target);
+      const isOutsideDropdown = !dropdownRef.current?.contains(target);
+      if (isOutsideButton && isOutsideDropdown) {
         closeDropdown();
       }
     };
@@ -113,8 +132,27 @@ export function AnimatedSelect({
     };
   }, [isOpen, closeDropdown]);
 
+  useLayoutEffect(() => {
+    if (!isOpen || !portalEl) return;
+
+    document.body.appendChild(portalEl);
+    positionDropdown();
+
+    const handleReposition = () => positionDropdown();
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+
+    return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+      if (portalEl.parentNode) {
+        document.body.removeChild(portalEl);
+      }
+    };
+  }, [isOpen, portalEl, positionDropdown]);
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !portalEl) return;
 
     if (dropdownRef.current) {
       animate(dropdownRef.current, {
@@ -138,13 +176,16 @@ export function AnimatedSelect({
         });
       }
     }
-  }, [isOpen]);
+  }, [isOpen, portalEl]);
 
   const handleToggle = () => {
     if (disabled) return;
     if (isOpen) {
       closeDropdown();
     } else {
+      if (!portalEl) {
+        setPortalEl(document.createElement('div'));
+      }
       setIsOpen(true);
       setHighlightedIndex(-1);
     }
@@ -195,7 +236,7 @@ export function AnimatedSelect({
   };
 
   return (
-    <div ref={containerRef} className={`relative ${isOpen ? 'z-[100]' : 'z-10'} ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`}>
       {label && (
         <label
           htmlFor={id}
@@ -209,6 +250,7 @@ export function AnimatedSelect({
       <button
         type="button"
         id={id}
+        ref={buttonRef}
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
         disabled={disabled}
@@ -234,11 +276,11 @@ export function AnimatedSelect({
         <input type="hidden" required value={value} onChange={() => {}} />
       )}
 
-      {isOpen && (
+      {isOpen && portalEl && createPortal(
         <div
           ref={dropdownRef}
-          className="absolute z-[100] w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden origin-top"
-          style={{ opacity: 0 }}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden origin-top"
+          style={{ ...dropdownStyle, opacity: 0 }}
         >
           <div ref={optionsRef} className="max-h-60 overflow-y-auto py-1" role="listbox">
             {options.map((option, index) => {
@@ -269,7 +311,8 @@ export function AnimatedSelect({
               );
             })}
           </div>
-        </div>
+        </div>,
+        portalEl
       )}
     </div>
   );
