@@ -1,20 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { useCategorias, useCrearCategoria, useEliminarCategoria, useEditarCategoria, Categoria } from '@/hooks/useAuxiliares'
+import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory, Category } from '@/hooks/useCategories'
 import { FolderOpen, Plus, X, Loader2, Trash2, Pencil } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedSelect } from '@/components/animations'
 
-export const dynamic = 'force-dynamic';
-
-export default function CategoriasPage() {
-  const { data: categorias, isLoading } = useCategorias()
-  const { mutateAsync: crearCategoria, isPending: isCreating } = useCrearCategoria()
-  const { mutateAsync: editarCategoria, isPending: isEditing } = useEditarCategoria()
-  const { mutateAsync: eliminarCategoria, isPending: isDeleting } = useEliminarCategoria()
+export default function CategoriesPage() {
+  const { data: categories, isLoading } = useCategories()
+  const { mutateAsync: createCategory, isPending: isCreating } = useCreateCategory()
+  const { mutateAsync: updateCategory, isPending: isEditing } = useUpdateCategory()
+  const { mutateAsync: deleteCategory, isPending: isDeleting } = useDeleteCategory()
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [categoriaEditando, setCategoriaEditando] = useState<Categoria | null>(null)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     nombre: '',
@@ -22,15 +20,15 @@ export default function CategoriasPage() {
   })
 
   const openCreate = () => {
-    setCategoriaEditando(null)
+    setEditingCategory(null)
     setFormData({ nombre: '', tipo: 'gasto' })
     setError('')
     setModalOpen(true)
   }
 
-  const openEdit = (cat: Categoria) => {
-    setCategoriaEditando(cat)
-    setFormData({ nombre: cat.nombre, tipo: cat.tipo })
+  const openEdit = (category: Category) => {
+    setEditingCategory(category)
+    setFormData({ nombre: category.nombre, tipo: category.tipo })
     setError('')
     setModalOpen(true)
   }
@@ -39,23 +37,25 @@ export default function CategoriasPage() {
     e.preventDefault()
     setError('')
     try {
-      if (categoriaEditando) {
-        await editarCategoria({ id: categoriaEditando.id, updates: { nombre: formData.nombre } })
+      if (editingCategory) {
+        await updateCategory({ id: editingCategory.id, updates: { nombre: formData.nombre } })
       } else {
-        await crearCategoria(formData)
+        await createCategory(formData)
       }
       setModalOpen(false)
-    } catch (err: any) {
-      setError(err.message || (categoriaEditando ? 'Error al editar la categoría' : 'Error al crear la categoría'))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : (editingCategory ? 'Error al editar la categoría' : 'Error al crear la categoría')
+      setError(message)
     }
   }
 
   const handleDelete = async (id: string) => {
     if (confirm('¿Estás seguro de que deseas eliminar esta categoría? Solo se puede eliminar si no tiene transacciones asociadas.')) {
       try {
-        await eliminarCategoria(id)
-      } catch (err: any) {
-        alert(err.message || 'Error al eliminar. Es posible que tenga transacciones.')
+        await deleteCategory(id)
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Error al eliminar. Es posible que tenga transacciones.'
+        alert(message)
       }
     }
   }
@@ -75,7 +75,7 @@ export default function CategoriasPage() {
 
       {isLoading ? (
         <div className="flex justify-center p-12"><AnimatedLoader size={40} color="#10b981" /></div>
-      ) : categorias?.length === 0 ? (
+      ) : categories?.length === 0 ? (
         <FadeIn>
           <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
             <FolderOpen className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
@@ -88,32 +88,32 @@ export default function CategoriasPage() {
         </FadeIn>
       ) : (
         <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" staggerDelay={80}>
-          {categorias?.map(cat => (
+          {categories?.map(category => (
             <AnimatedCard
               data-anime
-              key={cat.id}
+              key={category.id}
               className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex justify-between items-center cursor-default group"
             >
               <div>
-                <h3 className="font-semibold text-slate-900 dark:text-slate-200">{cat.nombre}</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-slate-200">{category.nombre}</h3>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full mt-2 inline-block ${
-                  cat.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                  cat.tipo === 'gasto' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                  category.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                  category.tipo === 'gasto' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                   'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                 }`}>
-                  {cat.tipo.charAt(0).toUpperCase() + cat.tipo.slice(1)}
+                  {category.tipo.charAt(0).toUpperCase() + category.tipo.slice(1)}
                 </span>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => openEdit(cat)}
+                  onClick={() => openEdit(category)}
                   className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                   title="Editar categoría"
                 >
                   <Pencil className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => handleDelete(cat.id)}
+                  onClick={() => handleDelete(category.id)}
                   disabled={isDeleting}
                   className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all"
                   title="Eliminar categoría"
@@ -126,13 +126,13 @@ export default function CategoriasPage() {
         </StaggerContainer>
       )}
 
-      {/* Modal Crear */}
+      {/* Create category modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                {categoriaEditando ? 'Editar Categoría' : 'Nueva Categoría'}
+                {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
               </h2>
               <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <X className="w-6 h-6" />
@@ -160,11 +160,9 @@ export default function CategoriasPage() {
                   options={[
                     { value: 'gasto', label: 'Gasto' },
                     { value: 'ingreso', label: 'Ingreso' },
-                    { value: 'ahorro', label: 'Ahorro' },
-                    { value: 'deuda', label: 'Deuda' },
                   ]}
                   placeholder="Seleccione un tipo"
-                  disabled={!!categoriaEditando}
+                  disabled={!!editingCategory}
                   accent="emerald"
                 />
               </div>
@@ -188,7 +186,7 @@ export default function CategoriasPage() {
                   disabled={isCreating || isEditing}
                   className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center"
                 >
-                  {isCreating || isEditing ? <Loader2 className="w-5 h-5 animate-spin" /> : (categoriaEditando ? 'Guardar' : 'Crear')}
+                  {isCreating || isEditing ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingCategory ? 'Guardar' : 'Crear')}
                 </button>
               </div>
             </form>
