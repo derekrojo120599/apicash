@@ -195,7 +195,7 @@ export function AnimatedSelect({
   };
 
   return (
-    <div ref={containerRef} className={`relative ${isOpen ? 'z-50' : 'z-10'} ${className}`}>
+    <div ref={containerRef} className={`relative ${isOpen ? 'z-[100]' : 'z-10'} ${className}`}>
       {label && (
         <label
           htmlFor={id}
@@ -217,7 +217,7 @@ export function AnimatedSelect({
         className={`w-full flex items-center justify-between gap-2 px-4 py-2 text-left border rounded-lg outline-none transition-colors ${
           disabled
             ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 cursor-not-allowed'
-            : `bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 ${accentClass.hoverBorder} ${accentClass.ring}`
+            : `bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 ${accentClass.hoverBorder} ${accentClass.ring}${isOpen ? ` ${accentClass.selectedBg} ${accentClass.darkSelectedBg} ring-2 ${accentClass.ring}` : ''}`
         }`}
       >
         <span className={selectedOption ? '' : 'text-slate-400 dark:text-slate-500'}>
@@ -237,7 +237,7 @@ export function AnimatedSelect({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden origin-top"
+          className="absolute z-[100] w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden origin-top"
           style={{ opacity: 0 }}
         >
           <div ref={optionsRef} className="max-h-60 overflow-y-auto py-1" role="listbox">
