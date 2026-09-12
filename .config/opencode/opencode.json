@@ -255,6 +255,17 @@
     }
   },
   "default_agent": "gentle-orchestrator",
+  "modelAssignments": {
+    "gentle-orchestrator": { "model": "kimi-k2.7-code" },
+    "sdd-explore": { "model": "kimi-k2.7-code" },
+    "sdd-propose": { "model": "claude-sonnet-4" },
+    "sdd-design": { "model": "claude-sonnet-4" },
+    "sdd-spec": { "model": "claude-sonnet-4" },
+    "sdd-tasks": { "model": "claude-sonnet-4" },
+    "sdd-apply": { "model": "kimi-k2.7-code" },
+    "sdd-verify": { "model": "claude-sonnet-4" },
+    "sdd-archive": { "model": "claude-sonnet-4" }
+  },
   "mcp": {
     "context7": {
       "enabled": true,
