@@ -27,7 +27,7 @@ src/
   hooks/             → useTransacciones, useCuentas, useDashboard, etc.
   utils/supabase/    → cliente/servidor de Supabase
 public/              → assets PWA
-supabase/            → edge functions (ej. actualizar-tasa-cambio)
+supabase/            → edge functions (ej. update-exchange-rate)
 esquema-supabase.md  → esquema completo de BD, RLS, triggers y funciones RPC
 ```
 
@@ -41,7 +41,7 @@ esquema-supabase.md  → esquema completo de BD, RLS, triggers y funciones RPC
 
 ### Tasas de cambio
 - La fuente preferida por defecto es **Cotizave API - Mediana P2P**.
-- Edge function en `supabase/functions/actualizar-tasa-cambio` actualiza la tabla `tasas_cambio`.
+- Edge function en `supabase/functions/update-exchange-rate` actualiza la tabla `tasas_cambio`.
 - El perfil del usuario guarda `fuente_tasa_preferida`.
 
 ### Seguridad

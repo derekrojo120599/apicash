@@ -198,7 +198,9 @@ CREATE POLICY "usuarios_ven_su_snapshots" ON snapshots_mensuales FOR SELECT USIN
 
 -- Tasas de cambio (data global, solo lectura para todos, solo service_role inserta)
 CREATE POLICY "todos_leen_tasas" ON tasas_cambio FOR SELECT USING (true);
-CREATE POLICY "solo_service_role_inserta_tasas" ON tasas_cambio FOR INSERT WITH CHECK (auth.role() = 'service_role');
+CREATE POLICY "solo_service_role_inserta_tasas" ON tasas_cambio FOR INSERT
+  TO service_role
+  WITH CHECK (true);
 ```
 
 ## 7. Trigger: crear perfil automáticamente al registrarse
