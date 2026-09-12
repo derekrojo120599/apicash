@@ -168,14 +168,14 @@ Deno.serve(async (req) => {
   const errorContext: ErrorContext = {};
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const cronSecretHeader = req.headers.get("X-CRON-Secret");
     const expectedKey = Deno.env.get("CRON_SECRET");
 
     if (!expectedKey) {
       throw new Error("CRON_SECRET is not configured in Supabase environment variables.");
     }
 
-    if (!authHeader || authHeader !== `Bearer ${expectedKey}`) {
+    if (cronSecretHeader !== expectedKey) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" }
