@@ -115,7 +115,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       {/* Mobile Sidebar Drawer */}
       <div
-        className={`fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 z-[60] md:hidden transition-opacity duration-300 ${mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 z-40 md:hidden transition-opacity duration-300 ${mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={handleCloseMobileSidebar}
       />
       <aside
