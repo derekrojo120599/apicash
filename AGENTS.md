@@ -94,6 +94,15 @@ Este proyecto usa la configuración workspace de Gentle-AI para OpenCode ubicada
 - La memoria persistente (Engram) guarda decisiones de arquitectura, convenciones y bugs resueltos.
 - Context7 provee documentación actualizada de Next.js, React, Tailwind y Supabase.
 
+### Reglas de ruteo orgánico (prioridad: bajo consumo de tokens)
+
+Para no forzar el flujo completo de SDD en cambios pequeños:
+
+- **1-3 archivos afectados:** resuelve directo e inline. No uses SDD ni sub-agentes de fase; aplica el cambio, verifica con build/lint y entrega.
+- **4+ archivos o cambio que toca más de una preocupación (auth + UI + DB):** delega a un sub-agente acotado con un scope claro. El sub-agente ejecuta, verifica y devuelve el resultado.
+- **SDD completo (explore → propose → spec → design → tasks → apply → verify → archive):** solo si el usuario lo pide explícitamente con *"usa SDD"*, o si acepta una propuesta de cambio grande generada por el orchestrator.
+- **Regla de oro:** si el cambio cabe en una sola interacción y no requiere documentación persistente, no lo conviertas en SDD.
+
 ## Comandos útiles
 
 ```bash
