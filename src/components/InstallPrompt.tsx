@@ -59,13 +59,15 @@ export function InstallPrompt() {
 
     // 4. Detect platform for specific instructions
     const ua = navigator.userAgent.toLowerCase()
+    let initialPlatform: 'ios' | 'android' | 'desktop' | 'other' = 'other'
     if (/iphone|ipad|ipod/.test(ua)) {
-      setPlatform('ios')
+      initialPlatform = 'ios'
     } else if (/android/.test(ua)) {
-      setPlatform('android')
+      initialPlatform = 'android'
     } else {
-      setPlatform('desktop')
+      initialPlatform = 'desktop'
     }
+    setPlatform(initialPlatform)
 
     // Wait a brief moment before showing to not be too aggressive
     const timer = setTimeout(() => setShow(true), 2000)

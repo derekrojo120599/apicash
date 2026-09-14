@@ -276,7 +276,7 @@ export default function DeudasPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Saldo pendiente: {formatMoney(deudaActual?.saldo_pendiente || 0, deudaActual?.moneda || 'USD')}</p>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-100 dark:border-orange-900/50 transition-colors">
-                Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como "Deuda", y se restará del saldo pendiente.
+                Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como &quot;Deuda&quot;, y se restará del saldo pendiente.
               </p>
               <button type="submit" disabled={isPaying} className="w-full bg-orange-600 hover:bg-orange-700 transition-colors text-white font-medium py-2.5 rounded-lg flex justify-center">{isPaying ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Confirmar Pago'}</button>
             </form>
