@@ -35,7 +35,7 @@ export default function TransaccionesPage() {
     descripcion: ''
   })
   const [error, setError] = useState('')
-  const [filtroCategoria, setFiltroCategoria] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState('')
 
   const { error: toastError } = useToast()
 
@@ -109,7 +109,7 @@ export default function TransaccionesPage() {
   }
 
   const txFiltradas = transacciones?.filter(tx => {
-    if (filtroCategoria && tx.categoria_id !== filtroCategoria) return false;
+    if (filtroTipo && tx.tipo !== filtroTipo) return false;
     return true;
   })
 
@@ -158,13 +158,14 @@ export default function TransaccionesPage() {
         
         <div className="w-full md:w-auto flex-1 md:max-w-xs">
           <AnimatedSelect
-            value={filtroCategoria}
-            onChange={setFiltroCategoria}
+            value={filtroTipo}
+            onChange={setFiltroTipo}
             options={[
-              { value: '', label: 'Todas las categorías' },
-              ...(categorias?.map(c => ({ value: c.id, label: c.nombre })) || [])
+              { value: '', label: 'Todos los tipos' },
+              { value: 'ingreso', label: 'Solo Ingresos' },
+              { value: 'gasto', label: 'Solo Gastos' }
             ]}
-            placeholder="Todas las categorías"
+            placeholder="Todos los tipos"
             accent="emerald"
           />
         </div>
