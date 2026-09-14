@@ -42,3 +42,6 @@ next-env.d.ts
 
 # tests
 test-e2e.mjs
+
+# gentle-ai / opencode local artifacts
+.atl/
