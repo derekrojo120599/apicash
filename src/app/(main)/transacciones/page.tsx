@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useTransacciones, useCrearTransaccion, useAnularTransaccion, Transaccion } from '@/hooks/useTransacciones'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
+import { useToast } from '@/hooks/useToast'
 import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 
@@ -35,6 +36,8 @@ export default function TransaccionesPage() {
   })
   const [error, setError] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
+
+  const { error: toastError } = useToast()
 
   const openCreateModal = () => {
     setFormData({
@@ -80,9 +83,9 @@ export default function TransaccionesPage() {
         descripcion: formData.descripcion
       })
       closeModal()
-    } catch (err: any) {
+    } catch (err) {
       // Manejar el error personalizado del trigger u otros errores
-      const msg = err.message || 'Error al guardar la transacción'
+      const msg = err instanceof Error ? err.message : 'Error al guardar la transacción'
       setError(msg.includes('No hay tasa de cambio') ? 'No hay tasa de cambio disponible. Contacte soporte.' : msg)
     }
   }
@@ -93,7 +96,7 @@ export default function TransaccionesPage() {
         await anularTransaccion(id)
       } catch (err) {
         console.error("Error anulando:", err)
-        alert('Error al anular transacción')
+        toastError({ title: 'Error al anular', message: 'No se pudo anular la transacción.' })
       }
     }
   }

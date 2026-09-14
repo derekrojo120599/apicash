@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useProgresoPresupuesto, useGuardarPresupuesto, useCopiarPresupuestosAnterior, ProgresoPresupuesto } from '@/hooks/usePresupuestos'
 import { useCategorias } from '@/hooks/useAuxiliares'
+import { useToast } from '@/hooks/useToast'
 import { Target, Calendar as CalendarIcon, Copy, Plus, X, Loader2, AlertCircle } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect } from '@/components/animations'
 
@@ -19,6 +20,8 @@ export default function PresupuestoPage() {
   const { mutateAsync: guardarPresupuesto, isPending: isSaving } = useGuardarPresupuesto()
   const { mutateAsync: copiarAnterior, isPending: isCopying } = useCopiarPresupuestosAnterior()
 
+  const { error: toastError } = useToast()
+
   const formatUSD = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val)
 
   const handleMoverMes = (offset: number) => {
@@ -33,8 +36,8 @@ export default function PresupuestoPage() {
     
     try {
       await copiarAnterior({ mesOrigen: mesAnterior, mesDestino: mesActual })
-    } catch (err: any) {
-      alert(err.message || 'Error al copiar los presupuestos.')
+    } catch (err) {
+      toastError({ title: 'Error al copiar', message: err instanceof Error ? err.message : 'No se pudieron copiar los presupuestos.' })
     }
   }
 
@@ -58,8 +61,8 @@ export default function PresupuestoPage() {
         mes: mesActual
       })
       setModalOpen(false)
-    } catch (err) {
-      alert('Error al guardar presupuesto')
+    } catch {
+      toastError({ title: 'Error al guardar', message: 'No se pudo guardar el presupuesto.' })
     }
   }
 

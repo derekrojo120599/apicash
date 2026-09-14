@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useMetas, useCrearMeta, useAgregarAporte, useEliminarMeta, useRetirarAhorro, Meta } from '@/hooks/useMetas'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useTasaActual } from '@/hooks/useAuxiliares'
+import { useToast } from '@/hooks/useToast'
 import { PiggyBank, Plus, X, Loader2, ArrowUpCircle, Trash2, ArrowDownCircle } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect, AnimatedDatePicker } from '@/components/animations'
 
@@ -18,6 +19,8 @@ export default function AhorrosPage() {
   const { mutateAsync: agregarAporte, isPending: isAdding } = useAgregarAporte()
   const { mutateAsync: eliminarMeta, isPending: isDeleting } = useEliminarMeta()
   const { mutateAsync: retirarAhorro, isPending: isRetirando } = useRetirarAhorro()
+
+  const { error: toastError, warning: toastWarning } = useToast()
 
   const [modalMode, setModalMode] = useState<'create' | 'aporte' | 'retiro' | null>(null)
   const [metaActual, setMetaActual] = useState<Meta | null>(null)
@@ -78,8 +81,8 @@ export default function AhorrosPage() {
         fecha_objetivo: formData.fecha_objetivo || null
       })
       setModalMode(null)
-    } catch (err) {
-      alert('Error al crear meta')
+    } catch {
+      toastError({ title: 'Error al crear', message: 'No se pudo crear la meta de ahorro.' })
     }
   }
 
@@ -91,7 +94,7 @@ export default function AhorrosPage() {
     if (!aporteData.esFuenteExterna) {
       cuenta = cuentas?.find(c => c.id === aporteData.cuenta_id)
       if (!cuenta) {
-        alert('Seleccione una cuenta origen')
+        toastWarning({ title: 'Cuenta requerida', message: 'Seleccione una cuenta origen.' })
         return
       }
     }
@@ -105,8 +108,8 @@ export default function AhorrosPage() {
         fecha: new Date()
       })
       setModalMode(null)
-    } catch (err: any) {
-      alert(err.message || 'Error al registrar aporte')
+    } catch (err) {
+      toastError({ title: 'Error al registrar aporte', message: err instanceof Error ? err.message : 'No se pudo registrar el aporte.' })
     }
   }
 
@@ -130,19 +133,19 @@ export default function AhorrosPage() {
 
     const cuenta = cuentas?.find(c => c.id === retiroData.cuenta_id)
     if (!cuenta) {
-      alert('Seleccione una cuenta destino')
+      toastWarning({ title: 'Cuenta requerida', message: 'Seleccione una cuenta destino.' })
       return
     }
 
     const monto = Number(retiroData.monto)
     if (!monto || monto <= 0) {
-      alert('Ingrese un monto válido')
+      toastWarning({ title: 'Monto inválido', message: 'Ingrese un monto válido.' })
       return
     }
 
     const maximoRetirable = calcularMaximoRetirable(metaActual, cuenta.moneda)
     if (monto > maximoRetirable + 0.001) {
-      alert(`El monto máximo retirable es ${formatMoney(maximoRetirable, cuenta.moneda)}`)
+      toastWarning({ title: 'Monto excedido', message: `El máximo retirable es ${formatMoney(maximoRetirable, cuenta.moneda)}.` })
       return
     }
 
@@ -156,8 +159,8 @@ export default function AhorrosPage() {
         descripcion: retiroData.descripcion.trim() || undefined
       })
       setModalMode(null)
-    } catch (err: any) {
-      alert(err.message || 'Error al registrar retiro')
+    } catch (err) {
+      toastError({ title: 'Error al retirar', message: err instanceof Error ? err.message : 'No se pudo registrar el retiro.' })
     }
   }
 
@@ -165,8 +168,8 @@ export default function AhorrosPage() {
     if (confirm('¿Seguro que quieres eliminar esta meta/ahorro? Esta acción no se puede deshacer.')) {
       try {
         await eliminarMeta(id)
-      } catch (err: any) {
-        alert(err.message || 'Error al eliminar la meta')
+      } catch (err) {
+        toastError({ title: 'Error al eliminar', message: err instanceof Error ? err.message : 'No se pudo eliminar la meta.' })
       }
     }
   }

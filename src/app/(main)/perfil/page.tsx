@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { usePerfil, useActualizarPerfil, useSolicitarCambioPassword, useEliminarCuenta, useBorrarDatos } from '@/hooks/usePerfil'
 import { useTasasFuentes } from '@/hooks/useTasasFuentes'
 import { useStatsPerfil } from '@/hooks/useStatsPerfil'
+import { useToast } from '@/hooks/useToast'
 import { createClient } from '@/utils/supabase/client'
 import { AvatarDiceBear } from '@/components/AvatarDiceBear'
 import { ThemeSelector } from '@/components/ThemeSelector'
@@ -24,6 +25,8 @@ export default function PerfilPage() {
   const { mutateAsync: solicitarCambioPassword, isPending: isSendingReset } = useSolicitarCambioPassword()
   const { mutateAsync: eliminarCuenta, isPending: isDeleting } = useEliminarCuenta()
   const { mutateAsync: borrarDatos, isPending: isBorrandoDatos } = useBorrarDatos()
+
+  const { error: toastError, warning: toastWarning } = useToast()
 
   const [nombreEditado, setNombreEditado] = useState('')
   const [modoEdicion, setModoEdicion] = useState(false)
@@ -46,8 +49,8 @@ export default function PerfilPage() {
       setModoEdicion(false)
       setMensajeExito('Nombre actualizado correctamente')
       setTimeout(() => setMensajeExito(''), 3000)
-    } catch (err: any) {
-      alert(err.message || 'Error al actualizar el nombre')
+    } catch (err) {
+      toastError({ title: 'Error al actualizar', message: err instanceof Error ? err.message : 'No se pudo actualizar el nombre.' })
     }
   }
 
@@ -55,8 +58,8 @@ export default function PerfilPage() {
     const nuevoSeed = Math.random().toString(36).substring(2, 15)
     try {
       await actualizarPerfil({ avatar_seed: nuevoSeed })
-    } catch (err: any) {
-      alert(err.message || 'Error al actualizar el avatar')
+    } catch (err) {
+      toastError({ title: 'Error al actualizar', message: err instanceof Error ? err.message : 'No se pudo actualizar el avatar.' })
     }
   }
 
@@ -66,8 +69,8 @@ export default function PerfilPage() {
       setModalAvatar(false)
       setMensajeExito('Avatar actualizado')
       setTimeout(() => setMensajeExito(''), 3000)
-    } catch (err: any) {
-      alert(err.message || 'Error al actualizar el avatar')
+    } catch (err) {
+      toastError({ title: 'Error al actualizar', message: err instanceof Error ? err.message : 'No se pudo actualizar el avatar.' })
     }
   }
 
@@ -83,8 +86,8 @@ export default function PerfilPage() {
       await actualizarPerfil({ tema })
       setMensajeExito('Tema actualizado')
       setTimeout(() => setMensajeExito(''), 3000)
-    } catch (err: any) {
-      alert(err.message || 'Error al actualizar el tema')
+    } catch (err) {
+      toastError({ title: 'Error al actualizar', message: err instanceof Error ? err.message : 'No se pudo actualizar el tema.' })
     }
   }
 
@@ -93,8 +96,8 @@ export default function PerfilPage() {
       await actualizarPerfil({ fuente_tasa_preferida: fuente })
       setMensajeExito('Fuente de tasa actualizada')
       setTimeout(() => setMensajeExito(''), 3000)
-    } catch (err: any) {
-      alert(err.message || 'Error al actualizar la fuente de tasa')
+    } catch (err) {
+      toastError({ title: 'Error al actualizar', message: err instanceof Error ? err.message : 'No se pudo actualizar la fuente de tasa.' })
     }
   }
 
@@ -105,22 +108,22 @@ export default function PerfilPage() {
       setModalPassword(false)
       setMensajeExito('Te enviamos un correo para cambiar tu contraseña')
       setTimeout(() => setMensajeExito(''), 5000)
-    } catch (err: any) {
-      alert(err.message || 'Error al solicitar el cambio de contraseña')
+    } catch (err) {
+      toastError({ title: 'Error al enviar', message: err instanceof Error ? err.message : 'No se pudo solicitar el cambio de contraseña.' })
     }
   }
 
   const handleEliminarCuenta = async () => {
     if (confirmacionEliminar !== 'ELIMINAR') {
-      alert('Debes escribir ELIMINAR para confirmar')
+      toastWarning({ title: 'Confirmación requerida', message: 'Escribe ELIMINAR para confirmar.' })
       return
     }
 
     try {
       await eliminarCuenta()
       router.push('/login')
-    } catch (err: any) {
-      alert(err.message || 'Error al eliminar la cuenta')
+    } catch (err) {
+      toastError({ title: 'Error al eliminar', message: err instanceof Error ? err.message : 'No se pudo eliminar la cuenta.' })
     }
   }
 
@@ -164,14 +167,14 @@ export default function PerfilPage() {
 
       setMensajeExito('Datos exportados correctamente')
       setTimeout(() => setMensajeExito(''), 3000)
-    } catch (err: any) {
-      alert(err.message || 'Error al exportar los datos')
+    } catch (err) {
+      toastError({ title: 'Error al exportar', message: err instanceof Error ? err.message : 'No se pudieron exportar los datos.' })
     }
   }
 
   const handleBorrarDatos = async () => {
     if (confirmacionBorrarDatos !== 'BORRAR') {
-      alert('Debes escribir BORRAR para confirmar')
+      toastWarning({ title: 'Confirmación requerida', message: 'Escribe BORRAR para confirmar.' })
       return
     }
 
@@ -182,8 +185,8 @@ export default function PerfilPage() {
       setMensajeExito('Todos tus datos fueron eliminados')
       setTimeout(() => setMensajeExito(''), 3000)
       router.refresh()
-    } catch (err: any) {
-      alert(err.message || 'Error al borrar los datos')
+    } catch (err) {
+      toastError({ title: 'Error al borrar', message: err instanceof Error ? err.message : 'No se pudieron borrar los datos.' })
     }
   }
 

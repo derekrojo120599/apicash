@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory, Category } from '@/hooks/useCategories'
+import { useToast } from '@/hooks/useToast'
 import { FolderOpen, Plus, X, Loader2, Trash2, Pencil } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedSelect } from '@/components/animations'
 
@@ -18,6 +19,8 @@ export default function CategoriesPage() {
     nombre: '',
     tipo: 'gasto' as 'gasto' | 'ingreso' | 'ahorro' | 'deuda'
   })
+
+  const { error: toastError } = useToast()
 
   const openCreate = () => {
     setEditingCategory(null)
@@ -55,7 +58,7 @@ export default function CategoriesPage() {
         await deleteCategory(id)
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Error al eliminar. Es posible que tenga transacciones.'
-        alert(message)
+        toastError({ title: 'Error al eliminar', message })
       }
     }
   }
