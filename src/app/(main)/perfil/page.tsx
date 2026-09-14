@@ -277,7 +277,7 @@ export default function PerfilPage() {
                         { value: 'micah', label: 'Minimalista' }
                       ]}
                       placeholder="Estilo"
-                      accent="primary"
+                      accent="emerald"
                     />
                   </div>
                 </div>
