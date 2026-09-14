@@ -238,30 +238,47 @@ export default function PerfilPage() {
               </h2>
 
               <div className="flex flex-col sm:flex-row items-start gap-6">
-                <div className="relative">
-                  <AvatarDiceBear
-                    seed={perfil?.avatar_seed || perfil?.email || 'default'}
-                    size={96}
-                    className="w-24 h-24"
-                    style={perfil?.estilo_avatar || 'bottts'}
-                  />
-                  <div className="absolute -bottom-2 -right-2 flex gap-1">
-                    <button
-                      onClick={regenerarAvatar}
-                      disabled={isUpdating}
-                      className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
-                      title="Generar aleatorio"
-                    >
-                      <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
-                    </button>
-                    <button
-                      onClick={() => setModalAvatar(true)}
-                      disabled={isUpdating}
-                      className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
-                      title="Elegir avatar"
-                    >
-                      <User className="w-4 h-4" />
-                    </button>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative">
+                    <AvatarDiceBear
+                      seed={perfil?.avatar_seed || perfil?.email || 'default'}
+                      size={96}
+                      className="w-24 h-24"
+                      style={perfil?.estilo_avatar || 'bottts'}
+                    />
+                    <div className="absolute -bottom-2 -right-2 flex gap-1">
+                      <button
+                        onClick={regenerarAvatar}
+                        disabled={isUpdating}
+                        className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
+                        title="Generar aleatorio"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
+                      </button>
+                      <button
+                        onClick={() => setModalAvatar(true)}
+                        disabled={isUpdating}
+                        className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors shadow-sm"
+                        title="Elegir avatar"
+                      >
+                        <User className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full max-w-[140px]">
+                    <AnimatedSelect
+                      value={perfil?.estilo_avatar || 'bottts'}
+                      onChange={cambiarEstiloAvatar}
+                      options={[
+                        { value: 'bottts', label: 'Robots' },
+                        { value: 'lorelei', label: 'Ilustración' },
+                        { value: 'avataaars', label: 'Personas' },
+                        { value: 'micah', label: 'Minimalista' }
+                      ]}
+                      placeholder="Estilo"
+                      accent="primary"
+                    />
                   </div>
                 </div>
 
@@ -345,22 +362,6 @@ export default function PerfilPage() {
                     value={perfil?.tema || 'emerald'}
                     onChange={cambiarTema}
                     disabled={isUpdating}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Estilo de Avatar</label>
-                  <AnimatedSelect
-                    value={perfil?.estilo_avatar || 'bottts'}
-                    onChange={cambiarEstiloAvatar}
-                    options={[
-                      { value: 'bottts', label: 'Robots (bottts)' },
-                      { value: 'lorelei', label: 'Ilustración (lorelei)' },
-                      { value: 'avataaars', label: 'Personas (avataaars)' },
-                      { value: 'micah', label: 'Minimalista (micah)' }
-                    ]}
-                    placeholder="Seleccione un estilo"
-                    accent="emerald"
                   />
                 </div>
 
