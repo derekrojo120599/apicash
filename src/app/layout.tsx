@@ -18,7 +18,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Apicash",
   description: "Apicash - Control de gastos en USD y VES",
-  manifest: "/manifest.json",
   icons: {
     apple: "/icon-192x192.png",
   },
@@ -35,6 +34,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8fafc" },

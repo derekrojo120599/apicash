@@ -107,6 +107,14 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Permitir selección de texto sólo en inputs y textareas */
+input, textarea {
+  user-select: auto;
 }
 
 /* Ocultar barra de scroll pero mantener funcionalidad */
