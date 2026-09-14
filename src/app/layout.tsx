@@ -18,7 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Apicash",
   description: "Apicash - Control de gastos en USD y VES",
-  icons: {\r\n    icon: \"/apicash.svg\",\r\n    apple: \"/icon-192x192.png\",\r\n  },
+  icons: {
+    icon: "/apicash.svg",
+    apple: "/icon-192x192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
