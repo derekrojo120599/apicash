@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
 import { useUltimasTransacciones } from '@/hooks/useTransacciones'
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft, Plus } from 'lucide-react'
+import { ApicashLogo } from '@/components/ApicashLogo'
+import { TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft, Plus } from 'lucide-react'
 import {
   FadeIn,
   StaggerContainer,
@@ -47,7 +48,7 @@ export default function DashboardPage() {
       <FadeIn delay={100}>
         <AnimatedCard className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Wallet className="w-32 h-32" />
+            <ApicashLogo className="w-32 h-32" />
           </div>
           <div className="relative z-10">
             <p className="text-primary-100 font-medium mb-1">Balance Neto (USD)</p>

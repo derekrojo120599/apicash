@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { signup } from '../actions'
+import { ApicashLogo } from '@/components/ApicashLogo'
 import { Wallet, Loader2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +24,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-8 space-y-6 border border-slate-200 dark:border-slate-800 transition-colors">
         <div className="flex flex-col items-center text-center space-y-2">
           <div className="bg-primary-100 dark:bg-primary-900/30 p-3 rounded-full mb-2">
-            <Wallet className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+            <ApicashLogo className="w-8 h-8 text-primary-600 dark:text-primary-400" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Crear cuenta</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm">Comienza a tener el control total de tu dinero</p>
