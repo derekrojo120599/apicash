@@ -141,7 +141,7 @@ export default function TransaccionesPage() {
             &larr;
           </button>
           <div className="flex items-center gap-2 shrink-0 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
-            <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <CalendarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             {mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
           </div>
           <button 
@@ -193,7 +193,7 @@ export default function TransaccionesPage() {
               >
                 <div className="flex items-start gap-4 min-w-0">
                   <div className={`shrink-0 p-3 rounded-full ${
-                    tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
+                    tx.tipo === 'ingreso' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' :
                     tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
                     'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                   }`}>
@@ -220,7 +220,7 @@ export default function TransaccionesPage() {
                 <div className="flex items-start justify-end gap-4 shrink-0 pl-4">
                   <div className="text-right flex-none">
                     <p className={`font-bold ${
-                      tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
+                      tx.tipo === 'ingreso' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
                       {tx.tipo === 'ingreso' ? '+' : '-'}
                       <AnimatedNumber
@@ -282,7 +282,7 @@ export default function TransaccionesPage() {
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'ingreso'})}
                   className={`flex-1 min-w-[120px] py-2 rounded-lg font-medium border-2 transition-all ${
-                    formData.tipo === 'ingreso' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    formData.tipo === 'ingreso' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   Ingreso
@@ -315,7 +315,7 @@ export default function TransaccionesPage() {
                         <span>Tasa actual: <strong className="text-blue-900 dark:text-blue-200 font-bold">{tasaActual} VES/USD</strong>.</span>
                         {formData.monto_original && Number(formData.monto_original) > 0 && (
                           <span className="mt-1 bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded inline-block w-max">
-                            Equivalente estimado: <strong className="text-emerald-700 dark:text-emerald-400">≈ ${(Number(formData.monto_original) / tasaActual).toFixed(2)} USD</strong>
+                            Equivalente estimado: <strong className="text-primary-700 dark:text-primary-400">≈ ${(Number(formData.monto_original) / tasaActual).toFixed(2)} USD</strong>
                           </span>
                         )}
                       </>
@@ -335,7 +335,7 @@ export default function TransaccionesPage() {
                   min="0.01"
                   value={formData.monto_original}
                   onChange={e => setFormData({...formData, monto_original: e.target.value})}
-                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
+                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="0.00"
                 />
               </div>
@@ -364,7 +364,7 @@ export default function TransaccionesPage() {
                   type="text"
                   value={formData.descripcion}
                   onChange={e => setFormData({...formData, descripcion: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="Ej: Mercado quincenal"
                 />
               </div>
@@ -386,7 +386,7 @@ export default function TransaccionesPage() {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
                 >
                   {isCreating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar'}
                 </button>

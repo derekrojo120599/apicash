@@ -35,12 +35,12 @@ const accentStyles: Record<AccentColor, {
   darkSelectedText: string;
 }> = {
   emerald: {
-    ring: 'focus:ring-emerald-500',
-    hoverBorder: 'hover:border-emerald-500',
-    selectedBg: 'bg-emerald-50',
-    selectedText: 'text-emerald-700',
-    darkSelectedBg: 'dark:bg-emerald-900/30',
-    darkSelectedText: 'dark:text-emerald-400',
+    ring: 'focus:ring-primary-500',
+    hoverBorder: 'hover:border-primary-500',
+    selectedBg: 'bg-primary-50',
+    selectedText: 'text-primary-700',
+    darkSelectedBg: 'dark:bg-primary-900/30',
+    darkSelectedText: 'dark:text-primary-400',
   },
   orange: {
     ring: 'focus:ring-orange-500',

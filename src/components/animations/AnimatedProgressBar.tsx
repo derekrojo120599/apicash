@@ -15,7 +15,7 @@ interface AnimatedProgressBarProps {
 
 export function AnimatedProgressBar({
   progress,
-  color = 'bg-emerald-500',
+  color = 'bg-primary-500',
   bgColor = 'bg-slate-100 dark:bg-slate-800',
   height = 12,
   duration = 1000,

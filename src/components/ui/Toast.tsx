@@ -22,8 +22,8 @@ const variantConfig: Record<
   success: {
     icon: CheckCircle2,
     containerClass:
-      'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-100 dark:border-emerald-900',
-    iconClass: 'text-emerald-600 dark:text-emerald-400',
+      'bg-primary-50 text-primary-900 border-primary-200 dark:bg-primary-950 dark:text-primary-100 dark:border-primary-900',
+    iconClass: 'text-primary-600 dark:text-primary-400',
   },
   error: {
     icon: XCircle,

@@ -97,10 +97,10 @@ export function InstallPrompt() {
       <FadeIn className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
         
         {/* Decorative background circle */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-2xl" />
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary-500/10 dark:bg-primary-500/5 rounded-full blur-2xl" />
 
         <div className="flex items-start justify-between mb-2 relative">
-          <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2.5 rounded-xl mb-4 text-emerald-600 dark:text-emerald-400 inline-block">
+          <div className="bg-primary-100 dark:bg-primary-900/30 p-2.5 rounded-xl mb-4 text-primary-600 dark:text-primary-400 inline-block">
             <Download className="w-6 h-6" />
           </div>
           <button 

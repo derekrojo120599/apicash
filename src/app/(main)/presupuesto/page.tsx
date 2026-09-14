@@ -91,7 +91,7 @@ export default function PresupuestoPage() {
             &larr;
           </button>
           <div className="flex items-center gap-2 shrink-0 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
-            <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <CalendarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             <span className="capitalize">{mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
           </div>
           <button
@@ -106,16 +106,16 @@ export default function PresupuestoPage() {
       {/* Resumen Global */}
       {!loadingProgreso && progreso && progreso.length > 0 && (
         <FadeIn delay={100}>
-          <AnimatedCard className="bg-emerald-600 dark:bg-emerald-800 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row gap-6 justify-between items-center relative overflow-hidden cursor-default">
-            <Target className="absolute -right-4 -top-4 w-32 h-32 text-emerald-500 dark:text-emerald-700 opacity-20" />
+          <AnimatedCard className="bg-primary-600 dark:bg-primary-800 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row gap-6 justify-between items-center relative overflow-hidden cursor-default">
+            <Target className="absolute -right-4 -top-4 w-32 h-32 text-primary-500 dark:text-primary-700 opacity-20" />
             <div className="relative z-10 w-full md:w-auto">
-              <p className="text-emerald-100 dark:text-emerald-200 mb-1 text-sm">Presupuesto Total Planeado</p>
+              <p className="text-primary-100 dark:text-primary-200 mb-1 text-sm">Presupuesto Total Planeado</p>
               <p className="text-3xl font-bold">
                 <AnimatedNumber value={totalPlaneado} formatter={formatUSD} duration={1500} />
               </p>
             </div>
             <div className="relative z-10 w-full md:w-auto text-left md:text-right">
-              <p className="text-emerald-100 dark:text-emerald-200 mb-1 text-sm">Total Gastado</p>
+              <p className="text-primary-100 dark:text-primary-200 mb-1 text-sm">Total Gastado</p>
               <p className="text-2xl font-bold">
                 <AnimatedNumber value={totalGastado} formatter={formatUSD} duration={1500} delay={200} />
               </p>
@@ -188,7 +188,7 @@ export default function PresupuestoPage() {
 
                     <AnimatedProgressBar
                       progress={p.porcentaje_usado}
-                      color={p.porcentaje_usado >= 100 ? 'bg-red-500' : p.porcentaje_usado >= 90 ? 'bg-orange-500' : 'bg-emerald-500'}
+                      color={p.porcentaje_usado >= 100 ? 'bg-red-500' : p.porcentaje_usado >= 90 ? 'bg-orange-500' : 'bg-primary-500'}
                       height={12}
                       duration={1200}
                       className="mb-2"
@@ -203,7 +203,7 @@ export default function PresupuestoPage() {
                         </span>
                         <button
                           onClick={() => handleOpenEdit(p)}
-                          className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline transition-opacity"
+                          className="text-primary-600 dark:text-primary-400 font-medium hover:underline transition-opacity"
                         >
                           Editar
                         </button>
@@ -265,7 +265,7 @@ export default function PresupuestoPage() {
                   min="0.01"
                   value={presupuestoEdit?.monto || ''}
                   onChange={e => setPresupuestoEdit(prev => ({...prev!, monto: e.target.value}))}
-                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
+                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="0.00"
                 />
               </div>
@@ -281,7 +281,7 @@ export default function PresupuestoPage() {
                 <button
                   type="submit"
                   disabled={isSaving || !presupuestoEdit?.categoria_id || !presupuestoEdit.monto}
-                  className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center disabled:opacity-50"
                 >
                   {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar'}
                 </button>

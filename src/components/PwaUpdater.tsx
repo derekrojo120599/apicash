@@ -38,8 +38,8 @@ export function PwaUpdater() {
 
   return (
     <div className="fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:w-96 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-50 flex items-start gap-4 animate-in slide-in-from-bottom-5">
-      <div className="bg-emerald-500/20 p-2 rounded-full">
-        <RefreshCw className="w-5 h-5 text-emerald-400" />
+      <div className="bg-primary-500/20 p-2 rounded-full">
+        <RefreshCw className="w-5 h-5 text-primary-400" />
       </div>
       <div className="flex-1">
         <h3 className="font-bold text-sm">Nueva versión disponible</h3>
@@ -47,7 +47,7 @@ export function PwaUpdater() {
         <div className="flex gap-2 mt-3">
           <button 
             onClick={handleUpdate}
-            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors"
+            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition-colors"
           >
             Actualizar ahora
           </button>

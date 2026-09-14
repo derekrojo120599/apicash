@@ -35,8 +35,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors">
         <div className="p-4 md:p-5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
-              <WalletCards className="w-5 h-5 md:w-6 md:h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg">
+              <WalletCards className="w-5 h-5 md:w-6 md:h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <span className="font-bold text-lg md:text-xl text-slate-900 dark:text-white">Apicash</span>
           </div>
@@ -92,8 +92,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         {/* Mobile Header (Only visible on small screens) */}
         <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 transition-colors">
           <div className="flex items-center gap-2">
-            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-1.5 rounded-lg">
-              <WalletCards className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="bg-primary-100 dark:bg-primary-900/30 p-1.5 rounded-lg">
+              <WalletCards className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
             <span className="font-bold text-lg text-slate-900 dark:text-white">Apicash</span>
           </div>
@@ -123,8 +123,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       >
         <div className="p-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
-              <WalletCards className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg">
+              <WalletCards className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
             <span className="font-bold text-lg text-slate-900 dark:text-white">Apicash</span>
           </div>

@@ -22,7 +22,7 @@ const secciones = [
     titulo: 'Dashboard',
     subtitulo: 'Tu pantalla principal',
     icono: LayoutDashboard,
-    color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
+    color: 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400',
     pasos: [
       'Es lo primero que ves al entrar.',
       'Te muestra tu Balance Neto en dólares.',
@@ -137,7 +137,7 @@ export default function GuiaPage() {
     <div className="p-4 md:p-8 space-y-8 max-w-5xl mx-auto pb-24 md:pb-8">
       {/* Header */}
       <div className="text-center md:text-left">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-sm font-medium mb-4">
           <Sparkles className="w-4 h-4" />
           Guía para nuevos usuarios
         </div>
@@ -151,9 +151,9 @@ export default function GuiaPage() {
       </div>
 
       {/* Pasos rápidos para empezar */}
-      <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-3 mb-4">
-          <BookOpen className="w-6 h-6 text-emerald-100" />
+          <BookOpen className="w-6 h-6 text-primary-100" />
           <h2 className="text-xl font-bold">¿Por dónde empiezo?</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-4">
@@ -163,12 +163,12 @@ export default function GuiaPage() {
             { num: '3', texto: 'Registrá tus Movimientos (cada gasto e ingreso)' }
           ].map((item) => (
             <div key={item.num} className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-              <span className="text-2xl font-bold text-emerald-200">{item.num}.</span>
-              <p className="mt-1 text-emerald-50">{item.texto}</p>
+              <span className="text-2xl font-bold text-primary-200">{item.num}.</span>
+              <p className="mt-1 text-primary-50">{item.texto}</p>
             </div>
           ))}
         </div>
-        <p className="mt-4 text-emerald-100 text-sm">
+        <p className="mt-4 text-primary-100 text-sm">
           Una vez que hagas esos 3 pasos, el Dashboard se va a empezar a llenar solo y vas a ver el poder de la app.
         </p>
       </div>
@@ -196,7 +196,7 @@ export default function GuiaPage() {
                       </div>
                       <Link
                         href={seccion.href}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                        className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                       >
                         Ir a {seccion.titulo}
                         <ChevronRight className="w-4 h-4" />
@@ -206,13 +206,13 @@ export default function GuiaPage() {
                     <ul className="mt-4 space-y-2">
                       {seccion.pasos.map((paso, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-5 h-5 text-primary-500 shrink-0 mt-0.5" />
                           <span>{paso}</span>
                         </li>
                       ))}
                     </ul>
                     
-                    <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-emerald-500">
+                    <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-primary-500">
                       <p className="text-sm text-slate-600 dark:text-slate-400 italic">
                         💡 {seccion.extra}
                       </p>
@@ -252,7 +252,7 @@ export default function GuiaPage() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/cuentas"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl transition-colors"
           >
             <WalletCards className="w-5 h-5" />
             Crear mi primera cuenta

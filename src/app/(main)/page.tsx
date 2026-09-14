@@ -50,7 +50,7 @@ export default function DashboardPage() {
             <Wallet className="w-32 h-32" />
           </div>
           <div className="relative z-10">
-            <p className="text-emerald-100 font-medium mb-1">Balance Neto (USD)</p>
+            <p className="text-primary-100 font-medium mb-1">Balance Neto (USD)</p>
             <div className="flex items-end gap-3">
               {loadingBalance ? (
                 <AnimatedLoader size={36} color="rgba(255,255,255,0.7)" />
@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/20">
               <div>
-                <p className="text-emerald-100 text-sm mb-1">Total USD Fijo</p>
+                <p className="text-primary-100 text-sm mb-1">Total USD Fijo</p>
                 {loadingBalance ? (
                   <AnimatedLoader size={24} color="rgba(255,255,255,0.7)" />
                 ) : (
@@ -82,7 +82,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <div>
-                <p className="text-emerald-100 text-sm mb-1">Total VES</p>
+                <p className="text-primary-100 text-sm mb-1">Total VES</p>
                 {loadingBalance ? (
                   <AnimatedLoader size={24} color="rgba(255,255,255,0.7)" />
                 ) : (
@@ -95,7 +95,7 @@ export default function DashboardPage() {
                         delay={300}
                       />
                     </p>
-                    <p className="text-xs text-emerald-200">
+                    <p className="text-xs text-primary-200">
                       ≈ <AnimatedNumber value={balance?.ves_en_usd || 0} formatter={formatUSD} duration={1200} delay={400} /> a tasa de {balance?.tasa_usada || 0}
                     </p>
                   </div>
@@ -111,8 +111,8 @@ export default function DashboardPage() {
         {/* Ingresos del Mes */}
         <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
-            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-full">
-              <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-full">
+              <TrendingUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ingresos del mes</p>
           </div>
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start gap-4 min-w-0">
                     <div className={`shrink-0 p-3 rounded-full ${
-                      tx.tipo === 'ingreso' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :
+                      tx.tipo === 'ingreso' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' :
                       tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
                       'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                     }`}>
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-end gap-4 shrink-0 pl-4">
                     <div className="text-right flex-none">
                     <p className={`font-bold ${
-                      tx.tipo === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
+                      tx.tipo === 'ingreso' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
                       {tx.tipo === 'ingreso' ? '+' : '-'}{tx.moneda_original === 'USD' ? formatUSD(tx.monto_original) : formatVES(tx.monto_original)}
                     </p>

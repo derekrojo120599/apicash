@@ -234,7 +234,7 @@ export default function AhorrosPage() {
                         {Math.round(progreso)}%
                       </div>
                     ) : (
-                      <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold px-3 py-1 rounded-full text-sm shrink-0">
+                      <div className="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-bold px-3 py-1 rounded-full text-sm shrink-0">
                         Ahorro Libre
                       </div>
                     )}
@@ -258,7 +258,7 @@ export default function AhorrosPage() {
                   {tieneObjetivo ? (
                     <AnimatedProgressBar
                       progress={progreso}
-                      color={completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-blue-500 dark:bg-blue-400'}
+                      color={completado ? 'bg-primary-500 dark:bg-primary-400' : 'bg-blue-500 dark:bg-blue-400'}
                       height={16}
                       duration={1200}
                       className="mb-6"
@@ -274,7 +274,7 @@ export default function AhorrosPage() {
                     disabled={completado}
                     className={`flex-1 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
                       completado
-                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default'
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 cursor-default'
                       : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
@@ -282,7 +282,7 @@ export default function AhorrosPage() {
                       '¡Meta Completada!'
                     ) : (
                       <>
-                        <ArrowUpCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <ArrowUpCircle className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         Agregar Aporte
                       </>
                     )}
@@ -326,7 +326,7 @@ export default function AhorrosPage() {
                     id="sinMetaFija"
                     checked={sinMetaFija} 
                     onChange={e => setSinMetaFija(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                   />
                   <label htmlFor="sinMetaFija" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
                     Sin monto objetivo (ahorro libre)
@@ -360,7 +360,7 @@ export default function AhorrosPage() {
                   accent="emerald"
                 />
               </div>
-              <button type="submit" disabled={isCreating} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
+              <button type="submit" disabled={isCreating} className="w-full bg-primary-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-primary-700 transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
             </form>
           </div>
         </div>
@@ -384,7 +384,7 @@ export default function AhorrosPage() {
                   id="fuenteExterna"
                   checked={aporteData.esFuenteExterna} 
                   onChange={e => setAporteData({...aporteData, esFuenteExterna: e.target.checked})}
-                  className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                 />
                 <label htmlFor="fuenteExterna" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
                   El dinero proviene de una fuente externa (no descontar de mis cuentas)
@@ -423,12 +423,12 @@ export default function AhorrosPage() {
                   Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como &quot;Ahorro&quot;, y se sumará a esta meta.
                 </p>
               ) : (
-                <p className="text-xs text-slate-500 dark:text-slate-400 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900/50 transition-colors">
+                <p className="text-xs text-slate-500 dark:text-slate-400 bg-primary-50 dark:bg-primary-900/20 p-3 rounded-lg border border-primary-100 dark:border-primary-900/50 transition-colors">
                   El monto se sumará directamente a tu ahorro <strong className="dark:text-slate-300">sin crear una transacción de gasto</strong> ni alterar tus balances.
                 </p>
               )}
               
-              <button type="submit" disabled={isAdding} className="w-full bg-emerald-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-emerald-700 transition-colors">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
+              <button type="submit" disabled={isAdding} className="w-full bg-primary-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-primary-700 transition-colors">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
             </form>
           </div>
         </div>

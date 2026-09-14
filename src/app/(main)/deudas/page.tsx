@@ -146,7 +146,7 @@ export default function DeudasPage() {
                         </p>
                       )}
                     </div>
-                    <div className={`${completado ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'} font-bold px-3 py-1 rounded-full text-sm transition-colors shrink-0`}>
+                    <div className={`${completado ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'} font-bold px-3 py-1 rounded-full text-sm transition-colors shrink-0`}>
                       {Math.round(progreso)}% Pagado
                     </div>
                   </div>
@@ -165,7 +165,7 @@ export default function DeudasPage() {
 
                   <AnimatedProgressBar
                     progress={progreso}
-                    color={completado ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-orange-500 dark:bg-orange-400'}
+                    color={completado ? 'bg-primary-500 dark:bg-primary-400' : 'bg-orange-500 dark:bg-orange-400'}
                     height={16}
                     duration={1200}
                     className="mb-6"
@@ -177,7 +177,7 @@ export default function DeudasPage() {
                   disabled={completado}
                   className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
                     completado
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 cursor-default border border-emerald-100 dark:border-emerald-800/50'
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 cursor-default border border-primary-100 dark:border-primary-800/50'
                     : 'bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >

@@ -100,7 +100,7 @@ export default function CategoriesPage() {
               <div>
                 <h3 className="font-semibold text-slate-900 dark:text-slate-200">{category.nombre}</h3>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full mt-2 inline-block ${
-                  category.tipo === 'ingreso' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                  category.tipo === 'ingreso' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' :
                   category.tipo === 'gasto' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                   'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                 }`}>
@@ -150,7 +150,7 @@ export default function CategoriesPage() {
                   required
                   value={formData.nombre}
                   onChange={e => setFormData({...formData, nombre: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="Ej: Gimnasio, Freelance, Mascotas..."
                 />
               </div>
@@ -187,7 +187,7 @@ export default function CategoriesPage() {
                 <button
                   type="submit"
                   disabled={isCreating || isEditing}
-                  className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
                 >
                   {isCreating || isEditing ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingCategory ? 'Guardar' : 'Crear')}
                 </button>

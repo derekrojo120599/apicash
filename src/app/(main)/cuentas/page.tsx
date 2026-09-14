@@ -132,13 +132,13 @@ export default function CuentasPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openEditModal(cuenta)}
-                    className="text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium px-2 py-1"
+                    className="text-slate-400 dark:text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-sm font-medium px-2 py-1"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleToggleActiva(cuenta)}
-                    className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${cuenta.activa ? 'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'}`}
+                    className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${cuenta.activa ? 'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20'}`}
                   >
                     {cuenta.activa ? 'Desactivar' : 'Activar'}
                   </button>
@@ -187,7 +187,7 @@ export default function CuentasPage() {
                   required
                   value={cuentaActual?.nombre || ''}
                   onChange={e => setCuentaActual({...cuentaActual, nombre: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
                   placeholder="Ej: Banesco, Binance, Efectivo..."
                 />
               </div>
@@ -243,7 +243,7 @@ export default function CuentasPage() {
                 <button
                   type="submit"
                   disabled={isCreating || isUpdating}
-                  className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex justify-center items-center"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
                 >
                   {isCreating || isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar'}
                 </button>
