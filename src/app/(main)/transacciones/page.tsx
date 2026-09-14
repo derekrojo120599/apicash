@@ -13,18 +13,18 @@ export const dynamic = 'force-dynamic';
 type ModalMode = 'create' | null
 
 export default function TransaccionesPage() {
-  const [mesActual, setMesActual] = useState(new Date())
+  const [currentMonth, setCurrentMonth] = useState(new Date())
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   
   // Data Fetching
-  const { data: transacciones, isLoading: loadingTx } = useTransacciones(mesActual)
-  const { data: cuentas } = useCuentas()
-  const { data: categorias } = useCategorias()
-  const { data: tasaActual } = useTasaActual()
+  const { data: transactions, isLoading: loadingTx } = useTransacciones(currentMonth)
+  const { data: accounts } = useCuentas()
+  const { data: categories } = useCategorias()
+  const { data: currentRate } = useTasaActual()
   
   // Mutations
-  const { mutateAsync: crearTransaccion, isPending: isCreating } = useCrearTransaccion()
-  const { mutateAsync: anularTransaccion, isPending: isAnulando } = useAnularTransaccion()
+  const { mutateAsync: createTransaction, isPending: isCreating } = useCrearTransaccion()
+  const { mutateAsync: voidTransaction, isPending: isVoiding } = useAnularTransaccion()
 
   // Form State
   const [formData, setFormData] = useState({
@@ -35,13 +35,13 @@ export default function TransaccionesPage() {
     descripcion: ''
   })
   const [error, setError] = useState('')
-  const [filtroTipo, setFiltroTipo] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
 
   const { error: toastError } = useToast()
 
   const openCreateModal = () => {
     setFormData({
-      cuenta_id: cuentas?.find(c => c.activa)?.id || '',
+      cuenta_id: accounts?.find(c => c.activa)?.id || '',
       categoria_id: '',
       tipo: 'gasto',
       monto_original: '',
@@ -55,15 +55,15 @@ export default function TransaccionesPage() {
     setModalMode(null)
   }
 
-  const cuentaSeleccionada = useMemo(() => {
-    return cuentas?.find(c => c.id === formData.cuenta_id)
-  }, [formData.cuenta_id, cuentas])
+  const selectedAccount = useMemo(() => {
+    return accounts?.find(c => c.id === formData.cuenta_id)
+  }, [formData.cuenta_id, accounts])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     
-    if (!cuentaSeleccionada) {
+    if (!selectedAccount) {
       setError('Seleccione una cuenta válida')
       return
     }
@@ -73,29 +73,34 @@ export default function TransaccionesPage() {
       return
     }
 
+    if (formData.tipo === 'gasto' && Number(formData.monto_original) > selectedAccount.saldo_cache) {
+      setError(`Saldo insuficiente. Tienes ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
+      return
+    }
+
     try {
-      await crearTransaccion({
+      await createTransaction({
         cuenta_id: formData.cuenta_id,
         categoria_id: formData.categoria_id || undefined,
         tipo: formData.tipo,
         monto_original: Number(formData.monto_original),
-        moneda_original: cuentaSeleccionada.moneda,
+        moneda_original: selectedAccount.moneda,
         descripcion: formData.descripcion
       })
       closeModal()
     } catch (err) {
-      // Manejar el error personalizado del trigger u otros errores
+      // Handle custom trigger error or other errors
       const msg = err instanceof Error ? err.message : 'Error al guardar la transacción'
       setError(msg.includes('No hay tasa de cambio') ? 'No hay tasa de cambio disponible. Contacte soporte.' : msg)
     }
   }
 
-  const handleAnular = async (id: string) => {
+  const handleVoidTransaction = async (id: string) => {
     if (confirm('¿Estás seguro de que deseas anular esta transacción? (Esta acción no se puede deshacer)')) {
       try {
-        await anularTransaccion(id)
+        await voidTransaction(id)
       } catch (err) {
-        console.error("Error anulando:", err)
+        console.error("Error voiding transaction:", err)
         toastError({ title: 'Error al anular', message: 'No se pudo anular la transacción.' })
       }
     }
@@ -108,8 +113,8 @@ export default function TransaccionesPage() {
     }).format(monto)
   }
 
-  const txFiltradas = transacciones?.filter(tx => {
-    if (filtroTipo && tx.tipo !== filtroTipo) return false;
+  const filteredTransactions = transactions?.filter(tx => {
+    if (typeFilter && tx.tipo !== typeFilter) return false;
     return true;
   })
 
@@ -126,30 +131,30 @@ export default function TransaccionesPage() {
         </AnimatedButton>
       </FadeIn>
 
-      {/* Filtros */}
+      {/* Filters */}
       <FadeIn delay={100}>
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between transition-colors">
         <div className="flex items-center gap-2 overflow-x-auto flex-nowrap w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
           <button 
             className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
             onClick={() => {
-              const d = new Date(mesActual)
+              const d = new Date(currentMonth)
               d.setMonth(d.getMonth() - 1)
-              setMesActual(d)
+              setCurrentMonth(d)
             }}
           >
             &larr;
           </button>
           <div className="flex items-center gap-2 shrink-0 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
             <CalendarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-            {mesActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+            {currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
           </div>
           <button 
             className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
             onClick={() => {
-              const d = new Date(mesActual)
+              const d = new Date(currentMonth)
               d.setMonth(d.getMonth() + 1)
-              setMesActual(d)
+              setCurrentMonth(d)
             }}
           >
             &rarr;
@@ -158,8 +163,8 @@ export default function TransaccionesPage() {
         
         <div className="w-full md:w-auto flex-1 md:max-w-xs">
           <AnimatedSelect
-            value={filtroTipo}
-            onChange={setFiltroTipo}
+            value={typeFilter}
+            onChange={setTypeFilter}
             options={[
               { value: '', label: 'Todos los tipos' },
               { value: 'ingreso', label: 'Solo Ingresos' },
@@ -172,13 +177,13 @@ export default function TransaccionesPage() {
         </div>
       </FadeIn>
 
-      {/* Lista */}
+      {/* List */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors mt-6">
         {loadingTx ? (
           <div className="p-8 flex justify-center">
             <AnimatedLoader size={40} color="#10b981" />
           </div>
-        ) : txFiltradas?.length === 0 ? (
+        ) : filteredTransactions?.length === 0 ? (
           <div className="p-12 text-center text-slate-500 dark:text-slate-400">
             <Search className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
             <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay transacciones</p>
@@ -186,7 +191,7 @@ export default function TransaccionesPage() {
           </div>
         ) : (
           <StaggerContainer className="divide-y divide-slate-100 dark:divide-slate-800/50" staggerDelay={60} duration={450}>
-            {txFiltradas?.map(tx => (
+            {filteredTransactions?.map(tx => (
               <AnimatedCard
                 data-anime
                 key={tx.id}
@@ -239,8 +244,8 @@ export default function TransaccionesPage() {
 
                   {!tx.anulada && (
                     <button
-                      onClick={() => handleAnular(tx.id)}
-                      disabled={isAnulando}
+                      onClick={() => handleVoidTransaction(tx.id)}
+                      disabled={isVoiding}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
                       title="Anular transacción"
                     >
@@ -257,7 +262,7 @@ export default function TransaccionesPage() {
         )}
       </div>
 
-      {/* Modal Crear */}
+      {/* Create Modal */}
       {modalMode === 'create' && (
         <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 overflow-y-auto backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible my-8 border border-slate-200 dark:border-slate-800">
@@ -297,7 +302,7 @@ export default function TransaccionesPage() {
                   onChange={(v) => setFormData({...formData, cuenta_id: v})}
                   options={[
                     { value: '', label: 'Seleccione una cuenta', disabled: true },
-                    ...(cuentas?.filter(c => c.activa).map(c => ({
+                    ...(accounts?.filter(c => c.activa).map(c => ({
                       value: c.id,
                       label: `${c.nombre} (${c.moneda}) - ${formatMoney(c.saldo_cache, c.moneda)}`
                     })) || [])
@@ -307,16 +312,16 @@ export default function TransaccionesPage() {
                   accent="emerald"
                 />
                 
-                {/* AVISO IMPORTANTE SOBRE LA TASA DE CAMBIO */}
-                {cuentaSeleccionada?.moneda === 'VES' && (
+                {/* IMPORTANT EXCHANGE RATE WARNING */}
+                {selectedAccount?.moneda === 'VES' && (
                   <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-lg text-sm text-blue-800 dark:text-blue-300 flex flex-col gap-1 transition-colors">
                     <span className="font-semibold">Información de conversión:</span>
-                    {tasaActual ? (
+                    {currentRate ? (
                       <>
-                        <span>Tasa actual: <strong className="text-blue-900 dark:text-blue-200 font-bold">{tasaActual} VES/USD</strong>.</span>
+                        <span>Tasa actual: <strong className="text-blue-900 dark:text-blue-200 font-bold">{currentRate} VES/USD</strong>.</span>
                         {formData.monto_original && Number(formData.monto_original) > 0 && (
                           <span className="mt-1 bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded inline-block w-max">
-                            Equivalente estimado: <strong className="text-primary-700 dark:text-primary-400">≈ ${(Number(formData.monto_original) / tasaActual).toFixed(2)} USD</strong>
+                            Equivalente estimado: <strong className="text-primary-700 dark:text-primary-400">≈ ${(Number(formData.monto_original) / currentRate).toFixed(2)} USD</strong>
                           </span>
                         )}
                       </>
@@ -328,7 +333,7 @@ export default function TransaccionesPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto ({cuentaSeleccionada?.moneda || '...'})</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto ({selectedAccount?.moneda || '...'})</label>
                 <input
                   type="number"
                   required
@@ -348,7 +353,7 @@ export default function TransaccionesPage() {
                   onChange={(v) => setFormData({...formData, categoria_id: v})}
                   options={[
                     { value: '', label: 'Seleccione una categoría', disabled: true },
-                    ...(categorias?.filter(c => c.tipo === formData.tipo).map(c => ({
+                    ...(categories?.filter(c => c.tipo === formData.tipo).map(c => ({
                       value: c.id,
                       label: c.nombre
                     })) || [])
