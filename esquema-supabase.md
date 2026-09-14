@@ -23,6 +23,7 @@ CREATE TABLE perfiles (
   fuente_tasa_preferida TEXT DEFAULT 'Cotizave API - Mediana P2P',
   tema TEXT DEFAULT 'emerald',
   avatar_seed TEXT,
+  estilo_avatar TEXT DEFAULT 'bottts',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -714,7 +715,8 @@ CREATE OR REPLACE FUNCTION actualizar_perfil(
   p_nombre_completo TEXT DEFAULT NULL,
   p_fuente_tasa_preferida TEXT DEFAULT NULL,
   p_tema TEXT DEFAULT NULL,
-  p_avatar_seed TEXT DEFAULT NULL
+  p_avatar_seed TEXT DEFAULT NULL,
+  p_estilo_avatar TEXT DEFAULT NULL
 )
 RETURNS VOID
 SECURITY DEFINER
@@ -732,7 +734,8 @@ BEGIN
     nombre_completo = COALESCE(p_nombre_completo, nombre_completo),
     fuente_tasa_preferida = COALESCE(p_fuente_tasa_preferida, fuente_tasa_preferida),
     tema = COALESCE(p_tema, tema),
-    avatar_seed = COALESCE(p_avatar_seed, avatar_seed)
+    avatar_seed = COALESCE(p_avatar_seed, avatar_seed),
+    estilo_avatar = COALESCE(p_estilo_avatar, estilo_avatar)
   WHERE id = v_user_id;
 END;
 $$ LANGUAGE plpgsql;

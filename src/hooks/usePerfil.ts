@@ -9,6 +9,7 @@ export interface Perfil {
   fuente_tasa_preferida: string | null
   tema: string | null
   avatar_seed: string | null
+  estilo_avatar: string
   email: string
   created_at: string
 }
@@ -48,6 +49,7 @@ export function useActualizarPerfil() {
       fuente_tasa_preferida?: string
       tema?: string
       avatar_seed?: string
+      estilo_avatar?: string
     }) => {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No autenticado')
@@ -56,7 +58,8 @@ export function useActualizarPerfil() {
         p_nombre_completo: updates.nombre_completo || null,
         p_fuente_tasa_preferida: updates.fuente_tasa_preferida || null,
         p_tema: updates.tema || null,
-        p_avatar_seed: updates.avatar_seed || null
+        p_avatar_seed: updates.avatar_seed || null,
+        p_estilo_avatar: updates.estilo_avatar || null
       })
 
       if (error) throw error

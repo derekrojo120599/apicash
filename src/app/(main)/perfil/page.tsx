@@ -10,7 +10,7 @@ import { createClient } from '@/utils/supabase/client'
 import { AvatarDiceBear } from '@/components/AvatarDiceBear'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { PerfilStatsSection } from '@/components/PerfilStatsSection'
-import { FadeIn, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedSelect } from '@/components/animations'
+import { FadeIn, AnimatedCard, AnimatedLoader, AnimatedSelect } from '@/components/animations'
 import { User, Mail, Calendar, RefreshCw, Lock, Trash2, Package, HelpCircle, Save, X, AlertTriangle, Loader2, Sparkles, TrendingUp, Download, FileText, Shield, BarChart3, Pencil } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
@@ -80,6 +80,16 @@ export default function PerfilPage() {
     'neon-cyber', 'pixel-hero', 'coffee-mug', 'chill-panda',
     'red-dragon', 'blue-ocean', 'star-ship', 'golden-bear'
   ]
+
+  const cambiarEstiloAvatar = async (estilo: string) => {
+    try {
+      await actualizarPerfil({ estilo_avatar: estilo })
+      setMensajeExito('Estilo de avatar actualizado')
+      setTimeout(() => setMensajeExito(''), 3000)
+    } catch (err) {
+      toastError({ title: 'Error al actualizar', message: err instanceof Error ? err.message : 'No se pudo actualizar el estilo de avatar.' })
+    }
+  }
 
   const cambiarTema = async (tema: string) => {
     try {
@@ -233,6 +243,7 @@ export default function PerfilPage() {
                     seed={perfil?.avatar_seed || perfil?.email || 'default'}
                     size={96}
                     className="w-24 h-24"
+                    style={perfil?.estilo_avatar || 'bottts'}
                   />
                   <div className="absolute -bottom-2 -right-2 flex gap-1">
                     <button
@@ -334,6 +345,22 @@ export default function PerfilPage() {
                     value={perfil?.tema || 'emerald'}
                     onChange={cambiarTema}
                     disabled={isUpdating}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Estilo de Avatar</label>
+                  <AnimatedSelect
+                    value={perfil?.estilo_avatar || 'bottts'}
+                    onChange={cambiarEstiloAvatar}
+                    options={[
+                      { value: 'bottts', label: 'Robots (bottts)' },
+                      { value: 'lorelei', label: 'Ilustración (lorelei)' },
+                      { value: 'avataaars', label: 'Personas (avataaars)' },
+                      { value: 'micah', label: 'Minimalista (micah)' }
+                    ]}
+                    placeholder="Seleccione un estilo"
+                    accent="emerald"
                   />
                 </div>
 
@@ -509,7 +536,7 @@ export default function PerfilPage() {
                         : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <AvatarDiceBear seed={seed} size={64} className="w-16 h-16" />
+                    <AvatarDiceBear seed={seed} size={64} className="w-16 h-16" style={perfil?.estilo_avatar || 'bottts'} />
                     {perfil?.avatar_seed === seed && (
                       <div className="absolute -top-2 -right-2 bg-primary-500 text-white rounded-full p-1 shadow-md">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
