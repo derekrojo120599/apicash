@@ -71,18 +71,18 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     screenshots: [
       {
-        src: '/icon-512x512.png',
-        sizes: '512x512',
+        src: '/screenshot-desktop.png',
+        sizes: '1280x720',
         type: 'image/png',
         form_factor: 'wide',
-        label: 'Apicash Dashboard'
+        label: 'Apicash Dashboard Desktop'
       },
       {
-        src: '/icon-512x512.png',
-        sizes: '512x512',
+        src: '/screenshot-mobile.png',
+        sizes: '720x1280',
         type: 'image/png',
         form_factor: 'narrow',
-        label: 'Apicash Mobile'
+        label: 'Apicash Mobile View'
       }
     ]
   }
