@@ -34,7 +34,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth') || request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register'
+  const pathname = request.nextUrl.pathname
+  const isAuthRoute = pathname.startsWith('/auth') || pathname === '/login' || pathname === '/register'
+  const isPwaOrPublicAsset =
+    pathname === '/sw.js' ||
+    pathname.startsWith('/workbox-') ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/manifest.json' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml'
+
+  if (isPwaOrPublicAsset) {
+    return supabaseResponse
+  }
 
   if (!user && !isAuthRoute) {
     // no user, potentially respond by redirecting the user to the login page
@@ -60,8 +72,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - PWA files (sw.js, workbox, manifests, etc.)
+     * - Static asset extensions
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sw\\.js|workbox-.*|manifest\\.webmanifest|manifest\\.json|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest)$).*)',
   ],
 }
