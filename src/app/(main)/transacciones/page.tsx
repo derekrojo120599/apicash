@@ -7,6 +7,7 @@ import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
 import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
+import { CreatableCategorySelect } from '@/components/CreatableCategorySelect'
 
 export const dynamic = 'force-dynamic';
 
@@ -348,19 +349,12 @@ export default function TransaccionesPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
-                <AnimatedSelect
+                <CreatableCategorySelect
                   value={formData.categoria_id}
                   onChange={(v) => setFormData({...formData, categoria_id: v})}
-                  options={[
-                    { value: '', label: 'Seleccione una categoría', disabled: true },
-                    ...(categories?.filter(c => c.tipo === formData.tipo).map(c => ({
-                      value: c.id,
-                      label: c.nombre
-                    })) || [])
-                  ]}
-                  placeholder="Seleccione una categoría"
-                  required
-                  accent="emerald"
+                  categories={categories || []}
+                  tipo={formData.tipo as 'gasto' | 'ingreso'}
+                  placeholder="Selecciona o escribe una categoría"
                 />
               </div>
 
