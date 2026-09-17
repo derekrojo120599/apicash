@@ -72,6 +72,9 @@ export default function RootLayout({
                 let theme = localStorage.getItem('apicash-theme');
                 if (!theme) theme = 'emerald';
                 document.documentElement.setAttribute('data-theme', theme);
+                if (sessionStorage.getItem('apicash_splash_shown')) {
+                  document.documentElement.classList.add('splash-hidden');
+                }
               } catch (e) {}
             `,
           }}
