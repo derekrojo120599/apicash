@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: '/?source=pwa',
     scope: '/',
     display: 'standalone',
-    display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
+    display_override: ['standalone', 'fullscreen'],
     orientation: 'portrait',
     dir: 'ltr',
     lang: 'es',
