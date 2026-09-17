@@ -14,8 +14,8 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: 'ltr',
     lang: 'es',
     categories: ['finance', 'productivity', 'utilities'],
-    background_color: '#f8fafc', // slate-50 (app background)
-    theme_color: '#059669', // primary-600 (primary color)
+    background_color: '#020617', // slate-950 (dark immersive native splash)
+    theme_color: '#020617', // slate-950 status bar on launch
     prefer_related_applications: false,
     launch_handler: {
       client_mode: ['navigate-existing', 'auto']
