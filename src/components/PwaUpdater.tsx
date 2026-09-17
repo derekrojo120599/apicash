@@ -3,32 +3,47 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw, X } from 'lucide-react'
 
+interface WorkboxLike {
+  addEventListener(event: string, callback: () => void): void
+  register(): Promise<void>
+  messageSkipWaiting(): void
+}
+
 export function PwaUpdater() {
   const [showUpdate, setShowUpdate] = useState(false)
 
   useEffect(() => {
-    // Solo se ejecuta en el navegador
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && window.workbox !== undefined) {
-      const wb = window.workbox
+    // Only execute on browser client
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      if (window.workbox !== undefined) {
+        const wb = window.workbox
 
-      // Se dispara cuando hay una nueva versión del Service Worker en estado 'waiting'
-      wb.addEventListener('waiting', () => {
-        setShowUpdate(true)
-      })
+        // Triggers when a new Service Worker version is in waiting state
+        wb.addEventListener('waiting', () => {
+          setShowUpdate(true)
+        })
 
-      // Se dispara cuando el SW toma el control tras hacer un skipWaiting()
-      wb.addEventListener('controlling', () => {
-        window.location.reload()
-      })
+        // Triggers when the Service Worker takes control after skipWaiting()
+        wb.addEventListener('controlling', () => {
+          window.location.reload()
+        })
 
-      wb.register()
+        wb.register().catch((err: unknown) => {
+          console.warn('Workbox registration failed:', err)
+        })
+      } else {
+        // Direct native fallback to ensure service worker registers in production
+        navigator.serviceWorker.register('/sw.js').catch((err: unknown) => {
+          console.warn('ServiceWorker fallback registration failed:', err)
+        })
+      }
     }
   }, [])
 
   const handleUpdate = () => {
     if (typeof window !== 'undefined' && window.workbox !== undefined) {
       const wb = window.workbox
-      // Le decimos al Service Worker en espera que tome el control inmediatamente
+      // Request waiting Service Worker to take immediate control
       wb.messageSkipWaiting()
       setShowUpdate(false)
     }
@@ -66,9 +81,9 @@ export function PwaUpdater() {
   )
 }
 
-// Add TypeScript declaration for window.workbox
+// Global TypeScript declaration for workbox window extension
 declare global {
   interface Window {
-    workbox: any
+    workbox?: WorkboxLike
   }
 }

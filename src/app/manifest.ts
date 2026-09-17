@@ -5,8 +5,8 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Apicash - Finanzas Personales',
     short_name: 'Apicash',
     description: 'Control de gastos, ingresos y presupuestos multimoneda en USD y VES con tasas de cambio en tiempo real.',
-    start_url: '/?source=pwa',
-    id: '/?source=pwa',
+    start_url: '/',
+    id: '/',
     scope: '/',
     display: 'standalone',
     display_override: ['fullscreen', 'standalone'],
@@ -75,14 +75,14 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: '1280x720',
         type: 'image/png',
         form_factor: 'wide',
-        label: 'Apicash Dashboard Desktop'
+        label: 'Panel Principal Apicash'
       },
       {
         src: '/screenshot-mobile.png',
         sizes: '720x1280',
         type: 'image/png',
         form_factor: 'narrow',
-        label: 'Apicash Mobile View'
+        label: 'Vista Móvil Apicash'
       }
     ]
   }
