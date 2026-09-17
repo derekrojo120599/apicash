@@ -2,18 +2,24 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Apicash',
+    name: 'Apicash - Finanzas Personales',
     short_name: 'Apicash',
-    description: 'Apicash - Control de gastos en USD y VES',
+    description: 'Control de gastos, ingresos y presupuestos multimoneda en USD y VES con tasas de cambio en tiempo real.',
     start_url: '/?source=pwa',
     id: '/?source=pwa',
     scope: '/',
     display: 'standalone',
+    display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
     orientation: 'portrait',
+    dir: 'ltr',
+    lang: 'es',
+    categories: ['finance', 'productivity', 'utilities'],
     background_color: '#f8fafc', // slate-50 (app background)
     theme_color: '#059669', // primary-600 (primary color)
-    lang: 'es',
-    categories: ['finance', 'productivity'],
+    prefer_related_applications: false,
+    launch_handler: {
+      client_mode: ['navigate-existing', 'auto']
+    },
     icons: [
       {
         src: '/icon-192x192.png',
@@ -38,6 +44,29 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any'
+      }
+    ],
+    shortcuts: [
+      {
+        name: 'Transacciones',
+        short_name: 'Gastos',
+        description: 'Registrar o revisar ingresos y gastos',
+        url: '/transacciones',
+        icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }]
+      },
+      {
+        name: 'Cuentas',
+        short_name: 'Cuentas',
+        description: 'Consultar balances y cuentas bancarias',
+        url: '/cuentas',
+        icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }]
+      },
+      {
+        name: 'Presupuesto',
+        short_name: 'Presupuesto',
+        description: 'Monitorear presupuesto mensual',
+        url: '/presupuesto',
+        icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }]
       }
     ],
     screenshots: [
