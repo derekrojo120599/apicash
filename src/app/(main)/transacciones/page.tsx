@@ -354,7 +354,7 @@ export default function TransaccionesPage() {
                   onChange={(v) => setFormData({...formData, categoria_id: v})}
                   categories={categories || []}
                   tipo={formData.tipo as 'gasto' | 'ingreso'}
-                  placeholder="Selecciona o escribe una categoría"
+                  placeholder="Seleccionar Categoría..."
                 />
               </div>
 

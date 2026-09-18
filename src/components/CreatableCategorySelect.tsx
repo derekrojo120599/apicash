@@ -19,7 +19,7 @@ export function CreatableCategorySelect({
   onChange,
   categories,
   tipo,
-  placeholder = 'Selecciona una categoría',
+  placeholder = 'Seleccionar Categoría...',
   disabled = false,
 }: CreatableCategorySelectProps) {
   const [isOpen, setIsOpen] = useState(false);
