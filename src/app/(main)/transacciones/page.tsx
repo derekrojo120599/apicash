@@ -37,6 +37,7 @@ export default function TransaccionesPage() {
   })
   const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [categoriaFiltro, setCategoriaFiltro] = useState('')
 
   const { error: toastError } = useToast()
 
@@ -115,7 +116,14 @@ export default function TransaccionesPage() {
   }
 
   const filteredTransactions = transactions?.filter(tx => {
-    if (typeFilter && tx.tipo !== typeFilter) return false;
+    if (typeFilter) {
+      if (typeFilter === 'ahorro') {
+        if (tx.categorias?.tipo !== 'ahorro') return false;
+      } else {
+        if (tx.tipo !== typeFilter) return false;
+      }
+    }
+    if (categoriaFiltro && tx.categoria_id !== categoriaFiltro) return false;
     return true;
   })
 
@@ -162,18 +170,40 @@ export default function TransaccionesPage() {
           </button>
         </div>
         
-        <div className="w-full md:w-auto flex-1 md:max-w-xs">
-          <AnimatedSelect
-            value={typeFilter}
-            onChange={setTypeFilter}
-            options={[
-              { value: '', label: 'Todos los tipos' },
-              { value: 'ingreso', label: 'Solo Ingresos' },
-              { value: 'gasto', label: 'Solo Gastos' }
-            ]}
-            placeholder="Todos los tipos"
-            accent="emerald"
-          />
+        <div className="w-full md:w-auto flex-1 md:max-w-lg flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <AnimatedSelect
+              value={typeFilter}
+              onChange={(v) => {
+                setTypeFilter(v)
+                setCategoriaFiltro('')
+              }}
+              options={[
+                { value: '', label: 'Todos los tipos' },
+                { value: 'ingreso', label: 'Solo Ingresos' },
+                { value: 'gasto', label: 'Solo Gastos' },
+                { value: 'ahorro', label: 'Solo Ahorros' }
+              ]}
+              placeholder="Todos los tipos"
+              accent="emerald"
+            />
+          </div>
+          {typeFilter && (
+            <div className="flex-1 animate-in fade-in zoom-in-95 duration-200">
+              <AnimatedSelect
+                value={categoriaFiltro}
+                onChange={setCategoriaFiltro}
+                options={[
+                  { value: '', label: 'Todas las categorías' },
+                  ...(categories
+                    ?.filter(c => c.tipo === typeFilter)
+                    .map(c => ({ value: c.id, label: c.nombre })) || [])
+                ]}
+                placeholder="Filtrar por categoría"
+                accent="emerald"
+              />
+            </div>
+          )}
         </div>
         </div>
       </FadeIn>
