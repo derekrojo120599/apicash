@@ -31,6 +31,7 @@ export default function TransaccionesPage() {
   // Form State
   const [formData, setFormData] = useState({
     cuenta_id: '',
+    cuenta_destino_id: '', // Added for transferences
     categoria_id: '',
     tipo: 'gasto',
     monto_original: '',
@@ -46,6 +47,7 @@ export default function TransaccionesPage() {
   const openCreateModal = () => {
     setFormData({
       cuenta_id: accounts?.find(c => c.activa)?.id || '',
+      cuenta_destino_id: '',
       categoria_id: '',
       tipo: 'gasto',
       monto_original: '',
@@ -73,30 +75,69 @@ export default function TransaccionesPage() {
       return
     }
 
-    if (!formData.categoria_id) {
+    if (formData.tipo !== 'transferencia' && !formData.categoria_id) {
       setError('Seleccione una categoría')
       return
     }
 
-    if (formData.tipo === 'gasto' && Number(formData.monto_original) > selectedAccount.saldo_cache) {
+    if (formData.tipo === 'transferencia' && !formData.cuenta_destino_id) {
+      setError('Seleccione una cuenta de destino')
+      return
+    }
+
+    if (formData.tipo === 'transferencia' && formData.cuenta_id === formData.cuenta_destino_id) {
+      setError('La cuenta origen y destino no pueden ser la misma')
+      return
+    }
+
+    if ((formData.tipo === 'gasto' || formData.tipo === 'transferencia') && Number(formData.monto_original) > selectedAccount.saldo_cache) {
       setError(`Saldo insuficiente. Tienes ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
       return
     }
 
     let montoFinal = Number(formData.monto_original)
-    if (formData.tipo === 'gasto' && selectedAccount.moneda === 'VES' && metodoPago === 'pago_movil') {
+    if ((formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount.moneda === 'VES' && metodoPago === 'pago_movil') {
       montoFinal += 14.00
     }
 
     try {
-      await createTransaction({
-        cuenta_id: formData.cuenta_id,
-        categoria_id: formData.categoria_id || undefined,
-        tipo: formData.tipo,
-        monto_original: montoFinal,
-        moneda_original: selectedAccount.moneda,
-        descripcion: formData.descripcion
-      })
+      if (formData.tipo === 'transferencia') {
+        const cuentaDestino = accounts?.find(c => c.id === formData.cuenta_destino_id)
+        if (!cuentaDestino) throw new Error('Cuenta destino inválida')
+        
+        if (selectedAccount.moneda !== cuentaDestino.moneda) {
+          setError('Por ahora solo se permiten transferencias entre cuentas con la misma moneda')
+          return
+        }
+
+        // Crear la transacción de gasto (salida) de la cuenta de origen
+        await createTransaction({
+          cuenta_id: formData.cuenta_id,
+          tipo: 'gasto',
+          monto_original: montoFinal, // Incluye comisión si aplica
+          moneda_original: selectedAccount.moneda,
+          descripcion: formData.descripcion || `Transferencia a ${cuentaDestino.nombre}`
+        })
+
+        // Crear la transacción de ingreso (entrada) a la cuenta de destino (sin la comisión)
+        await createTransaction({
+          cuenta_id: formData.cuenta_destino_id,
+          tipo: 'ingreso',
+          monto_original: Number(formData.monto_original), // El monto real sin comisión llega al destino
+          moneda_original: cuentaDestino.moneda,
+          descripcion: formData.descripcion || `Transferencia desde ${selectedAccount.nombre}`
+        })
+
+      } else {
+        await createTransaction({
+          cuenta_id: formData.cuenta_id,
+          categoria_id: formData.categoria_id || undefined,
+          tipo: formData.tipo,
+          monto_original: montoFinal,
+          moneda_original: selectedAccount.moneda,
+          descripcion: formData.descripcion
+        })
+      }
       closeModal()
     } catch (err) {
       // Handle custom trigger error or other errors
@@ -338,7 +379,7 @@ export default function TransaccionesPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'gasto'})}
-                  className={`flex-1 min-w-[120px] py-2 rounded-lg font-medium border-2 transition-all ${
+                  className={`flex-1 min-w-[100px] py-2 rounded-lg font-medium border-2 transition-all ${
                     formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
@@ -347,16 +388,27 @@ export default function TransaccionesPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({...formData, tipo: 'ingreso'})}
-                  className={`flex-1 min-w-[120px] py-2 rounded-lg font-medium border-2 transition-all ${
+                  className={`flex-1 min-w-[100px] py-2 rounded-lg font-medium border-2 transition-all ${
                     formData.tipo === 'ingreso' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   Ingreso
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, tipo: 'transferencia'})}
+                  className={`flex-1 min-w-[100px] py-2 rounded-lg font-medium border-2 transition-all ${
+                    formData.tipo === 'transferencia' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  Transferencia
+                </button>
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta origen/destino</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {formData.tipo === 'transferencia' ? 'Cuenta origen' : 'Cuenta origen/destino'}
+                </label>
                 <AnimatedSelect
                   value={formData.cuenta_id}
                   onChange={(v) => setFormData({...formData, cuenta_id: v})}
@@ -392,6 +444,31 @@ export default function TransaccionesPage() {
                 )}
               </div>
 
+              {formData.tipo === 'transferencia' && (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta destino</label>
+                  <AnimatedSelect
+                    value={formData.cuenta_destino_id}
+                    onChange={(v) => setFormData({...formData, cuenta_destino_id: v})}
+                    options={[
+                      { value: '', label: 'Seleccione cuenta destino', disabled: true },
+                      ...(accounts?.filter(c => c.activa && c.moneda === selectedAccount?.moneda).map(c => ({
+                        value: c.id,
+                        label: `${c.nombre} (${c.moneda})`
+                      })) || [])
+                    ]}
+                    placeholder="Seleccione cuenta destino"
+                    required
+                    accent="emerald"
+                  />
+                  {formData.tipo === 'transferencia' && selectedAccount && accounts?.filter(c => c.activa && c.moneda === selectedAccount.moneda).length === 1 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      No tienes otra cuenta en {selectedAccount.moneda} para recibir la transferencia.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto ({selectedAccount?.moneda || '...'})</label>
                 <input
@@ -406,9 +483,9 @@ export default function TransaccionesPage() {
                 />
               </div>
 
-              {formData.tipo === 'gasto' && selectedAccount?.moneda === 'VES' && (
+              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.moneda === 'VES' && (
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago (origen)</label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
@@ -417,7 +494,7 @@ export default function TransaccionesPage() {
                         metodoPago === 'tarjeta' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
-                      Tarjeta
+                      {formData.tipo === 'transferencia' ? 'Transferencia (Sin comisión)' : 'Tarjeta'}
                     </button>
                     <button
                       type="button"
@@ -432,16 +509,18 @@ export default function TransaccionesPage() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
-                <CreatableCategorySelect
-                  value={formData.categoria_id}
-                  onChange={(v) => setFormData({...formData, categoria_id: v})}
-                  categories={categories || []}
-                  tipo={formData.tipo as 'gasto' | 'ingreso'}
-                  placeholder="Seleccionar Categoría..."
-                />
-              </div>
+              {formData.tipo !== 'transferencia' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
+                  <CreatableCategorySelect
+                    value={formData.categoria_id}
+                    onChange={(v) => setFormData({...formData, categoria_id: v})}
+                    categories={categories || []}
+                    tipo={formData.tipo as 'gasto' | 'ingreso'}
+                    placeholder="Seleccionar Categoría..."
+                  />
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Descripción (Opcional)</label>
