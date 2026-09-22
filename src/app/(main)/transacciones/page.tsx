@@ -35,6 +35,7 @@ export default function TransaccionesPage() {
     monto_original: '',
     descripcion: ''
   })
+  const [metodoPago, setMetodoPago] = useState<'tarjeta' | 'pago_movil'>('tarjeta')
   const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
@@ -49,6 +50,7 @@ export default function TransaccionesPage() {
       monto_original: '',
       descripcion: ''
     })
+    setMetodoPago('tarjeta')
     setError('')
     setModalMode('create')
   }
@@ -80,12 +82,17 @@ export default function TransaccionesPage() {
       return
     }
 
+    let montoFinal = Number(formData.monto_original)
+    if (formData.tipo === 'gasto' && selectedAccount.moneda === 'VES' && metodoPago === 'pago_movil') {
+      montoFinal += 14.00
+    }
+
     try {
       await createTransaction({
         cuenta_id: formData.cuenta_id,
         categoria_id: formData.categoria_id || undefined,
         tipo: formData.tipo,
-        monto_original: Number(formData.monto_original),
+        monto_original: montoFinal,
         moneda_original: selectedAccount.moneda,
         descripcion: formData.descripcion
       })
@@ -376,6 +383,32 @@ export default function TransaccionesPage() {
                   placeholder="0.00"
                 />
               </div>
+
+              {formData.tipo === 'gasto' && selectedAccount?.moneda === 'VES' && (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMetodoPago('tarjeta')}
+                      className={`flex-1 py-2 rounded-lg font-medium border-2 transition-all ${
+                        metodoPago === 'tarjeta' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Tarjeta
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMetodoPago('pago_movil')}
+                      className={`flex-1 py-2 rounded-lg font-medium border-2 transition-all ${
+                        metodoPago === 'pago_movil' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Pago Móvil (+14 Bs)
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
