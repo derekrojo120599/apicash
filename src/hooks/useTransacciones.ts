@@ -128,3 +128,28 @@ export function useAnularTransaccion() {
     }
   })
 }
+
+export function useRestaurarTransaccion() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('transacciones')
+        .update({ anulada: false })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+    }
+  })
+}

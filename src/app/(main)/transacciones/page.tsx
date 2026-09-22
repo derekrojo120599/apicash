@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useTransacciones, useCrearTransaccion, useAnularTransaccion, Transaccion } from '@/hooks/useTransacciones'
+import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
-import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban } from 'lucide-react'
+import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 import { CreatableCategorySelect } from '@/components/CreatableCategorySelect'
 
@@ -26,6 +26,7 @@ export default function TransaccionesPage() {
   // Mutations
   const { mutateAsync: createTransaction, isPending: isCreating } = useCrearTransaccion()
   const { mutateAsync: voidTransaction, isPending: isVoiding } = useAnularTransaccion()
+  const { mutateAsync: restoreTransaction, isPending: isRestoring } = useRestaurarTransaccion()
 
   // Form State
   const [formData, setFormData] = useState({
@@ -105,12 +106,23 @@ export default function TransaccionesPage() {
   }
 
   const handleVoidTransaction = async (id: string) => {
-    if (confirm('¿Estás seguro de que deseas anular esta transacción? (Esta acción no se puede deshacer)')) {
+    if (confirm('¿Estás seguro de que deseas anular esta transacción?')) {
       try {
         await voidTransaction(id)
       } catch (err) {
         console.error("Error voiding transaction:", err)
         toastError({ title: 'Error al anular', message: 'No se pudo anular la transacción.' })
+      }
+    }
+  }
+
+  const handleRestoreTransaction = async (id: string) => {
+    if (confirm('¿Deseas restaurar esta transacción? Esto devolverá el balance a como estaba antes de anularla.')) {
+      try {
+        await restoreTransaction(id)
+      } catch (err) {
+        console.error("Error restoring transaction:", err)
+        toastError({ title: 'Error al restaurar', message: 'No se pudo restaurar la transacción.' })
       }
     }
   }
@@ -283,7 +295,7 @@ export default function TransaccionesPage() {
                   {!tx.anulada && (
                     <button
                       onClick={() => handleVoidTransaction(tx.id)}
-                      disabled={isVoiding}
+                      disabled={isVoiding || isRestoring}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
                       title="Anular transacción"
                     >
@@ -291,7 +303,17 @@ export default function TransaccionesPage() {
                     </button>
                   )}
                   {tx.anulada && (
-                    <span className="text-xs font-bold text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded">ANULADA</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded">ANULADA</span>
+                      <button
+                        onClick={() => handleRestoreTransaction(tx.id)}
+                        disabled={isVoiding || isRestoring}
+                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 rounded-lg transition-colors"
+                        title="Restaurar transacción"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </AnimatedCard>
