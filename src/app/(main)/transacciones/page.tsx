@@ -96,8 +96,13 @@ export default function TransaccionesPage() {
     }
 
     let montoFinal = Number(formData.monto_original)
-    if ((formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount.moneda === 'VES' && metodoPago === 'pago_movil') {
-      montoFinal += 14.00
+    if (selectedAccount.moneda === 'VES') {
+      if (formData.tipo === 'gasto' && metodoPago === 'pago_movil') {
+        montoFinal += 14.00
+      } else if (formData.tipo === 'transferencia') {
+        // En transferencias VES SIEMPRE se cobran 14.00 Bs, según la nueva regla
+        montoFinal += 14.00
+      }
     }
 
     try {
@@ -365,44 +370,50 @@ export default function TransaccionesPage() {
 
       {/* Create Modal */}
       {modalMode === 'create' && (
-        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 overflow-y-auto backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl overflow-visible my-8 border border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 rounded-t-2xl z-10 transition-colors">
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-end md:items-center justify-center md:p-4 z-50 transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-t-2xl md:rounded-2xl w-full md:max-w-md shadow-xl overflow-visible mt-auto md:my-8 border-t md:border border-slate-200 dark:border-slate-800 max-h-[90vh] md:max-h-none flex flex-col">
+            <div className="flex justify-between items-center p-4 md:p-6 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 rounded-t-2xl z-10 transition-colors">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Nueva Transacción</h2>
               <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 overflow-y-auto">
               <div className="flex flex-wrap gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, tipo: 'gasto'})}
-                  className={`flex-1 min-w-[100px] py-2 rounded-lg font-medium border-2 transition-all ${
-                    formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  Gasto
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, tipo: 'ingreso'})}
-                  className={`flex-1 min-w-[100px] py-2 rounded-lg font-medium border-2 transition-all ${
-                    formData.tipo === 'ingreso' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  Ingreso
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, tipo: 'transferencia'})}
-                  className={`flex-1 min-w-[100px] py-2 rounded-lg font-medium border-2 transition-all ${
-                    formData.tipo === 'transferencia' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  Transferencia
-                </button>
+      <div className="flex-1 min-w-[100px]">
+        <button
+          type="button"
+          onClick={() => setFormData({...formData, tipo: 'gasto'})}
+          className={`w-full py-2 px-2 rounded-lg font-medium border-2 transition-all text-sm sm:text-base ${
+            formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+          }`}
+        >
+          Gasto
+        </button>
+      </div>
+      <div className="flex-1 min-w-[100px]">
+        <button
+          type="button"
+          onClick={() => setFormData({...formData, tipo: 'ingreso'})}
+          className={`w-full py-2 px-2 rounded-lg font-medium border-2 transition-all text-sm sm:text-base ${
+            formData.tipo === 'ingreso' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+          }`}
+        >
+          Ingreso
+        </button>
+      </div>
+      <div className="flex-1 min-w-[100px]">
+        <button
+          type="button"
+          onClick={() => setFormData({...formData, tipo: 'transferencia'})}
+          className={`w-full py-2 px-2 rounded-lg font-medium border-2 transition-all text-sm sm:text-base ${
+            formData.tipo === 'transferencia' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+          }`}
+        >
+          Traspaso
+        </button>
+      </div>
               </div>
 
               <div className="space-y-1">
@@ -452,7 +463,7 @@ export default function TransaccionesPage() {
                     onChange={(v) => setFormData({...formData, cuenta_destino_id: v})}
                     options={[
                       { value: '', label: 'Seleccione cuenta destino', disabled: true },
-                      ...(accounts?.filter(c => c.activa && c.moneda === selectedAccount?.moneda).map(c => ({
+                      ...(accounts?.filter(c => c.activa && c.moneda === selectedAccount?.moneda && c.id !== formData.cuenta_id).map(c => ({
                         value: c.id,
                         label: `${c.nombre} (${c.moneda})`
                       })) || [])
@@ -461,9 +472,9 @@ export default function TransaccionesPage() {
                     required
                     accent="emerald"
                   />
-                  {formData.tipo === 'transferencia' && selectedAccount && accounts?.filter(c => c.activa && c.moneda === selectedAccount.moneda).length === 1 && (
+                  {formData.tipo === 'transferencia' && selectedAccount && accounts?.filter(c => c.activa && c.moneda === selectedAccount.moneda && c.id !== formData.cuenta_id).length === 0 && (
                     <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                      No tienes otra cuenta en {selectedAccount.moneda} para recibir la transferencia.
+                      No tienes otra cuenta en {selectedAccount.moneda} diferente a la de origen para recibir la transferencia.
                     </p>
                   )}
                 </div>
@@ -483,9 +494,9 @@ export default function TransaccionesPage() {
                 />
               </div>
 
-              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.moneda === 'VES' && (
+              {formData.tipo === 'gasto' && selectedAccount?.moneda === 'VES' && (
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago (origen)</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
@@ -494,7 +505,7 @@ export default function TransaccionesPage() {
                         metodoPago === 'tarjeta' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
-                      {formData.tipo === 'transferencia' ? 'Transferencia (Sin comisión)' : 'Tarjeta'}
+                      Tarjeta
                     </button>
                     <button
                       type="button"
@@ -506,6 +517,13 @@ export default function TransaccionesPage() {
                       Pago Móvil (+14 Bs)
                     </button>
                   </div>
+                </div>
+              )}
+
+              {formData.tipo === 'transferencia' && selectedAccount?.moneda === 'VES' && (
+                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg text-sm text-amber-800 dark:text-amber-300 flex flex-col gap-1 transition-colors">
+                  <span className="font-semibold">Información de transferencia:</span>
+                  <span>Por tratarse de una cuenta en bolívares (VES), se debitarán automáticamente <strong>+14.00 Bs</strong> adicionales de la cuenta de origen por concepto de comisión bancaria.</span>
                 </div>
               )}
 
