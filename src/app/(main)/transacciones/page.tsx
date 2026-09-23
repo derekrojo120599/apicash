@@ -16,6 +16,7 @@ type ModalMode = 'create' | null
 export default function TransaccionesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [modalMode, setModalMode] = useState<ModalMode>(null)
+  const [selectedTx, setSelectedTx] = useState<Transaccion | null>(null)
   
   // Data Fetching
   const { data: transactions, isLoading: loadingTx } = useTransacciones(currentMonth)
@@ -291,7 +292,8 @@ export default function TransaccionesPage() {
               <AnimatedCard
                 data-anime
                 key={tx.id}
-                className={`p-4 flex flex-row items-start justify-between gap-4 cursor-default ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
+                onClick={() => setSelectedTx(tx)}
+                className={`p-4 flex flex-row items-start justify-between gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${tx.anulada ? 'bg-slate-50/50 dark:bg-slate-900/50 opacity-60' : ''}`}
               >
                 <div className="flex items-start gap-4 min-w-0">
                   <div className={`shrink-0 p-3 rounded-full ${
@@ -340,7 +342,7 @@ export default function TransaccionesPage() {
 
                   {!tx.anulada && (
                     <button
-                      onClick={() => handleVoidTransaction(tx.id)}
+                      onClick={(e) => { e.stopPropagation(); handleVoidTransaction(tx.id); }}
                       disabled={isVoiding || isRestoring}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
                       title="Anular transacción"
@@ -352,7 +354,7 @@ export default function TransaccionesPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded">ANULADA</span>
                       <button
-                        onClick={() => handleRestoreTransaction(tx.id)}
+                        onClick={(e) => { e.stopPropagation(); handleRestoreTransaction(tx.id); }}
                         disabled={isVoiding || isRestoring}
                         className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 rounded-lg transition-colors"
                         title="Restaurar transacción"
@@ -574,6 +576,90 @@ export default function TransaccionesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {selectedTx && (
+        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                Detalle del Movimiento
+              </h2>
+              <button onClick={() => setSelectedTx(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors bg-white dark:bg-slate-800 rounded-full p-1 border border-slate-200 dark:border-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Monto Principal */}
+              <div className="text-center pb-4 border-b border-slate-100 dark:border-slate-800">
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1 uppercase tracking-wider">{selectedTx.tipo}</p>
+                <p className={`text-4xl font-bold ${
+                  selectedTx.tipo === 'ingreso' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-white'
+                } ${selectedTx.anulada ? 'line-through text-slate-400 dark:text-slate-500' : ''}`}>
+                  {selectedTx.tipo === 'ingreso' ? '+' : '-'}
+                  {formatMoney(selectedTx.monto_original, selectedTx.moneda_original)}
+                </p>
+                {selectedTx.moneda_original === 'VES' && (
+                  <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                    ≈ {formatMoney(selectedTx.monto_usd_calculado, 'USD')}
+                  </p>
+                )}
+                {selectedTx.anulada && (
+                  <span className="inline-block mt-3 text-xs font-bold text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-3 py-1 rounded-full">ANULADA</span>
+                )}
+              </div>
+
+              {/* Detalles Grid */}
+              <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400 mb-1">Fecha</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {new Date(selectedTx.fecha).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400 mb-1">Categoría</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {selectedTx.categorias?.nombre || 'Sin categoría'}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400 mb-1">Cuenta</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {selectedTx.cuentas?.nombre}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400 mb-1">Tasa usada</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {selectedTx.tasa_al_momento ? `${selectedTx.tasa_al_momento} VES/USD` : '-'}
+                  </p>
+                </div>
+
+                <div className="col-span-2 mt-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <p className="text-slate-500 dark:text-slate-400 mb-1 text-xs uppercase tracking-wider">Descripción</p>
+                  <p className="font-medium text-slate-900 dark:text-white break-words">
+                    {selectedTx.descripcion || 'Sin descripción'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-2xl flex justify-end">
+              <button
+                onClick={() => setSelectedTx(null)}
+                className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors font-medium"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
