@@ -47,7 +47,14 @@ const SOURCES: ExchangeRateSource[] = [
   {
     name: 'Banco Central de Venezuela',
     extractors: [
-      (data) => asPositiveNumber(getPath(data, 'index.bcv')),
+      (data) => {
+        const rates = getPath(data, 'rates');
+        if (Array.isArray(rates)) {
+          const bcv = rates.find(r => r.market === 'reference');
+          if (bcv && bcv.mid) return asPositiveNumber(bcv.mid);
+        }
+        return asPositiveNumber(getPath(data, 'index.bcv'));
+      },
       (data) => asPositiveNumber(getPath(data, 'rates.bcv.rate')),
       (data) => asPositiveNumber(getPath(data, 'rates.bcv')),
       (data) => asPositiveNumber(getPath(data, 'bcv')),
@@ -56,7 +63,14 @@ const SOURCES: ExchangeRateSource[] = [
   {
     name: 'EnParaleloVzla',
     extractors: [
-      (data) => asPositiveNumber(getPath(data, 'index.paralelo')),
+      (data) => {
+        const rates = getPath(data, 'rates');
+        if (Array.isArray(rates)) {
+          const paralelo = rates.find(r => r.market === 'parallel');
+          if (paralelo && paralelo.mid) return asPositiveNumber(paralelo.mid);
+        }
+        return asPositiveNumber(getPath(data, 'index.paralelo'));
+      },
       (data) => asPositiveNumber(getPath(data, 'rates.paralelo.rate')),
       (data) => asPositiveNumber(getPath(data, 'rates.paralelo')),
       (data) => asPositiveNumber(getPath(data, 'paralelo')),
@@ -65,7 +79,14 @@ const SOURCES: ExchangeRateSource[] = [
   {
     name: 'Binance P2P',
     extractors: [
-      (data) => asPositiveNumber(getPath(data, 'index.binance')),
+      (data) => {
+        const rates = getPath(data, 'rates');
+        if (Array.isArray(rates)) {
+          const binance = rates.find(r => r.market === 'binance');
+          if (binance && binance.mid) return asPositiveNumber(binance.mid);
+        }
+        return asPositiveNumber(getPath(data, 'index.binance'));
+      },
       (data) => asPositiveNumber(getPath(data, 'rates.binance.rate')),
       (data) => asPositiveNumber(getPath(data, 'rates.binance')),
       (data) => asPositiveNumber(getPath(data, 'binance')),
@@ -74,7 +95,14 @@ const SOURCES: ExchangeRateSource[] = [
   {
     name: 'DolarToday',
     extractors: [
-      (data) => asPositiveNumber(getPath(data, 'index.dolartoday')),
+      (data) => {
+        const rates = getPath(data, 'rates');
+        if (Array.isArray(rates)) {
+          const dolartoday = rates.find(r => r.market === 'dolartoday' || r.market === 'dolartoday_btc');
+          if (dolartoday && dolartoday.mid) return asPositiveNumber(dolartoday.mid);
+        }
+        return asPositiveNumber(getPath(data, 'index.dolartoday'));
+      },
       (data) => asPositiveNumber(getPath(data, 'rates.dolartoday.rate')),
       (data) => asPositiveNumber(getPath(data, 'rates.dolartoday')),
       (data) => asPositiveNumber(getPath(data, 'dolartoday')),
