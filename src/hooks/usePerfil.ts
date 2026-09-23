@@ -67,6 +67,10 @@ export function useActualizarPerfil() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['perfil'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['tasaActual'] })
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
     }
   })
 }
