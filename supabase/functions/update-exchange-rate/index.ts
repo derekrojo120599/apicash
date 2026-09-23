@@ -52,6 +52,33 @@ const SOURCES: ExchangeRateSource[] = [
       (data) => asPositiveNumber(getPath(data, 'rates.bcv')),
       (data) => asPositiveNumber(getPath(data, 'bcv')),
     ]
+  },
+  {
+    name: 'EnParaleloVzla',
+    extractors: [
+      (data) => asPositiveNumber(getPath(data, 'index.paralelo')),
+      (data) => asPositiveNumber(getPath(data, 'rates.paralelo.rate')),
+      (data) => asPositiveNumber(getPath(data, 'rates.paralelo')),
+      (data) => asPositiveNumber(getPath(data, 'paralelo')),
+    ]
+  },
+  {
+    name: 'Binance P2P',
+    extractors: [
+      (data) => asPositiveNumber(getPath(data, 'index.binance')),
+      (data) => asPositiveNumber(getPath(data, 'rates.binance.rate')),
+      (data) => asPositiveNumber(getPath(data, 'rates.binance')),
+      (data) => asPositiveNumber(getPath(data, 'binance')),
+    ]
+  },
+  {
+    name: 'DolarToday',
+    extractors: [
+      (data) => asPositiveNumber(getPath(data, 'index.dolartoday')),
+      (data) => asPositiveNumber(getPath(data, 'rates.dolartoday.rate')),
+      (data) => asPositiveNumber(getPath(data, 'rates.dolartoday')),
+      (data) => asPositiveNumber(getPath(data, 'dolartoday')),
+    ]
   }
 ];
 
@@ -221,26 +248,37 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const today = new Date().toISOString().split('T')[0];
-    const { data: existing, error: existingError } = await supabase
+    // Traer las últimas tasas insertadas (ej. las últimas 10) para comparar el estado actual
+    const { data: recentRates, error: recentError } = await supabase
       .from('tasas_cambio')
-      .select('id, fuente')
-      .gte('fecha', `${today}T00:00:00Z`)
-      .lte('fecha', `${today}T23:59:59Z`);
+      .select('tasa, fuente')
+      .order('fecha', { ascending: false })
+      .limit(10);
 
-    if (existingError) {
-      console.error("Error checking duplicates:", existingError.message);
-      throw existingError;
+    if (recentError) {
+      console.error("Error checking recent rates:", recentError.message);
+      throw recentError;
     }
 
-    const existingSet = new Set((existing || []).map(row => row.fuente as string));
-    const newRates = ratesToInsert.filter(r => !existingSet.has(r.fuente));
+    // Mapa con la última tasa conocida de cada fuente
+    const lastKnownRates = new Map<string, number>();
+    for (const row of (recentRates || [])) {
+      if (!lastKnownRates.has(row.fuente as string)) {
+        lastKnownRates.set(row.fuente as string, Number(row.tasa));
+      }
+    }
+
+    // Solo insertamos si la tasa cambió respecto al último registro conocido
+    const newRates = ratesToInsert.filter(r => {
+      const lastRate = lastKnownRates.get(r.fuente);
+      return lastRate === undefined || lastRate !== r.tasa;
+    });
 
     if (newRates.length === 0) {
       return new Response(JSON.stringify({
         success: true,
         skipped: true,
-        message: "Rates for today already exist for all obtained sources."
+        message: "Rates have not changed since the last check. Skipped insertion."
       }), {
         status: 200,
         headers: { "Content-Type": "application/json" }
