@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
+import { usePerfil } from './usePerfil'
 
 export interface Categoria {
   id: string
@@ -124,23 +125,43 @@ export function useEliminarCategoria() {
 
 export function useTasaActual() {
   const supabase = createClient()
+  const { data: perfil } = usePerfil()
 
   return useQuery({
-    queryKey: ['tasaActual'],
+    queryKey: ['tasaActual', perfil?.fuente_tasa_preferida],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('tasas_cambio')
         .select('tasa')
         .order('fecha', { ascending: false })
         .limit(1)
-        .single()
+
+      if (perfil?.fuente_tasa_preferida) {
+        query = query.eq('fuente', perfil.fuente_tasa_preferida)
+      }
+
+      const { data, error } = await query.single()
       
+      // Si hay un error PGRST116 (No rows found) y teniamos un filtro por fuente, intentamos sin el filtro (fallback)
+      if (error && error.code === 'PGRST116' && perfil?.fuente_tasa_preferida) {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('tasas_cambio')
+          .select('tasa')
+          .order('fecha', { ascending: false })
+          .limit(1)
+          .single()
+          
+        if (fallbackError && fallbackError.code !== 'PGRST116') throw fallbackError
+        return fallbackData?.tasa || null
+      }
+
       if (error && error.code !== 'PGRST116') {
         throw error
       }
       
       // PGRST116 = No rows found
       return data?.tasa || null
-    }
+    },
+    enabled: perfil !== undefined // Esperar a que perfil resuelva (puede ser null pero undefined es que esta cargando)
   })
 }
