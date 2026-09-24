@@ -24,8 +24,16 @@ BEGIN
     ON CONFLICT DO NOTHING;
     
     INSERT INTO cuentas (id, user_id, nombre, tipo, moneda, saldo_cache) VALUES 
-        ('cccccccc-cccc-cccc-cccc-cccccccccccc', '00000000-0000-0000-0000-000000000001', 'Banesco', 'banco', 'VES', 500000.00),
-        ('dddddddd-dddd-dddd-dddd-dddddddddddd', '00000000-0000-0000-0000-000000000001', 'Zelle', 'banco', 'USD', 50000.00) 
+        ('cccccccc-cccc-cccc-cccc-cccccccccccc', '00000000-0000-0000-0000-000000000001', 'Banesco', 'banco', 'VES', 0),
+        ('dddddddd-dddd-dddd-dddd-dddddddddddd', '00000000-0000-0000-0000-000000000001', 'Zelle', 'banco', 'USD', 0) 
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO tasas_cambio (tasa, fuente) VALUES (40.00, 'Cotizave API - Mediana P2P');
+
+    -- Proveer fondos iniciales reales a través de transacciones para que los triggers cuadren el saldo_cache
+    INSERT INTO transacciones (id, cuenta_id, user_id, categoria_id, tipo, monto_original, moneda_original, monto_usd_calculado, descripcion) VALUES 
+        (gen_random_uuid(), 'cccccccc-cccc-cccc-cccc-cccccccccccc', '00000000-0000-0000-0000-000000000001', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'ingreso', 500000.00, 'VES', 12500.00, 'Saldo Inicial VES'),
+        (gen_random_uuid(), 'dddddddd-dddd-dddd-dddd-dddddddddddd', '00000000-0000-0000-0000-000000000001', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'ingreso', 50000.00, 'USD', 50000.00, 'Saldo Inicial USD')
     ON CONFLICT DO NOTHING;
 
     PERFORM seed_comisiones_config_default('00000000-0000-0000-0000-000000000001');
@@ -162,8 +170,8 @@ SELECT col_type_is('transacciones', 'tasa_al_momento', 'numeric(20,8)', 'tasa_al
 DO $$ DECLARE v_res JSONB; BEGIN v_res := registrar_operacion_con_comision('cccccccc-cccc-cccc-cccc-cccccccccccc', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'gasto', 100.00, 'VES', 'pm_p2p', 40.12345678, now(), 'Test Tasa 4 Decimales Hoy', NULL, FALSE); END; $$;
 SELECT results_eq(
     'SELECT tasa_al_momento FROM transacciones WHERE id = (SELECT id FROM transacciones WHERE descripcion = ''Test Tasa 4 Decimales Hoy'')', 
-    'VALUES (40.1235::numeric)', 
-    'Mientras tasa sea NUMERIC(18,4), 40.12345678 se guarda como 40.1235'
+    'VALUES (40.12345678::numeric)', 
+    'Con la migracion a NUMERIC(20,8) la tasa se guarda intacta'
 );
 
 -- TEST 25: Check Saldo con Aritmética (no hardcodear el resultado)
@@ -188,11 +196,11 @@ SELECT throws_like('test_timezone_rechazado', 'No se encontró configuración de
 DO $$ DECLARE v_res JSONB; BEGIN v_res := registrar_operacion_con_comision('cccccccc-cccc-cccc-cccc-cccccccccccc', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'gasto', 100.00, 'VES', 'pm_p2p', 40.00, '2026-08-01 00:30:00-04', 'TZ Accept', NULL, FALSE); END; $$;
 SELECT isnt_empty('SELECT id FROM transacciones WHERE descripcion = ''TZ Accept''', 'Acepta 2026-08-01 00:30-04 (Vigencia activa)');
 
--- TEST 28: RPC con JWT usuario 2 sobre cuenta de usuario 1
-SET LOCAL request.jwt.claims = '{"sub": "00000000-0000-0000-0000-000000000002"}';
-PREPARE test_hacker_op AS SELECT registrar_operacion_con_comision('cccccccc-cccc-cccc-cccc-cccccccccccc', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'gasto', 100.00, 'VES', 'pm_p2p', 40.00, now(), 'Test', NULL, FALSE);
-SELECT throws_like('test_hacker_op', 'Cuenta no encontrada o no autorizada', 'Usuario 2 no puede operar la cuenta del Usuario 1');
-SET LOCAL request.jwt.claims = '{"sub": "00000000-0000-0000-0000-000000000001"}';
+  -- TEST 28: RPC con JWT usuario 2 sobre cuenta de usuario 1
+  SET LOCAL request.jwt.claims = '{"sub": "00000000-0000-0000-0000-000000000002"}';
+  PREPARE test_hacker_op AS SELECT registrar_operacion_con_comision('cccccccc-cccc-cccc-cccc-cccccccccccc', 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'gasto', 100.00, 'VES', 'pm_p2p', 40.00, now(), 'Test', NULL, FALSE);
+  SELECT throws_like('test_hacker_op', 'Cuenta no encontrada o no autorizada%', 'Usuario 2 no puede operar la cuenta del Usuario 1');
+  SET LOCAL request.jwt.claims = '{"sub": "00000000-0000-0000-0000-000000000001"}';
 
 -- TEST 29: Categoría ajena
 PREPARE test_cat_ajena AS SELECT registrar_operacion_con_comision('cccccccc-cccc-cccc-cccc-cccccccccccc', 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'gasto', 100.00, 'VES', 'pm_p2p', 40.00, now(), 'Test', NULL, FALSE);

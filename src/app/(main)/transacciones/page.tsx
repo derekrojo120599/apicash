@@ -38,7 +38,8 @@ export default function TransaccionesPage() {
     monto_original: '',
     descripcion: ''
   })
-  const [metodoPago, setMetodoPago] = useState<'tarjeta' | 'pago_movil'>('tarjeta')
+  const [subtipoOperacion, setSubtipoOperacion] = useState<string | null>(null)
+  const [esFallida, setEsFallida] = useState(false)
   const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
@@ -54,7 +55,8 @@ export default function TransaccionesPage() {
       monto_original: '',
       descripcion: ''
     })
-    setMetodoPago('tarjeta')
+    setSubtipoOperacion(null)
+    setEsFallida(false)
     setError('')
     setModalMode('create')
   }
@@ -92,56 +94,58 @@ export default function TransaccionesPage() {
     }
 
     if ((formData.tipo === 'gasto' || formData.tipo === 'transferencia') && Number(formData.monto_original) > selectedAccount.saldo_cache) {
-      setError(`Saldo insuficiente. Tienes ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
+      // Soft check on principal. The backend RPC does a strict check including commissions.
+      setError(`El monto principal supera el saldo. Tienes ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
       return
-    }
-
-    let montoFinal = Number(formData.monto_original)
-    if (selectedAccount.moneda === 'VES') {
-      if (formData.tipo === 'gasto' && metodoPago === 'pago_movil') {
-        montoFinal += 14.00
-      } else if (formData.tipo === 'transferencia') {
-        // En transferencias VES SIEMPRE se cobran 14.00 Bs, según la nueva regla
-        montoFinal += 14.00
-      }
     }
 
     try {
       if (formData.tipo === 'transferencia') {
         const cuentaDestino = accounts?.find(c => c.id === formData.cuenta_destino_id)
-        if (!cuentaDestino) throw new Error('Cuenta destino inválida')
+        if (!cuentaDestino) throw new Error('Cuenta destino invǭlida')
         
         if (selectedAccount.moneda !== cuentaDestino.moneda) {
           setError('Por ahora solo se permiten transferencias entre cuentas con la misma moneda')
           return
         }
 
-        // Crear la transacción de gasto (salida) de la cuenta de origen
+        // Crear la transaccin de gasto (salida) de la cuenta de origen
         await createTransaction({
           cuenta_id: formData.cuenta_id,
           tipo: 'gasto',
-          monto_original: montoFinal, // Incluye comisión si aplica
+          monto_original: Number(formData.monto_original), // RPC handles commission
           moneda_original: selectedAccount.moneda,
-          descripcion: formData.descripcion || `Transferencia a ${cuentaDestino.nombre}`
+          descripcion: formData.descripcion || `Transferencia a ${cuentaDestino.nombre}`,
+          subtipo_operacion: subtipoOperacion,
+          tasa_cambio: currentRate,
+          es_fallida: esFallida
         })
 
-        // Crear la transacción de ingreso (entrada) a la cuenta de destino (sin la comisión)
-        await createTransaction({
-          cuenta_id: formData.cuenta_destino_id,
-          tipo: 'ingreso',
-          monto_original: Number(formData.monto_original), // El monto real sin comisión llega al destino
-          moneda_original: cuentaDestino.moneda,
-          descripcion: formData.descripcion || `Transferencia desde ${selectedAccount.nombre}`
-        })
+        // Solo crear el ingreso si la operacin no fue fallida
+        if (!esFallida) {
+          await createTransaction({
+            cuenta_id: formData.cuenta_destino_id,
+            tipo: 'ingreso',
+            monto_original: Number(formData.monto_original),
+            moneda_original: cuentaDestino.moneda,
+            descripcion: formData.descripcion || `Transferencia desde ${selectedAccount.nombre}`,
+            subtipo_operacion: null, // No commission on incoming transfers
+            tasa_cambio: currentRate,
+            es_fallida: false
+          })
+        }
 
       } else {
         await createTransaction({
           cuenta_id: formData.cuenta_id,
           categoria_id: formData.categoria_id || undefined,
           tipo: formData.tipo,
-          monto_original: montoFinal,
+          monto_original: Number(formData.monto_original), // RPC handles commission
           moneda_original: selectedAccount.moneda,
-          descripcion: formData.descripcion
+          descripcion: formData.descripcion,
+          subtipo_operacion: subtipoOperacion,
+          tasa_cambio: currentRate,
+          es_fallida: esFallida
         })
       }
       closeModal()
@@ -496,29 +500,49 @@ export default function TransaccionesPage() {
                 />
               </div>
 
-              {formData.tipo === 'gasto' && selectedAccount?.moneda === 'VES' && (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMetodoPago('tarjeta')}
-                      className={`flex-1 py-2 rounded-lg font-medium border-2 transition-all ${
-                        metodoPago === 'tarjeta' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      Tarjeta
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMetodoPago('pago_movil')}
-                      className={`flex-1 py-2 rounded-lg font-medium border-2 transition-all ${
-                        metodoPago === 'pago_movil' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      Pago Móvil (+14 Bs)
-                    </button>
+              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.moneda === 'VES' && (
+                <div className="space-y-4">
+                  <div className="space-y-1 animate-in fade-in zoom-in-95 duration-200">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">MǸtodo de pago / Tipo de operacin</label>
+                    <AnimatedSelect
+                      value={subtipoOperacion || ''}
+                      onChange={(v) => setSubtipoOperacion(v === '' ? null : v)}
+                      options={[
+                        { value: '', label: 'Otro / Sin comisin bancaria (Ej: Tarjeta)' },
+                        { value: 'pm_p2p', label: 'Pago Mvil (P2P)' },
+                        { value: 'pm_p2c', label: 'Pago Mvil a Comercio (P2C)' },
+                        { value: 'pm_c2p_interbancario', label: 'Cobro C2P (Interbancario)' },
+                        { value: 'pm_c2p_mismo_banco', label: 'Cobro C2P (Mismo banco)' },
+                        { value: 'transferencia_interbancaria', label: 'Transferencia Interbancaria' },
+                        { value: 'transferencia_mismo_banco', label: 'Transferencia Mismo Banco' },
+                        { value: 'cajero', label: 'Retiro en Cajero Automǭtico' },
+                        { value: 'biopago', label: 'Biopago' }
+                      ]}
+                      placeholder="Seleccione el mǸtodo"
+                      accent="emerald"
+                    />
                   </div>
+
+                  {subtipoOperacion && (
+                    <label className="flex items-center gap-2 cursor-pointer animate-in fade-in duration-200">
+                      <input 
+                        type="checkbox" 
+                        checked={esFallida}
+                        onChange={e => setEsFallida(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Operacin fallida (solo se cobrarǭ la comisin mnima por intento)
+                      </span>
+                    </label>
+                  )}
+                </div>
+              )}
+
+              {formData.tipo === 'transferencia' && selectedAccount?.moneda === 'VES' && (
+                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg text-sm text-amber-800 dark:text-amber-300 flex flex-col gap-1 transition-colors">
+                  <span className="font-semibold">Atencin sobre las transferencias:</span>
+                  <span>Si la operacin genera comisin segǧn el mǸtodo seleccionado, el sistema la debitarǭ automǭticamente de la cuenta origen.</span>
                 </div>
               )}
 
