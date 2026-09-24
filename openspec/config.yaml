@@ -1,0 +1,45 @@
+context: |
+  Apicasch - Next.js 16.3.4 (App Router) personal finance app.
+  React 19.2.8, Tailwind CSS v4, Supabase (auth/DB), React Query, Recharts.
+  Business logic focuses on USD/VES multicurrency and strict exchange rate constraints.
+
+strict_tdd: false
+
+testing:
+  projects:
+    - path: .
+      stack: Next.js, React, Tailwind, Supabase
+      test_command: null
+      framework: null
+      layers:
+        unit:
+          available: false
+          tool: null
+        integration:
+          available: false
+          tool: null
+        e2e:
+          available: false
+          tool: null
+      coverage:
+        available: false
+        command: null
+      quality_tools:
+        linter:
+          available: true
+          command: eslint
+        type_checker:
+          available: false
+          command: tsc
+        formatter:
+          available: false
+          command: null
+
+phase_rules:
+  propose: generate proposal considering Supabase and multispan logic
+  spec: explicit behavioral specifications
+  design: architecture adhering to edge functions and App Router conventions
+  tasks: sequence steps including adding Vitest for missing test capabilities
+  apply: execute steps iteratively, ensuring test runners are set up
+  verify: validate against setup test runner
+  archive: commit specs to archive
