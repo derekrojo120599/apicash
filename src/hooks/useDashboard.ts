@@ -69,6 +69,13 @@ export function useBalanceNeto() {
   })
 }
 
+export interface ResumenMes {
+  ingresos: number
+  gastos: number
+  ahorros: number
+  deuda: number
+}
+
 export function useResumenMes() {
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -124,8 +131,8 @@ export function useResumenMes() {
       }
     },
     // Derivar optimistamente desde el caché de transacciones del mes actual
-    placeholderData: () => {
-      const prev = queryClient.getQueryData<ReturnType<typeof useResumenMes>['data']>(['resumenMes'])
+    placeholderData: (): ResumenMes | undefined => {
+      const prev = queryClient.getQueryData<ResumenMes>(['resumenMes'])
       
       // Buscar transacciones cacheadas del mes actual para aproximar gastos/ingresos
       const todasTxs = queryClient.getQueriesData<Transaccion[]>({ queryKey: ['transacciones'] })

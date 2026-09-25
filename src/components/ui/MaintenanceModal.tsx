@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
-import anime from 'animejs';
+import { animate } from 'animejs';
 
 export function MaintenanceModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,14 +15,12 @@ export function MaintenanceModal() {
       
       // Animate entry
       setTimeout(() => {
-        anime({
-          targets: '.maintenance-modal-overlay',
+        animate('.maintenance-modal-overlay', {
           opacity: [0, 1],
           duration: 300,
           easing: 'easeOutQuad'
         });
-        anime({
-          targets: '.maintenance-modal-content',
+        animate('.maintenance-modal-content', {
           scale: [0.9, 1],
           opacity: [0, 1],
           translateY: [20, 0],
@@ -35,20 +33,18 @@ export function MaintenanceModal() {
 
   const handleClose = () => {
     // Animate exit
-    anime({
-      targets: '.maintenance-modal-overlay',
+    animate('.maintenance-modal-overlay', {
       opacity: 0,
       duration: 200,
       easing: 'easeInQuad'
     });
-    anime({
-      targets: '.maintenance-modal-content',
+    animate('.maintenance-modal-content', {
       scale: 0.95,
       opacity: 0,
       translateY: 10,
       duration: 250,
       easing: 'easeInCubic',
-      complete: () => {
+      onComplete: () => {
         localStorage.setItem('apicash_maintenance_ack', 'true');
         setIsOpen(false);
       }
