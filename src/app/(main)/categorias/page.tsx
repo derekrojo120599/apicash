@@ -8,8 +8,8 @@ import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader,
 
 export default function CategoriesPage() {
   const { data: categories, isLoading } = useCategories()
-  const { mutateAsync: createCategory, isPending: isCreating } = useCreateCategory()
-  const { mutateAsync: updateCategory, isPending: isEditing } = useUpdateCategory()
+  const { mutateAsync: createCategory } = useCreateCategory()
+  const { mutateAsync: updateCategory } = useUpdateCategory()
   const { mutateAsync: deleteCategory, isPending: isDeleting } = useDeleteCategory()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -39,16 +39,19 @@ export default function CategoriesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    const isEdit = !!editingCategory
+    const editId = editingCategory?.id
+    setModalOpen(false) // Cerrar modal antes del mutate optimista
     try {
-      if (editingCategory) {
-        await updateCategory({ id: editingCategory.id, updates: { nombre: formData.nombre } })
+      if (isEdit && editId) {
+        await updateCategory({ id: editId, updates: { nombre: formData.nombre } })
       } else {
         await createCategory(formData)
       }
-      setModalOpen(false)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : (editingCategory ? 'Error al editar la categoría' : 'Error al crear la categoría')
+      const message = err instanceof Error ? err.message : (isEdit ? 'Error al editar la categoría' : 'Error al crear la categoría')
       setError(message)
+      setModalOpen(true) // Reabrir si falla
     }
   }
 
@@ -186,10 +189,9 @@ export default function CategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCreating || isEditing}
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
                 >
-                  {isCreating || isEditing ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingCategory ? 'Guardar' : 'Crear')}
+                  {editingCategory ? 'Guardar' : 'Crear'}
                 </button>
               </div>
             </form>

@@ -15,10 +15,10 @@ export default function AhorrosPage() {
   const { data: cuentas } = useCuentas()
   const { data: tasaActual } = useTasaActual()
   
-  const { mutateAsync: crearMeta, isPending: isCreating } = useCrearMeta()
-  const { mutateAsync: agregarAporte, isPending: isAdding } = useAgregarAporte()
-  const { mutateAsync: eliminarMeta, isPending: isDeleting } = useEliminarMeta()
-  const { mutateAsync: retirarAhorro, isPending: isRetirando } = useRetirarAhorro()
+  const { mutateAsync: crearMeta } = useCrearMeta()
+  const { mutateAsync: agregarAporte } = useAgregarAporte()
+  const { mutateAsync: eliminarMeta } = useEliminarMeta()
+  const { mutateAsync: retirarAhorro } = useRetirarAhorro()
 
   const { error: toastError, warning: toastWarning } = useToast()
 
@@ -73,6 +73,7 @@ export default function AhorrosPage() {
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setModalMode(null)
     try {
       await crearMeta({
         nombre: formData.nombre,
@@ -80,7 +81,6 @@ export default function AhorrosPage() {
         moneda: formData.moneda,
         fecha_objetivo: formData.fecha_objetivo || null
       })
-      setModalMode(null)
     } catch {
       toastError({ title: 'Error al crear', message: 'No se pudo crear la meta de ahorro.' })
     }
@@ -100,6 +100,7 @@ export default function AhorrosPage() {
     }
 
     try {
+      setModalMode(null)
       await agregarAporte({
         meta_id: metaActual.id,
         cuenta_id: aporteData.esFuenteExterna ? null : cuenta!.id,
@@ -107,7 +108,6 @@ export default function AhorrosPage() {
         moneda_cuenta: aporteData.esFuenteExterna ? metaActual.moneda : cuenta!.moneda,
         fecha: new Date()
       })
-      setModalMode(null)
     } catch (err) {
       toastError({ title: 'Error al registrar aporte', message: err instanceof Error ? err.message : 'No se pudo registrar el aporte.' })
     }
@@ -150,6 +150,7 @@ export default function AhorrosPage() {
     }
 
     try {
+      setModalMode(null)
       await retirarAhorro({
         meta_id: metaActual.id,
         cuenta_id: cuenta.id,
@@ -158,7 +159,6 @@ export default function AhorrosPage() {
         fecha: new Date(),
         descripcion: retiroData.descripcion.trim() || undefined
       })
-      setModalMode(null)
     } catch (err) {
       toastError({ title: 'Error al retirar', message: err instanceof Error ? err.message : 'No se pudo registrar el retiro.' })
     }
@@ -215,7 +215,6 @@ export default function AhorrosPage() {
               >
                 <button
                   onClick={() => handleDelete(meta.id)}
-                  disabled={isDeleting}
                   className="absolute top-4 right-4 p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all z-10"
                   title="Eliminar meta"
                 >
@@ -360,7 +359,7 @@ export default function AhorrosPage() {
                   accent="emerald"
                 />
               </div>
-              <button type="submit" disabled={isCreating} className="w-full bg-primary-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-primary-700 transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Crear Meta'}</button>
+              <button type="submit" className="w-full bg-primary-600 text-white font-medium py-2.5 rounded-lg hover:bg-primary-700 transition-colors">Crear Meta</button>
             </form>
           </div>
         </div>
@@ -428,7 +427,7 @@ export default function AhorrosPage() {
                 </p>
               )}
               
-              <button type="submit" disabled={isAdding} className="w-full bg-primary-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-primary-700 transition-colors">{isAdding ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Registrar Aporte'}</button>
+              <button type="submit" className="w-full bg-primary-600 text-white font-medium py-2.5 rounded-lg hover:bg-primary-700 transition-colors">Registrar Aporte</button>
             </form>
           </div>
         </div>
@@ -507,10 +506,9 @@ export default function AhorrosPage() {
               
               <button 
                 type="submit" 
-                disabled={isRetirando} 
-                className="w-full bg-orange-600 text-white font-medium py-2.5 rounded-lg flex justify-center hover:bg-orange-700 transition-colors"
+                className="w-full bg-orange-600 text-white font-medium py-2.5 rounded-lg hover:bg-orange-700 transition-colors"
               >
-                {isRetirando ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Confirmar Retiro'}
+                Confirmar Retiro
               </button>
             </form>
           </div>

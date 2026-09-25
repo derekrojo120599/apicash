@@ -13,9 +13,9 @@ export default function DeudasPage() {
   const { data: deudas, isLoading } = useDeudas()
   const { data: cuentas } = useCuentas()
   
-  const { mutateAsync: crearDeuda, isPending: isCreating } = useCrearDeuda()
-  const { mutateAsync: registrarPago, isPending: isPaying } = useRegistrarPagoDeuda()
-  const { mutateAsync: eliminarDeuda, isPending: isDeleting } = useEliminarDeuda()
+  const { mutateAsync: crearDeuda } = useCrearDeuda()
+  const { mutateAsync: registrarPago } = useRegistrarPagoDeuda()
+  const { mutateAsync: eliminarDeuda } = useEliminarDeuda()
 
   const { error: toastError } = useToast()
 
@@ -47,6 +47,7 @@ export default function DeudasPage() {
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setModalMode(null)
     try {
       await crearDeuda({
         nombre: formData.nombre,
@@ -54,7 +55,6 @@ export default function DeudasPage() {
         moneda: formData.moneda,
         fecha_limite: formData.fecha_limite || null
       })
-      setModalMode(null)
     } catch {
       toastError({ title: 'Error al registrar', message: 'No se pudo registrar la deuda.' })
     }
@@ -67,6 +67,7 @@ export default function DeudasPage() {
     if (!cuenta) return
 
     try {
+      setModalMode(null)
       await registrarPago({
         deuda_id: deudaActual.id,
         cuenta_id: cuenta.id,
@@ -74,7 +75,6 @@ export default function DeudasPage() {
         moneda_cuenta: cuenta.moneda,
         fecha: new Date()
       })
-      setModalMode(null)
     } catch (err) {
       toastError({ title: 'Error al registrar pago', message: err instanceof Error ? err.message : 'No se pudo registrar el pago.' })
     }
@@ -130,7 +130,6 @@ export default function DeudasPage() {
               >
                 <button
                   onClick={() => handleDelete(deuda.id)}
-                  disabled={isDeleting}
                   className="absolute top-4 right-4 p-2 text-slate-300 dark:text-slate-600 hover:text-red-600 dark:hover:text-red-400 transition-all z-10"
                   title="Eliminar deuda"
                 >
@@ -238,7 +237,7 @@ export default function DeudasPage() {
                   accent="orange"
                 />
               </div>
-              <button type="submit" disabled={isCreating} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 rounded-lg flex justify-center transition-colors">{isCreating ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Guardar Deuda'}</button>
+              <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 rounded-lg transition-colors">Guardar Deuda</button>
             </form>
           </div>
         </div>
@@ -281,7 +280,7 @@ export default function DeudasPage() {
               <p className="text-xs text-slate-500 dark:text-slate-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-100 dark:border-orange-900/50 transition-colors">
                 Se creará una transacción de tipo <strong className="dark:text-slate-300">gasto</strong> en la cuenta seleccionada, categorizada como &quot;Deuda&quot;, y se restará del saldo pendiente.
               </p>
-              <button type="submit" disabled={isPaying} className="w-full bg-orange-600 hover:bg-orange-700 transition-colors text-white font-medium py-2.5 rounded-lg flex justify-center">{isPaying ? <Loader2 className="w-5 h-5 animate-spin"/> : 'Confirmar Pago'}</button>
+              <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 transition-colors text-white font-medium py-2.5 rounded-lg">Confirmar Pago</button>
             </form>
           </div>
         </div>
