@@ -1,5 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
+import type { Cuenta } from './useCuentas'
+import type { Transaccion } from './useTransacciones'
 
 export interface BalanceNeto {
   usd_fijo: number
@@ -12,6 +14,7 @@ export interface BalanceNeto {
 
 export function useBalanceNeto() {
   const supabase = createClient()
+  const queryClient = useQueryClient()
 
   return useQuery({
     queryKey: ['balanceNeto'],
@@ -24,8 +27,6 @@ export function useBalanceNeto() {
         
       if (error) throw error
       
-      // La función RPC retorna un array (por el RETURNS TABLE), tomamos el primer elemento
-      // Manejando el caso de null que puede devolver Supabase si no hay datos
       const result = (data as any[])?.[0]
       return {
         usd_fijo: Number(result?.usd_fijo || 0),
@@ -36,11 +37,47 @@ export function useBalanceNeto() {
         tasa_fecha: result?.tasa_fecha || new Date().toISOString()
       } as BalanceNeto
     },
+    // Mientras el refetch de fondo ocurre, derivar una estimación parcial desde
+    // el cache de cuentas (ya optimista) para evitar mostrar datos obsoletos
+    placeholderData: () => {
+      const cuentas = queryClient.getQueryData<Cuenta[]>(['cuentas'])
+      if (!cuentas?.length) return undefined
+
+      const usd_fijo = cuentas
+        .filter(c => c.moneda === 'USD' && c.activa)
+        .reduce((acc, c) => acc + Number(c.saldo_cache), 0)
+
+      const ves_total = cuentas
+        .filter(c => c.moneda === 'VES' && c.activa)
+        .reduce((acc, c) => acc + Number(c.saldo_cache), 0)
+
+      // Sin tasa actualizada no podemos derivar ves_en_usd exacto,
+      // usamos el último valor conocido de balanceNeto si existe
+      const prev = queryClient.getQueryData<BalanceNeto>(['balanceNeto'])
+      const tasa_usada = prev?.tasa_usada || 0
+      const ves_en_usd = tasa_usada > 0 ? ves_total / tasa_usada : 0
+
+      return {
+        usd_fijo,
+        ves_total,
+        ves_en_usd,
+        balance_neto: usd_fijo + ves_en_usd,
+        tasa_usada,
+        tasa_fecha: prev?.tasa_fecha || new Date().toISOString()
+      } satisfies BalanceNeto
+    }
   })
 }
 
 export function useResumenMes() {
   const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  // Inicio del mes actual para filtrar
+  const inicioMes = new Date()
+  inicioMes.setDate(1)
+  inicioMes.setHours(0, 0, 0, 0)
+  const inicioMesISO = inicioMes.toISOString()
 
   return useQuery({
     queryKey: ['resumenMes'],
@@ -48,50 +85,69 @@ export function useResumenMes() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No user found')
 
-      const inicioMes = new Date()
-      inicioMes.setDate(1)
-      inicioMes.setHours(0, 0, 0, 0)
-
-      // Gastos del mes
-      const { data: gastos } = await supabase
-        .from('transacciones')
-        .select('monto_usd_calculado')
-        .eq('user_id', userData.user.id)
-        .eq('tipo', 'gasto')
-        .eq('anulada', false)
-        .gte('fecha', inicioMes.toISOString())
-
-      // Ingresos del mes
-      const { data: ingresos } = await supabase
-        .from('transacciones')
-        .select('monto_usd_calculado')
-        .eq('user_id', userData.user.id)
-        .eq('tipo', 'ingreso')
-        .eq('anulada', false)
-        .gte('fecha', inicioMes.toISOString())
-
-      // Ahorros (metas)
-      const { data: ahorros } = await supabase
-        .from('metas')
-        .select('monto_actual')
-        .eq('user_id', userData.user.id)
-
-      // Deudas
-      const { data: deudas } = await supabase
-        .from('deudas')
-        .select('saldo_pendiente')
-        .eq('user_id', userData.user.id)
-
-      const totalGastos = gastos?.reduce((acc, curr) => acc + Number(curr.monto_usd_calculado), 0) || 0
-      const totalIngresos = ingresos?.reduce((acc, curr) => acc + Number(curr.monto_usd_calculado), 0) || 0
-      const totalAhorros = ahorros?.reduce((acc, curr) => acc + Number(curr.monto_actual), 0) || 0
-      const totalDeuda = deudas?.reduce((acc, curr) => acc + Number(curr.saldo_pendiente), 0) || 0
+      // Ejecutar las 4 queries en paralelo en lugar de secuencial
+      const [
+        { data: gastos },
+        { data: ingresos },
+        { data: ahorros },
+        { data: deudas }
+      ] = await Promise.all([
+        supabase
+          .from('transacciones')
+          .select('monto_usd_calculado')
+          .eq('user_id', userData.user.id)
+          .eq('tipo', 'gasto')
+          .eq('anulada', false)
+          .gte('fecha', inicioMesISO),
+        supabase
+          .from('transacciones')
+          .select('monto_usd_calculado')
+          .eq('user_id', userData.user.id)
+          .eq('tipo', 'ingreso')
+          .eq('anulada', false)
+          .gte('fecha', inicioMesISO),
+        supabase
+          .from('metas')
+          .select('monto_actual')
+          .eq('user_id', userData.user.id),
+        supabase
+          .from('deudas')
+          .select('saldo_pendiente')
+          .eq('user_id', userData.user.id)
+      ])
 
       return {
-        ingresos: totalIngresos,
-        gastos: totalGastos,
-        ahorros: totalAhorros,
-        deuda: totalDeuda
+        ingresos: ingresos?.reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0) || 0,
+        gastos: gastos?.reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0) || 0,
+        ahorros: ahorros?.reduce((acc, m) => acc + Number(m.monto_actual), 0) || 0,
+        deuda: deudas?.reduce((acc, d) => acc + Number(d.saldo_pendiente), 0) || 0
+      }
+    },
+    // Derivar optimistamente desde el caché de transacciones del mes actual
+    placeholderData: () => {
+      const prev = queryClient.getQueryData<ReturnType<typeof useResumenMes>['data']>(['resumenMes'])
+      
+      // Buscar transacciones cacheadas del mes actual para aproximar gastos/ingresos
+      const todasTxs = queryClient.getQueriesData<Transaccion[]>({ queryKey: ['transacciones'] })
+      let txsDelMes: Transaccion[] = []
+      for (const [, data] of todasTxs) {
+        if (Array.isArray(data)) {
+          txsDelMes = data.filter(t => !t.anulada && new Date(t.fecha) >= inicioMes)
+          if (txsDelMes.length > 0) break
+        }
+      }
+
+      if (!txsDelMes.length) return prev
+
+      return {
+        ingresos: txsDelMes
+          .filter(t => t.tipo === 'ingreso')
+          .reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0),
+        gastos: txsDelMes
+          .filter(t => t.tipo === 'gasto')
+          .reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0),
+        ahorros: prev?.ahorros || 0,
+        deuda: prev?.deuda || 0
       }
     }
   })
