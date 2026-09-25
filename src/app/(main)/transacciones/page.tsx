@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
@@ -68,6 +68,13 @@ export default function TransaccionesPage() {
   const selectedAccount = useMemo(() => {
     return accounts?.find(c => c.id === formData.cuenta_id)
   }, [formData.cuenta_id, accounts])
+
+  useEffect(() => {
+    // Al cambiar de cuenta, limpiamos el método de pago seleccionado
+    // Si la cuenta no es un banco, el backend asume 'null' (sin comisión)
+    setSubtipoOperacion(null)
+    setEsFallida(false)
+  }, [formData.cuenta_id])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -498,30 +505,32 @@ export default function TransaccionesPage() {
                 />
               </div>
 
-              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.moneda === 'VES' && (
+              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.tipo === 'banco' && (
                 <div className="space-y-4">
                   <div className="space-y-1 animate-in fade-in zoom-in-95 duration-200">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">MǸtodo de pago / Tipo de operacin</label>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
                     <AnimatedSelect
                       value={subtipoOperacion || ''}
                       onChange={(v) => setSubtipoOperacion(v === '' ? null : v)}
-                      options={[
-                        { value: '', label: 'Otro / Sin comisin bancaria (Ej: Tarjeta)' },
-                        { value: 'pm_p2p', label: 'Pago Mvil (P2P)' },
-                        { value: 'pm_p2c', label: 'Pago Mvil a Comercio (P2C)' },
-                        { value: 'pm_c2p_interbancario', label: 'Cobro C2P (Interbancario)' },
-                        { value: 'pm_c2p_mismo_banco', label: 'Cobro C2P (Mismo banco)' },
-                        { value: 'transferencia_interbancaria', label: 'Transferencia Interbancaria' },
-                        { value: 'transferencia_mismo_banco', label: 'Transferencia Mismo Banco' },
-                        { value: 'cajero', label: 'Retiro en Cajero Automǭtico' },
-                        { value: 'biopago', label: 'Biopago' }
-                      ]}
-                      placeholder="Seleccione el mǸtodo"
+                      options={
+                        selectedAccount.moneda === 'VES' ? [
+                          { value: '', label: 'Seleccione un método', disabled: true },
+                          { value: 'pm_p2p', label: '📱 Pago Móvil' },
+                          { value: 'punto_venta', label: '💳 Punto de Venta' },
+                          { value: 'transferencia_mismo_banco', label: '🏦 Transferencia (Mismo Banco)' },
+                          { value: 'transferencia_interbancaria', label: '⏳ Transferencia (Otros Bancos)' }
+                        ] : [
+                          { value: '', label: 'Seleccione un método', disabled: true },
+                          { value: 'tarjeta_usd_nacional', label: '💳 Tarjeta en Dólares (Aplica IGTF)' },
+                          { value: 'transferencia_usd', label: '🏦 Transferencia / Retiro' }
+                        ]
+                      }
+                      placeholder="Seleccione el método"
                       accent="emerald"
                     />
                   </div>
 
-                  {subtipoOperacion && (
+                  {subtipoOperacion && ['pm_p2p', 'transferencia_interbancaria'].includes(subtipoOperacion) && (
                     <label className="flex items-center gap-2 cursor-pointer animate-in fade-in duration-200">
                       <input 
                         type="checkbox" 
@@ -530,24 +539,17 @@ export default function TransaccionesPage() {
                         className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Operacin fallida (solo se cobrarǭ la comisin mnima por intento)
+                        Operación fallida (solo cobra comisión por intento)
                       </span>
                     </label>
                   )}
                 </div>
               )}
 
-              {formData.tipo === 'transferencia' && selectedAccount?.moneda === 'VES' && (
-                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg text-sm text-amber-800 dark:text-amber-300 flex flex-col gap-1 transition-colors">
-                  <span className="font-semibold">Atencin sobre las transferencias:</span>
-                  <span>Si la operacin genera comisin segǧn el mǸtodo seleccionado, el sistema la debitarǭ automǭticamente de la cuenta origen.</span>
-                </div>
-              )}
-
-              {formData.tipo === 'transferencia' && selectedAccount?.moneda === 'VES' && (
+              {formData.tipo === 'transferencia' && selectedAccount?.tipo === 'banco' && selectedAccount?.moneda === 'VES' && (
                 <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg text-sm text-amber-800 dark:text-amber-300 flex flex-col gap-1 transition-colors">
                   <span className="font-semibold">Información de transferencia:</span>
-                  <span>Por tratarse de una cuenta en bolívares (VES), se debitarán automáticamente <strong>+14.00 Bs</strong> adicionales de la cuenta de origen por concepto de comisión bancaria.</span>
+                  <span>Si el método seleccionado genera comisión, el sistema la calculará y la debitará automáticamente de tu cuenta origen.</span>
                 </div>
               )}
 
