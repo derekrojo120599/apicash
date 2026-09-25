@@ -5,7 +5,7 @@ import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaur
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
-import { Plus, X, Loader2, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw } from 'lucide-react'
+import { Plus, X, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 import { CreatableCategorySelect } from '@/components/CreatableCategorySelect'
 
@@ -25,9 +25,9 @@ export default function TransaccionesPage() {
   const { data: currentRate } = useTasaActual()
   
   // Mutations
-  const { mutateAsync: createTransaction, isPending: isCreating } = useCrearTransaccion()
-  const { mutateAsync: voidTransaction, isPending: isVoiding } = useAnularTransaccion()
-  const { mutateAsync: restoreTransaction, isPending: isRestoring } = useRestaurarTransaccion()
+  const { mutateAsync: createTransaction } = useCrearTransaccion()
+  const { mutateAsync: voidTransaction } = useAnularTransaccion()
+  const { mutateAsync: restoreTransaction } = useRestaurarTransaccion()
 
   // Form State
   const [formData, setFormData] = useState({
@@ -347,7 +347,6 @@ export default function TransaccionesPage() {
                   {!tx.anulada && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleVoidTransaction(tx.id); }}
-                      disabled={isVoiding || isRestoring}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
                       title="Anular transacción"
                     >
@@ -359,7 +358,6 @@ export default function TransaccionesPage() {
                       <span className="text-xs font-bold text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded">ANULADA</span>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRestoreTransaction(tx.id); }}
-                        disabled={isVoiding || isRestoring}
                         className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 rounded-lg transition-colors"
                         title="Restaurar transacción"
                       >
@@ -593,10 +591,9 @@ export default function TransaccionesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCreating}
                   className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
                 >
-                  {isCreating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar'}
+                  Guardar
                 </button>
               </div>
             </form>

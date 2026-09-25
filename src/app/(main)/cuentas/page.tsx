@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useCuentas, useCrearCuenta, useActualizarCuenta, Cuenta } from '@/hooks/useCuentas'
-import { WalletCards, Plus, MoreVertical, Building2, Coins, Landmark, Smartphone, Loader2, X } from 'lucide-react'
+import { WalletCards, Plus, MoreVertical, Building2, Coins, Landmark, Smartphone, X } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
@@ -11,8 +11,8 @@ type ModalMode = 'create' | 'edit' | null
 
 export default function CuentasPage() {
   const { data: cuentas, isLoading } = useCuentas()
-  const { mutateAsync: crearCuenta, isPending: isCreating } = useCrearCuenta()
-  const { mutateAsync: actualizarCuenta, isPending: isUpdating } = useActualizarCuenta()
+  const { mutateAsync: crearCuenta } = useCrearCuenta()
+  const { mutateAsync: actualizarCuenta } = useActualizarCuenta()
 
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   const [cuentaActual, setCuentaActual] = useState<Partial<Cuenta> | null>(null)
@@ -242,10 +242,9 @@ export default function CuentasPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isCreating || isUpdating}
                   className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
                 >
-                  {isCreating || isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar'}
+                  Guardar
                 </button>
               </div>
             </form>
