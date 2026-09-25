@@ -44,7 +44,28 @@ export function useCreateCategory() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (newCategory) => {
+      await queryClient.cancelQueries({ queryKey: ['categorias'] })
+      const previousCategories = queryClient.getQueryData<Category[]>(['categorias'])
+
+      const optimistic: Category = {
+        id: `temp-${Date.now()}`,
+        user_id: 'optimistic',
+        ...newCategory
+      }
+
+      queryClient.setQueryData<Category[]>(['categorias'], old =>
+        old ? [...old, optimistic].sort((a, b) => a.nombre.localeCompare(b.nombre)) : [optimistic]
+      )
+
+      return { previousCategories }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCategories) {
+        queryClient.setQueryData(['categorias'], context.previousCategories)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
     }
   })
@@ -66,7 +87,23 @@ export function useUpdateCategory() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async ({ id, updates }) => {
+      await queryClient.cancelQueries({ queryKey: ['categorias'] })
+      const previousCategories = queryClient.getQueryData<Category[]>(['categorias'])
+
+      queryClient.setQueryData<Category[]>(['categorias'], old =>
+        old?.map(c => c.id === id ? { ...c, ...updates } : c)
+          .sort((a, b) => a.nombre.localeCompare(b.nombre))
+      )
+
+      return { previousCategories }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCategories) {
+        queryClient.setQueryData(['categorias'], context.previousCategories)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
     }
   })
@@ -111,7 +148,7 @@ export function useDeleteCategory() {
       }
       return true
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
     }

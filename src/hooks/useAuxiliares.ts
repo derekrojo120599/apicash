@@ -45,7 +45,28 @@ export function useCrearCategoria() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (nuevaCategoria) => {
+      await queryClient.cancelQueries({ queryKey: ['categorias'] })
+      const previousCategorias = queryClient.getQueryData<Categoria[]>(['categorias'])
+
+      const optimistic: Categoria = {
+        id: `temp-${Date.now()}`,
+        user_id: 'optimistic',
+        ...nuevaCategoria
+      }
+
+      queryClient.setQueryData<Categoria[]>(['categorias'], old =>
+        old ? [...old, optimistic].sort((a, b) => a.nombre.localeCompare(b.nombre)) : [optimistic]
+      )
+
+      return { previousCategorias }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCategorias) {
+        queryClient.setQueryData(['categorias'], context.previousCategorias)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
     }
   })
@@ -67,7 +88,23 @@ export function useEditarCategoria() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async ({ id, updates }) => {
+      await queryClient.cancelQueries({ queryKey: ['categorias'] })
+      const previousCategorias = queryClient.getQueryData<Categoria[]>(['categorias'])
+
+      queryClient.setQueryData<Categoria[]>(['categorias'], old =>
+        old?.map(c => c.id === id ? { ...c, ...updates } : c)
+          .sort((a, b) => a.nombre.localeCompare(b.nombre))
+      )
+
+      return { previousCategorias }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCategorias) {
+        queryClient.setQueryData(['categorias'], context.previousCategorias)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
     }
   })
@@ -89,12 +126,10 @@ export function useEliminarCategoria() {
 
       const txActivas = transacciones?.filter(tx => !tx.anulada) || []
 
-      // Si hay transacciones activas, no se puede eliminar
       if (txActivas.length > 0) {
         throw new Error('No se puede eliminar: esta categoría tiene movimientos activos asociados.')
       }
 
-      // Si solo hay transacciones anuladas, desvincularlas para poder borrar la categoría
       const { error: updateError } = await supabase
         .from('transacciones')
         .update({ categoria_id: null })
@@ -102,7 +137,6 @@ export function useEliminarCategoria() {
       
       if (updateError) throw updateError
 
-      // Eliminar la categoría
       const { error } = await supabase
         .from('categorias')
         .delete()
@@ -116,7 +150,21 @@ export function useEliminarCategoria() {
       }
       return true
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['categorias'] })
+      const previousCategorias = queryClient.getQueryData<Categoria[]>(['categorias'])
+
+      // Nota: no eliminamos optimistamente porque la mutationFn hace validaciones
+      // previas (transacciones activas) que pueden fallar. El rollback sería confuso.
+      // Solo invalidamos en onSettled para mantener consistencia.
+      return { previousCategorias }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCategorias) {
+        queryClient.setQueryData(['categorias'], context.previousCategorias)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
     }
@@ -142,7 +190,6 @@ export function useTasaActual() {
 
       const { data, error } = await query.single()
       
-      // Si hay un error PGRST116 (No rows found) y teniamos un filtro por fuente, intentamos sin el filtro (fallback)
       if (error && error.code === 'PGRST116' && perfil?.fuente_tasa_preferida) {
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('tasas_cambio')
@@ -159,9 +206,8 @@ export function useTasaActual() {
         throw error
       }
       
-      // PGRST116 = No rows found
       return data?.tasa || null
     },
-    enabled: perfil !== undefined // Esperar a que perfil resuelva (puede ser null pero undefined es que esta cargando)
+    enabled: perfil !== undefined
   })
 }
