@@ -46,7 +46,29 @@ export function useCrearMeta() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (nuevaMeta) => {
+      await queryClient.cancelQueries({ queryKey: ['metas'] })
+      const previousMetas = queryClient.getQueryData<Meta[]>(['metas'])
+
+      const optimisticMeta: Meta = {
+        id: `temp-${Date.now()}`,
+        user_id: 'optimistic',
+        monto_actual: 0,
+        ...nuevaMeta
+      }
+
+      queryClient.setQueryData<Meta[]>(['metas'], old =>
+        old ? [optimisticMeta, ...old] : [optimisticMeta]
+      )
+
+      return { previousMetas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousMetas) {
+        queryClient.setQueryData(['metas'], context.previousMetas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] })
     }
   })
@@ -61,9 +83,7 @@ export function useAgregarAporte() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No auth user')
 
-      // Si no hay cuenta, asumimos que es una fuente externa y simplemente sumamos a la meta
       if (!cuenta_id) {
-        // Primero obtenemos el estado actual de la meta para saber cuánto sumarle
         const { data: metaActual, error: fetchError } = await supabase
           .from('metas')
           .select('monto_actual, moneda')
@@ -72,8 +92,6 @@ export function useAgregarAporte() {
         
         if (fetchError) throw fetchError
 
-        // Hacemos el update sumando el nuevo monto
-        // Nota: en este escenario, asumimos que el usuario introduce el monto en la moneda de la meta
         const nuevoMonto = metaActual.monto_actual + monto
 
         const { error: updateError } = await supabase
@@ -85,8 +103,6 @@ export function useAgregarAporte() {
         return true
       }
 
-      // LÓGICA ORIGINAL SI HAY CUENTA SELECCIONADA
-      // Buscamos la categoria de tipo 'ahorro'
       const { data: cat } = await supabase
         .from('categorias')
         .select('id')
@@ -97,12 +113,11 @@ export function useAgregarAporte() {
       
       const categoria_id = cat?.id
 
-      // Usamos el RPC que maneja la transacción atómica
       const { error } = await supabase
         .rpc('registrar_aporte_meta', {
           p_meta_id: meta_id,
           p_cuenta_id: cuenta_id,
-          p_categoria_id: categoria_id || null, // Permitimos null si no existe la categoría, aunque la DB prefiere tenerla
+          p_categoria_id: categoria_id || null,
           p_monto: monto,
           p_moneda_original: moneda_cuenta,
           p_fecha: fecha.toISOString()
@@ -111,7 +126,26 @@ export function useAgregarAporte() {
       if (error) throw error
       return true
     },
-    onSuccess: () => {
+    onMutate: async ({ meta_id, monto }) => {
+      await queryClient.cancelQueries({ queryKey: ['metas'] })
+      const previousMetas = queryClient.getQueryData<Meta[]>(['metas'])
+
+      // Actualizar monto_actual optimistamente (sin conversión de moneda — el server la hace exacta)
+      queryClient.setQueryData<Meta[]>(['metas'], old =>
+        old?.map(m => m.id === meta_id
+          ? { ...m, monto_actual: m.monto_actual + monto }
+          : m
+        )
+      )
+
+      return { previousMetas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousMetas) {
+        queryClient.setQueryData(['metas'], context.previousMetas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
@@ -137,7 +171,6 @@ export function useRetirarAhorro() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No auth user')
 
-      // Buscamos la categoria de tipo 'ahorro'
       const { data: cat } = await supabase
         .from('categorias')
         .select('id')
@@ -167,7 +200,25 @@ export function useRetirarAhorro() {
       }
       return true
     },
-    onSuccess: () => {
+    onMutate: async ({ meta_id, monto }) => {
+      await queryClient.cancelQueries({ queryKey: ['metas'] })
+      const previousMetas = queryClient.getQueryData<Meta[]>(['metas'])
+
+      queryClient.setQueryData<Meta[]>(['metas'], old =>
+        old?.map(m => m.id === meta_id
+          ? { ...m, monto_actual: Math.max(0, m.monto_actual - monto) }
+          : m
+        )
+      )
+
+      return { previousMetas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousMetas) {
+        queryClient.setQueryData(['metas'], context.previousMetas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
@@ -191,7 +242,22 @@ export function useEliminarMeta() {
       if (error) throw error
       return true
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['metas'] })
+      const previousMetas = queryClient.getQueryData<Meta[]>(['metas'])
+
+      queryClient.setQueryData<Meta[]>(['metas'], old =>
+        old?.filter(m => m.id !== id)
+      )
+
+      return { previousMetas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousMetas) {
+        queryClient.setQueryData(['metas'], context.previousMetas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] })
     }
   })

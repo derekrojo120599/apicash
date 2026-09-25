@@ -47,7 +47,31 @@ export function useCrearCuenta() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (nuevaCuenta) => {
+      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      const previousCuentas = queryClient.getQueryData<Cuenta[]>(['cuentas'])
+
+      const optimisticCuenta: Cuenta = {
+        id: `temp-${Date.now()}`,
+        user_id: 'optimistic',
+        saldo_cache: 0,
+        activa: true,
+        created_at: new Date().toISOString(),
+        ...nuevaCuenta
+      }
+
+      queryClient.setQueryData<Cuenta[]>(['cuentas'], old =>
+        old ? [optimisticCuenta, ...old] : [optimisticCuenta]
+      )
+
+      return { previousCuentas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousCuentas) {
+        queryClient.setQueryData(['cuentas'], context.previousCuentas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
     }
   })

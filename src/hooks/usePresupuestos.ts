@@ -60,39 +60,57 @@ export function useGuardarPresupuesto() {
 
       const mesFormat = `${mes.getFullYear()}-${String(mes.getMonth() + 1).padStart(2, '0')}-01`
 
-      // Try to find if it exists
-      const { data: existing } = await supabase
+      // Upsert directo — elimina el SELECT previo de "check if exists"
+      const { data, error } = await supabase
         .from('presupuestos')
-        .select('id')
-        .eq('user_id', userData.user.id)
-        .eq('categoria_id', categoria_id)
-        .eq('mes', mesFormat)
-        .single()
-
-      if (existing) {
-        // Update
-        const { data, error } = await supabase
-          .from('presupuestos')
-          .update({ monto_planeado })
-          .eq('id', existing.id)
-        if (error) throw error
-        return data
-      } else {
-        // Insert
-        const { data, error } = await supabase
-          .from('presupuestos')
-          .insert([{
+        .upsert(
+          [{
             user_id: userData.user.id,
             categoria_id,
             monto_planeado,
             mes: mesFormat,
             moneda: 'USD'
-          }])
-        if (error) throw error
-        return data
+          }],
+          { onConflict: 'user_id,categoria_id,mes' }
+        )
+
+      if (error) throw error
+      return data
+    },
+    onMutate: async ({ categoria_id, monto_planeado, mes }) => {
+      const mesFormat = `${mes.getFullYear()}-${String(mes.getMonth() + 1).padStart(2, '0')}-01`
+      const queryKey = ['progresoPresupuesto', mesFormat]
+
+      await queryClient.cancelQueries({ queryKey })
+      const previousProgreso = queryClient.getQueryData<ProgresoPresupuesto[]>(queryKey)
+
+      // Actualizar monto_planeado en la entrada existente, o dejar como está si no existe
+      // (el refetch de onSettled la va a agregar correctamente)
+      queryClient.setQueryData<ProgresoPresupuesto[]>(queryKey, old =>
+        old?.map(p => p.categoria_id === categoria_id
+          ? {
+              ...p,
+              monto_planeado,
+              restante: monto_planeado - p.monto_gastado,
+              porcentaje_usado: monto_planeado > 0
+                ? Math.round((p.monto_gastado / monto_planeado) * 1000) / 10
+                : 0
+            }
+          : p
+        )
+      )
+
+      return { previousProgreso, mesFormat }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousProgreso) {
+        queryClient.setQueryData(
+          ['progresoPresupuesto', context.mesFormat],
+          context.previousProgreso
+        )
       }
     },
-    onSuccess: (_, variables) => {
+    onSettled: (_data, _err, variables) => {
       const mesFormat = `${variables.mes.getFullYear()}-${String(variables.mes.getMonth() + 1).padStart(2, '0')}-01`
       queryClient.invalidateQueries({ queryKey: ['progresoPresupuesto', mesFormat] })
     }

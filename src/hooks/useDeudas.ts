@@ -46,7 +46,29 @@ export function useCrearDeuda() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (nuevaDeuda) => {
+      await queryClient.cancelQueries({ queryKey: ['deudas'] })
+      const previousDeudas = queryClient.getQueryData<Deuda[]>(['deudas'])
+
+      const optimisticDeuda: Deuda = {
+        id: `temp-${Date.now()}`,
+        user_id: 'optimistic',
+        saldo_pendiente: nuevaDeuda.monto_total,
+        ...nuevaDeuda
+      }
+
+      queryClient.setQueryData<Deuda[]>(['deudas'], old =>
+        old ? [optimisticDeuda, ...old] : [optimisticDeuda]
+      )
+
+      return { previousDeudas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousDeudas) {
+        queryClient.setQueryData(['deudas'], context.previousDeudas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['deudas'] })
     }
   })
@@ -61,7 +83,6 @@ export function useRegistrarPagoDeuda() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No auth user')
 
-      // Buscamos la categoria de tipo 'deuda'
       const { data: cat } = await supabase
         .from('categorias')
         .select('id')
@@ -72,7 +93,6 @@ export function useRegistrarPagoDeuda() {
       
       const categoria_id = cat?.id
 
-      // Usamos el RPC que maneja la transacción atómica
       const { error } = await supabase
         .rpc('registrar_pago_deuda', {
           p_deuda_id: deuda_id,
@@ -86,7 +106,26 @@ export function useRegistrarPagoDeuda() {
       if (error) throw error
       return true
     },
-    onSuccess: () => {
+    onMutate: async ({ deuda_id, monto }) => {
+      await queryClient.cancelQueries({ queryKey: ['deudas'] })
+      const previousDeudas = queryClient.getQueryData<Deuda[]>(['deudas'])
+
+      // Reducir saldo_pendiente optimistamente
+      queryClient.setQueryData<Deuda[]>(['deudas'], old =>
+        old?.map(d => d.id === deuda_id
+          ? { ...d, saldo_pendiente: Math.max(0, d.saldo_pendiente - monto) }
+          : d
+        )
+      )
+
+      return { previousDeudas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousDeudas) {
+        queryClient.setQueryData(['deudas'], context.previousDeudas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['deudas'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
@@ -110,7 +149,22 @@ export function useEliminarDeuda() {
       if (error) throw error
       return true
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['deudas'] })
+      const previousDeudas = queryClient.getQueryData<Deuda[]>(['deudas'])
+
+      queryClient.setQueryData<Deuda[]>(['deudas'], old =>
+        old?.filter(d => d.id !== id)
+      )
+
+      return { previousDeudas }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousDeudas) {
+        queryClient.setQueryData(['deudas'], context.previousDeudas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['deudas'] })
     }
   })
