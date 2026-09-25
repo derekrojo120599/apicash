@@ -108,11 +108,82 @@ export function useCrearTransaccion() {
       }
       return data
     },
-    onSuccess: () => {
+    onMutate: async (nuevaTx) => {
+      // 1. Cancelar refetches en vuelo para evitar condiciones de carrera
+      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
+      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+
+      // 2. Snapshot del estado previo (por si hay rollback)
+      const previousCuentas = queryClient.getQueryData(['cuentas']) as any[]
+
+      // Obtener info de la cuenta para la UI
+      const cuentaCache = previousCuentas?.find(c => c.id === nuevaTx.cuenta_id)
+      
+      // 3. Crear transacción "fake" optimista
+      const optimisticTx = {
+        id: `temp-${Date.now()}`,
+        user_id: 'optimistic',
+        cuenta_id: nuevaTx.cuenta_id,
+        categoria_id: nuevaTx.categoria_id || null,
+        tipo: nuevaTx.tipo,
+        monto_original: nuevaTx.monto_original,
+        moneda_original: nuevaTx.moneda_original,
+        tasa_al_momento: nuevaTx.tasa_cambio || null,
+        monto_usd_calculado: nuevaTx.moneda_original === 'USD' ? nuevaTx.monto_original : 0, // Server computa exacto luego
+        descripcion: nuevaTx.descripcion || 'Guardando...',
+        fecha: nuevaTx.fecha || new Date().toISOString(),
+        anulada: false,
+        cuentas: { 
+          nombre: cuentaCache?.nombre || 'Cuenta', 
+          moneda: cuentaCache?.moneda || nuevaTx.moneda_original 
+        },
+        categorias: { nombre: '...', icono: 'clock', tipo: nuevaTx.tipo }
+      }
+
+      // 4. Inyectar en la lista principal de transacciones (setQueriesData atrapa todas las fechas cacheadas)
+      queryClient.setQueriesData({ queryKey: ['transacciones'] }, (old: any) => {
+        if (!Array.isArray(old)) return old
+        return [optimisticTx, ...old].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+      })
+
+      // 5. Inyectar en el widget de últimas transacciones
+      queryClient.setQueriesData({ queryKey: ['ultimasTransacciones'] }, (old: any) => {
+        if (!Array.isArray(old)) return old
+        return [optimisticTx, ...old].slice(0, 5) // Mantiene maximo 5
+      })
+
+      // 6. Actualizar saldo cuenta optimista (solo si coinciden las monedas para no romper la matemática visual)
+      if (cuentaCache && cuentaCache.moneda === nuevaTx.moneda_original && !nuevaTx.es_fallida) {
+         queryClient.setQueriesData({ queryKey: ['cuentas'] }, (old: any) => {
+            if (!Array.isArray(old)) return old
+            return old.map((c: any) => {
+               if (c.id === nuevaTx.cuenta_id) {
+                  const factor = nuevaTx.tipo === 'gasto' ? -1 : (nuevaTx.tipo === 'ingreso' ? 1 : 0)
+                  return { ...c, saldo_cache: c.saldo_cache + (nuevaTx.monto_original * factor) }
+               }
+               return c
+            })
+         })
+      }
+
+      return { previousCuentas }
+    },
+    onError: (err, nuevaTx, context) => {
+      // Rollback en caso de que el backend rechace (ej: sin fondos, error de red)
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
+      if (context?.previousCuentas) {
+        queryClient.setQueryData(['cuentas'], context.previousCuentas)
+      }
+    },
+    onSettled: () => {
+      // Re-sincronizar con la DB al terminar para tener el cálculo EXACTO (conversiones, comisiones, etc)
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
       queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
     }
   })
 }
