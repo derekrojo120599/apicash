@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useProgresoPresupuesto, useGuardarPresupuesto, useCopiarPresupuestosAnterior, ProgresoPresupuesto } from '@/hooks/usePresupuestos'
 import { useCategorias } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
-import { Target, Calendar as CalendarIcon, Copy, Plus, X, Loader2, AlertCircle } from 'lucide-react'
+import { Target, Calendar as CalendarIcon, Copy, Plus, X, AlertCircle } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect } from '@/components/animations'
 
 export const dynamic = 'force-dynamic';
@@ -17,8 +17,8 @@ export default function PresupuestoPage() {
   const { data: progreso, isLoading: loadingProgreso } = useProgresoPresupuesto(mesActual)
   const { data: categorias } = useCategorias()
   
-  const { mutateAsync: guardarPresupuesto, isPending: isSaving } = useGuardarPresupuesto()
-  const { mutateAsync: copiarAnterior, isPending: isCopying } = useCopiarPresupuestosAnterior()
+  const { mutateAsync: guardarPresupuesto } = useGuardarPresupuesto()
+  const { mutateAsync: copiarAnterior } = useCopiarPresupuestosAnterior()
 
   const { error: toastError } = useToast()
 
@@ -55,12 +55,12 @@ export default function PresupuestoPage() {
     if (!presupuestoEdit?.categoria_id || !presupuestoEdit.monto) return
 
     try {
+      setModalOpen(false)
       await guardarPresupuesto({
         categoria_id: presupuestoEdit.categoria_id,
         monto_planeado: Number(presupuestoEdit.monto),
         mes: mesActual
       })
-      setModalOpen(false)
     } catch {
       toastError({ title: 'Error al guardar', message: 'No se pudo guardar el presupuesto.' })
     }
@@ -151,8 +151,8 @@ export default function PresupuestoPage() {
                   <Plus className="w-5 h-5" />
                   Crear desde cero
                 </AnimatedButton>
-                <AnimatedButton variant="secondary" onClick={handleCopiar} disabled={isCopying}>
-                  {isCopying ? <Loader2 className="w-5 h-5 animate-spin" /> : <Copy className="w-5 h-5" />}
+                <AnimatedButton variant="secondary" onClick={handleCopiar}>
+                  <Copy className="w-5 h-5" />
                   Copiar del mes anterior
                 </AnimatedButton>
               </div>
@@ -280,10 +280,10 @@ export default function PresupuestoPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSaving || !presupuestoEdit?.categoria_id || !presupuestoEdit.monto}
+                  disabled={!presupuestoEdit?.categoria_id || !presupuestoEdit.monto}
                   className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center disabled:opacity-50"
                 >
-                  {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar'}
+                  Guardar
                 </button>
               </div>
             </form>

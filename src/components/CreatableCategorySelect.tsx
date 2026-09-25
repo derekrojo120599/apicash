@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Check, Plus, Loader2, Search } from 'lucide-react';
+import { ChevronDown, Check, Plus, Search } from 'lucide-react';
 import { useCrearCategoria, Categoria } from '@/hooks/useAuxiliares';
 
 interface CreatableCategorySelectProps {
@@ -31,7 +31,7 @@ export function CreatableCategorySelect({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const { mutateAsync: createCategory, isPending: isCreating } = useCrearCategoria();
+  const { mutateAsync: createCategory } = useCrearCategoria();
 
   // Filter categories matching current transaction type (gasto / ingreso)
   const typeCategories = categories.filter((c) => c.tipo === tipo);
@@ -130,7 +130,7 @@ export function CreatableCategorySelect({
   };
 
   const handleCreateNewCategory = async () => {
-    if (!canCreate || isCreating) return;
+    if (!canCreate) return;
 
     try {
       const newCategory = await createCategory({
@@ -212,15 +212,10 @@ export function CreatableCategorySelect({
               <button
                 type="button"
                 onClick={handleCreateNewCategory}
-                disabled={isCreating}
                 className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 font-medium transition-colors text-left"
               >
                 <div className="flex items-center gap-2 truncate">
-                  {isCreating ? (
-                    <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                  ) : (
-                    <Plus className="w-4 h-4 shrink-0" />
-                  )}
+                  <Plus className="w-4 h-4 shrink-0" />
                   <span className="truncate">
                     Crear <strong>&quot;{trimmedSearch}&quot;</strong>
                   </span>
