@@ -45,3 +45,8 @@ test-e2e.mjs
 
 # gentle-ai / opencode local artifacts
 .atl/
+
+# pwa generated files (built by next-pwa on each build)
+/public/sw.js
+/public/workbox-*.js
+/public/swe-worker-*.js
