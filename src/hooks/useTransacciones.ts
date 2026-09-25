@@ -204,8 +204,63 @@ export function useAnularTransaccion() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
+      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+
+      // Snapshot para rollback
+      const previousTransacciones = queryClient.getQueriesData({ queryKey: ['transacciones'] })
+      const previousUltimas = queryClient.getQueriesData({ queryKey: ['ultimasTransacciones'] })
+      const previousCuentas = queryClient.getQueryData(['cuentas']) as any[]
+
+      // Encontrar la transacción en cualquier query cacheada para ajustar el saldo
+      let txAnulada: any = null
+      for (const [, data] of previousTransacciones) {
+        if (Array.isArray(data)) {
+          txAnulada = data.find((t: any) => t.id === id)
+          if (txAnulada) break
+        }
+      }
+
+      // Marcar como anulada en todas las listas cacheadas
+      const patchAnulada = (old: any) => {
+        if (!Array.isArray(old)) return old
+        return old.map((t: any) => t.id === id ? { ...t, anulada: true } : t)
+      }
+      queryClient.setQueriesData({ queryKey: ['transacciones'] }, patchAnulada)
+      queryClient.setQueriesData({ queryKey: ['ultimasTransacciones'] }, patchAnulada)
+
+      // Revertir impacto en saldo si conocemos la transacción y la cuenta
+      if (txAnulada && previousCuentas) {
+        queryClient.setQueryData(['cuentas'], previousCuentas.map((c: any) => {
+          if (c.id !== txAnulada.cuenta_id) return c
+          // Anular = deshacer: si era gasto devolvemos el monto, si era ingreso lo quitamos
+          const factor = txAnulada.tipo === 'gasto' ? 1 : (txAnulada.tipo === 'ingreso' ? -1 : 0)
+          return { ...c, saldo_cache: c.saldo_cache + (txAnulada.monto_original * factor) }
+        }))
+      }
+
+      return { previousTransacciones, previousUltimas, previousCuentas }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousTransacciones) {
+        for (const [queryKey, data] of context.previousTransacciones) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+      if (context?.previousUltimas) {
+        for (const [queryKey, data] of context.previousUltimas) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+      if (context?.previousCuentas) {
+        queryClient.setQueryData(['cuentas'], context.previousCuentas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
       queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
@@ -229,8 +284,60 @@ export function useRestaurarTransaccion() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
+      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+
+      const previousTransacciones = queryClient.getQueriesData({ queryKey: ['transacciones'] })
+      const previousUltimas = queryClient.getQueriesData({ queryKey: ['ultimasTransacciones'] })
+      const previousCuentas = queryClient.getQueryData(['cuentas']) as any[]
+
+      let txRestaurada: any = null
+      for (const [, data] of previousTransacciones) {
+        if (Array.isArray(data)) {
+          txRestaurada = data.find((t: any) => t.id === id)
+          if (txRestaurada) break
+        }
+      }
+
+      // Marcar como activa en todas las listas cacheadas
+      const patchActiva = (old: any) => {
+        if (!Array.isArray(old)) return old
+        return old.map((t: any) => t.id === id ? { ...t, anulada: false } : t)
+      }
+      queryClient.setQueriesData({ queryKey: ['transacciones'] }, patchActiva)
+      queryClient.setQueriesData({ queryKey: ['ultimasTransacciones'] }, patchActiva)
+
+      // Re-aplicar impacto en saldo
+      if (txRestaurada && previousCuentas) {
+        queryClient.setQueryData(['cuentas'], previousCuentas.map((c: any) => {
+          if (c.id !== txRestaurada.cuenta_id) return c
+          const factor = txRestaurada.tipo === 'gasto' ? -1 : (txRestaurada.tipo === 'ingreso' ? 1 : 0)
+          return { ...c, saldo_cache: c.saldo_cache + (txRestaurada.monto_original * factor) }
+        }))
+      }
+
+      return { previousTransacciones, previousUltimas, previousCuentas }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousTransacciones) {
+        for (const [queryKey, data] of context.previousTransacciones) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+      if (context?.previousUltimas) {
+        for (const [queryKey, data] of context.previousUltimas) {
+          queryClient.setQueryData(queryKey, data)
+        }
+      }
+      if (context?.previousCuentas) {
+        queryClient.setQueryData(['cuentas'], context.previousCuentas)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
       queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
