@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
@@ -17,6 +17,11 @@ export default function TransaccionesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   const [selectedTx, setSelectedTx] = useState<Transaccion | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   // Data Fetching
   const { data: transactions, isLoading: loadingTx } = useTransacciones(currentMonth)
@@ -211,7 +216,9 @@ export default function TransaccionesPage() {
           </button>
           <div className="flex items-center gap-2 shrink-0 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center">
             <CalendarIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-            {currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+            {mounted
+              ? currentMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+              : '\u00A0'}
           </div>
           <button 
             className="p-2 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition-colors"
