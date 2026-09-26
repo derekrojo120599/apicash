@@ -4,7 +4,7 @@ import "./globals.css";
 import Providers from "@/components/providers";
 import { PwaUpdater } from "@/components/PwaUpdater";
 import { ToastProvider } from "@/components/ui/ToastProvider";
-import { SplashScreen } from "@/components/SplashScreen";
+import { SplashScreenClient as SplashScreen } from "@/components/SplashScreenClient";
 
 import { createClient } from "@/utils/supabase/server";
 
