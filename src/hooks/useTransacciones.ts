@@ -116,10 +116,10 @@ export function useCrearTransaccion() {
         tipo: nuevaTx.tipo,
         monto_original: nuevaTx.monto_original,
         moneda_original: nuevaTx.moneda_original,
-        tasa_al_momento: nuevaTx.tasa_cambio || null,
+        tasa_al_momento: null,
         monto_usd_calculado: nuevaTx.moneda_original === 'USD' ? nuevaTx.monto_original : 0, // Server computa exacto luego
         descripcion: nuevaTx.descripcion || 'Guardando...',
-        fecha: nuevaTx.fecha || new Date().toISOString(),
+        fecha: new Date().toISOString(),
         anulada: false,
         cuentas: { 
           nombre: cuentaCache?.nombre || 'Cuenta', 
@@ -141,7 +141,7 @@ export function useCrearTransaccion() {
       })
 
       // 6. Actualizar saldo cuenta optimista (solo si coinciden las monedas para no romper la matemática visual)
-      if (cuentaCache && cuentaCache.moneda === nuevaTx.moneda_original && !nuevaTx.es_fallida) {
+      if (cuentaCache && cuentaCache.moneda === nuevaTx.moneda_original) {
          queryClient.setQueriesData({ queryKey: ['cuentas'] }, (old: any) => {
             if (!Array.isArray(old)) return old
             return old.map((c: any) => {
