@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
@@ -38,8 +38,6 @@ export default function TransaccionesPage() {
     monto_original: '',
     descripcion: ''
   })
-  const [subtipoOperacion, setSubtipoOperacion] = useState<string | null>(null)
-  const [esFallida, setEsFallida] = useState(false)
   const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
@@ -55,8 +53,6 @@ export default function TransaccionesPage() {
       monto_original: '',
       descripcion: ''
     })
-    setSubtipoOperacion(null)
-    setEsFallida(false)
     setError('')
     setModalMode('create')
   }
@@ -68,13 +64,6 @@ export default function TransaccionesPage() {
   const selectedAccount = useMemo(() => {
     return accounts?.find(c => c.id === formData.cuenta_id)
   }, [formData.cuenta_id, accounts])
-
-  useEffect(() => {
-    // Al cambiar de cuenta, limpiamos el método de pago seleccionado
-    // Si la cuenta no es un banco, el backend asume 'null' (sin comisión)
-    setSubtipoOperacion(null)
-    setEsFallida(false)
-  }, [formData.cuenta_id])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -109,7 +98,7 @@ export default function TransaccionesPage() {
     try {
       if (formData.tipo === 'transferencia') {
         const cuentaDestino = accounts?.find(c => c.id === formData.cuenta_destino_id)
-        if (!cuentaDestino) throw new Error('Cuenta destino invǭlida')
+        if (!cuentaDestino) throw new Error('Cuenta destino inválida')
         
         if (selectedAccount.moneda !== cuentaDestino.moneda) {
           setError('Por ahora solo se permiten transferencias entre cuentas con la misma moneda')
@@ -120,39 +109,28 @@ export default function TransaccionesPage() {
         await createTransaction({
           cuenta_id: formData.cuenta_id,
           tipo: 'gasto',
-          monto_original: Number(formData.monto_original), // RPC handles commission
+          monto_original: Number(formData.monto_original),
           moneda_original: selectedAccount.moneda,
-          descripcion: formData.descripcion || `Transferencia a ${cuentaDestino.nombre}`,
-          subtipo_operacion: subtipoOperacion,
-          tasa_cambio: currentRate,
-          es_fallida: esFallida
+          descripcion: formData.descripcion || `Transferencia a ${cuentaDestino.nombre}`
         })
 
-        // Solo crear el ingreso si la operacin no fue fallida
-        if (!esFallida) {
-          await createTransaction({
-            cuenta_id: formData.cuenta_destino_id,
-            tipo: 'ingreso',
-            monto_original: Number(formData.monto_original),
-            moneda_original: cuentaDestino.moneda,
-            descripcion: formData.descripcion || `Transferencia desde ${selectedAccount.nombre}`,
-            subtipo_operacion: null, // No commission on incoming transfers
-            tasa_cambio: currentRate,
-            es_fallida: false
-          })
-        }
+        // Crear el ingreso en la cuenta destino
+        await createTransaction({
+          cuenta_id: formData.cuenta_destino_id,
+          tipo: 'ingreso',
+          monto_original: Number(formData.monto_original),
+          moneda_original: cuentaDestino.moneda,
+          descripcion: formData.descripcion || `Transferencia desde ${selectedAccount.nombre}`
+        })
 
       } else {
         await createTransaction({
           cuenta_id: formData.cuenta_id,
           categoria_id: formData.categoria_id || undefined,
           tipo: formData.tipo,
-          monto_original: Number(formData.monto_original), // RPC handles commission
+          monto_original: Number(formData.monto_original),
           moneda_original: selectedAccount.moneda,
-          descripcion: formData.descripcion,
-          subtipo_operacion: subtipoOperacion,
-          tasa_cambio: currentRate,
-          es_fallida: esFallida
+          descripcion: formData.descripcion
         })
       }
       closeModal()
@@ -504,54 +482,6 @@ export default function TransaccionesPage() {
                   placeholder="0.00"
                 />
               </div>
-
-              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.tipo === 'banco' && (
-                <div className="space-y-4">
-                  <div className="space-y-1 animate-in fade-in zoom-in-95 duration-200">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
-                    <AnimatedSelect
-                      value={subtipoOperacion || ''}
-                      onChange={(v) => setSubtipoOperacion(v === '' ? null : v)}
-                      options={
-                        selectedAccount.moneda === 'VES' ? [
-                          { value: '', label: 'Seleccione un método', disabled: true },
-                          { value: 'pm_p2p', label: '📱 Pago Móvil' },
-                          { value: 'punto_venta', label: '💳 Punto de Venta' },
-                          { value: 'transferencia_mismo_banco', label: '🏦 Transferencia (Mismo Banco)' },
-                          { value: 'transferencia_interbancaria', label: '⏳ Transferencia (Otros Bancos)' }
-                        ] : [
-                          { value: '', label: 'Seleccione un método', disabled: true },
-                          { value: 'tarjeta_usd_nacional', label: '💳 Tarjeta en Dólares (Aplica IGTF)' },
-                          { value: 'transferencia_usd', label: '🏦 Transferencia / Retiro' }
-                        ]
-                      }
-                      placeholder="Seleccione el método"
-                      accent="emerald"
-                    />
-                  </div>
-
-                  {subtipoOperacion && ['pm_p2p', 'transferencia_interbancaria'].includes(subtipoOperacion) && (
-                    <label className="flex items-center gap-2 cursor-pointer animate-in fade-in duration-200">
-                      <input 
-                        type="checkbox" 
-                        checked={esFallida}
-                        onChange={e => setEsFallida(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Operación fallida (solo cobra comisión por intento)
-                      </span>
-                    </label>
-                  )}
-                </div>
-              )}
-
-              {formData.tipo === 'transferencia' && selectedAccount?.tipo === 'banco' && selectedAccount?.moneda === 'VES' && (
-                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg text-sm text-amber-800 dark:text-amber-300 flex flex-col gap-1 transition-colors">
-                  <span className="font-semibold">Información de transferencia:</span>
-                  <span>Si el método seleccionado genera comisión, el sistema la calculará y la debitará automáticamente de tu cuenta origen.</span>
-                </div>
-              )}
 
               {formData.tipo !== 'transferencia' && (
                 <div className="space-y-2">
