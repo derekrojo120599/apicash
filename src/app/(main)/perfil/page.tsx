@@ -116,7 +116,7 @@ export default function PerfilPage() {
     try {
       await solicitarCambioPassword(perfil.email)
       setModalPassword(false)
-      setMensajeExito('Te enviamos un correo para cambiar tu contraseña')
+      setMensajeExito('Se envió un correo para el cambio de contraseña')
       setTimeout(() => setMensajeExito(''), 5000)
     } catch (err) {
       toastError({ title: 'Error al enviar', message: err instanceof Error ? err.message : 'No se pudo solicitar el cambio de contraseña.' })
@@ -192,7 +192,7 @@ export default function PerfilPage() {
       await borrarDatos()
       setModalBorrarDatos(false)
       setConfirmacionBorrarDatos('')
-      setMensajeExito('Todos tus datos fueron eliminados')
+      setMensajeExito('Datos eliminados correctamente')
       setTimeout(() => setMensajeExito(''), 3000)
       router.refresh()
     } catch (err) {
@@ -450,7 +450,7 @@ export default function PerfilPage() {
                 >
                   <div>
                     <p className="font-medium text-red-700 dark:text-red-400">Eliminar cuenta</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Borra todos tus datos de forma permanente</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Elimina los datos y accesos de forma permanente</p>
                   </div>
                   <Trash2 className="w-5 h-5 text-red-500" />
                 </button>
@@ -612,10 +612,10 @@ export default function PerfilPage() {
               <div className="text-sm text-slate-600 dark:text-slate-300 space-y-2">
                 <p>Esta acción eliminará de forma permanente:</p>
                 <ul className="list-disc list-inside text-slate-500 dark:text-slate-400">
-                  <li>Todas tus cuentas</li>
-                  <li>Todas tus transacciones</li>
-                  <li>Tus metas de ahorro y deudas</li>
-                  <li>Tus categorías y presupuestos</li>
+                  <li>Cuentas</li>
+                  <li>Transacciones</li>
+                  <li>Metas de ahorro y deudas</li>
+                  <li>Categorías y presupuestos</li>
                 </ul>
                 <p className="font-medium text-red-600 dark:text-red-400">No se puede deshacer.</p>
               </div>
@@ -668,13 +668,13 @@ export default function PerfilPage() {
             </div>
             <div className="p-5 space-y-4">
               <div className="text-sm text-slate-600 dark:text-slate-300 space-y-2">
-                <p>Se eliminarán todos tus datos financieros:</p>
+                <p>Se eliminarán los siguientes datos financieros:</p>
                 <ul className="list-disc list-inside text-slate-500 dark:text-slate-400">
                   <li>Cuentas y transacciones</li>
                   <li>Metas de ahorro y deudas</li>
                   <li>Categorías y presupuestos</li>
                 </ul>
-                <p className="font-medium text-orange-600 dark:text-orange-400">Tu cuenta de usuario se mantendrá. Esta acción no se puede deshacer.</p>
+                <p className="font-medium text-orange-600 dark:text-orange-400">La cuenta de usuario se mantendrá. Esta acción no se puede deshacer.</p>
               </div>
 
               <div>

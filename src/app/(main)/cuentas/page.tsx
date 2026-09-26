@@ -86,7 +86,7 @@ export default function CuentasPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mis Cuentas</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administra tus billeteras y cuentas bancarias</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administración de billeteras y cuentas bancarias</p>
         </div>
         <AnimatedButton onClick={openCreateModal}>
           <Plus className="w-5 h-5" />
@@ -102,8 +102,8 @@ export default function CuentasPage() {
         <FadeIn>
           <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
             <WalletCards className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No tienes cuentas registradas</p>
-            <p className="text-sm mt-1 mb-6">Crea tu primera cuenta para empezar a registrar transacciones.</p>
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">Sin cuentas registradas</p>
+            <p className="text-sm mt-1 mb-6">Crea una cuenta para empezar a registrar transacciones.</p>
             <AnimatedButton variant="secondary" onClick={openCreateModal}>
               Crear primera cuenta
             </AnimatedButton>

@@ -80,7 +80,7 @@ export default function PresupuestoPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Presupuesto</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Planea tus gastos mensuales en USD</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Planifica los gastos mensuales en USD</p>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto flex-nowrap bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 transition-colors scrollbar-hide">
@@ -144,7 +144,7 @@ export default function PresupuestoPage() {
               <Target className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
               <p className="text-lg font-medium text-slate-900 dark:text-slate-200 mb-2">No has definido presupuestos</p>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
-                Empieza a planificar tus gastos para este mes y toma el control de tu dinero.
+                Empieza a planificar los gastos para este mes y toma el control de las finanzas.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <AnimatedButton onClick={() => handleOpenEdit()}>

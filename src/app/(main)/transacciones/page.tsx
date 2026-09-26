@@ -102,7 +102,7 @@ export default function TransaccionesPage() {
 
     if ((formData.tipo === 'gasto' || formData.tipo === 'transferencia') && Number(formData.monto_original) > selectedAccount.saldo_cache) {
       // Soft check on principal. The backend RPC does a strict check including commissions.
-      setError(`El monto principal supera el saldo. Tienes ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
+      setError(`El monto principal supera el saldo disponible. Hay ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
       return
     }
 
@@ -164,7 +164,7 @@ export default function TransaccionesPage() {
   }
 
   const handleVoidTransaction = async (id: string) => {
-    if (confirm('¿Estás seguro de que deseas anular esta transacción?')) {
+    if (confirm('¿Confirmas la anulación de esta transacción?')) {
       try {
         await voidTransaction(id)
       } catch (err) {
@@ -209,7 +209,7 @@ export default function TransaccionesPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transacciones</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y revisa tus movimientos del mes</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registro y revisión de movimientos del mes</p>
         </div>
         <AnimatedButton onClick={openCreateModal}>
           <Plus className="w-5 h-5" />

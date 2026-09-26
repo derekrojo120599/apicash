@@ -81,7 +81,7 @@ export default function DeudasPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Seguro que quieres eliminar esta deuda? Esta acción no se puede deshacer.')) {
+    if (confirm('¿Confirmas la eliminación de esta deuda? Esta acción no se puede deshacer.')) {
       try {
         await eliminarDeuda(id)
       } catch (err) {
@@ -97,7 +97,7 @@ export default function DeudasPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Gestión de Deudas</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y amortiza tus obligaciones financieras</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registro y amortización de obligaciones financieras</p>
         </div>
         <AnimatedButton onClick={openCreate} className="!bg-orange-600 hover:!bg-orange-700">
           <Plus className="w-5 h-5" />
@@ -111,8 +111,8 @@ export default function DeudasPage() {
         <FadeIn>
           <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
             <Receipt className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">Estás libre de deudas</p>
-            <p className="text-sm mt-1 mb-6">No tienes deudas activas registradas en el sistema.</p>
+            <p className="text-lg font-medium text-slate-900 dark:text-slate-200">Sin deudas activas</p>
+            <p className="text-sm mt-1 mb-6">No hay deudas registradas en el sistema.</p>
           </AnimatedCard>
         </FadeIn>
       ) : (
@@ -256,7 +256,7 @@ export default function DeudasPage() {
             </div>
             <form onSubmit={handlePagoSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (Con qué vas a pagar)</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen</label>
                 <AnimatedSelect
                   value={pagoData.cuenta_id}
                   onChange={(v) => setPagoData({...pagoData, cuenta_id: v})}

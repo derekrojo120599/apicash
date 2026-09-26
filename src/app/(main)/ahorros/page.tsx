@@ -165,7 +165,7 @@ export default function AhorrosPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Seguro que quieres eliminar esta meta/ahorro? Esta acción no se puede deshacer.')) {
+    if (confirm('¿Confirmas la eliminación de esta meta? Esta acción no se puede deshacer.')) {
       try {
         await eliminarMeta(id)
       } catch (err) {
@@ -181,7 +181,7 @@ export default function AhorrosPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Metas de Ahorro</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y sigue tu progreso para alcanzar tus objetivos</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y sigue el progreso para alcanzar objetivos</p>
         </div>
         <AnimatedButton onClick={openCreate}>
           <Plus className="w-5 h-5" />
@@ -244,7 +244,7 @@ export default function AhorrosPage() {
                       {tieneObjetivo ? (
                         <AnimatedNumber value={meta.monto_actual} formatter={(v) => formatMoney(v, meta.moneda)} duration={1000} />
                       ) : (
-                        <>Llevas ahorrado: <AnimatedNumber value={meta.monto_actual} formatter={(v) => formatMoney(v, meta.moneda)} duration={1000} /></>
+                        <>Total ahorrado: <AnimatedNumber value={meta.monto_actual} formatter={(v) => formatMoney(v, meta.moneda)} duration={1000} /></>
                       )}
                     </span>
                     {tieneObjetivo && (
@@ -392,7 +392,7 @@ export default function AhorrosPage() {
 
               {!aporteData.esFuenteExterna && (
                 <div className="space-y-1 transition-all">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen (De dónde sale el dinero)</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de origen</label>
                   <AnimatedSelect
                     value={aporteData.cuenta_id}
                     onChange={(v) => setAporteData({...aporteData, cuenta_id: v})}
@@ -423,7 +423,7 @@ export default function AhorrosPage() {
                 </p>
               ) : (
                 <p className="text-xs text-slate-500 dark:text-slate-400 bg-primary-50 dark:bg-primary-900/20 p-3 rounded-lg border border-primary-100 dark:border-primary-900/50 transition-colors">
-                  El monto se sumará directamente a tu ahorro <strong className="dark:text-slate-300">sin crear una transacción de gasto</strong> ni alterar tus balances.
+                  El monto se sumará directamente al ahorro <strong className="dark:text-slate-300">sin crear una transacción de gasto</strong> ni alterar los balances.
                 </p>
               )}
               
@@ -446,7 +446,7 @@ export default function AhorrosPage() {
             </div>
             <form onSubmit={handleRetiroSubmit} className="p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta destino (A dónde va el dinero)</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta de destino</label>
                 <AnimatedSelect
                   value={retiroData.cuenta_id}
                   onChange={(v) => setRetiroData({...retiroData, cuenta_id: v})}
