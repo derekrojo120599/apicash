@@ -46,6 +46,8 @@ export default function TransaccionesPage() {
     monto_original: '',
     descripcion: ''
   })
+  const [subtipoOperacion, setSubtipoOperacion] = useState<string | null>(null)
+  const [esFallida, setEsFallida] = useState(false)
   const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
@@ -72,6 +74,22 @@ export default function TransaccionesPage() {
   const selectedAccount = useMemo(() => {
     return accounts?.find(c => c.id === formData.cuenta_id)
   }, [formData.cuenta_id, accounts])
+
+  const currentComision = useMemo(() => {
+    if (!subtipoOperacion || !formData.monto_original || !comisionesConfig) return null;
+    const config = comisionesConfig.find(c => c.subtipo_operacion === subtipoOperacion);
+    if (!config) return null;
+
+    try {
+      return previewComision(
+        formData.monto_original,
+        config,
+        esFallida
+      );
+    } catch {
+      return null;
+    }
+  }, [subtipoOperacion, formData.monto_original, comisionesConfig, esFallida])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -453,6 +471,59 @@ export default function TransaccionesPage() {
                   </div>
                 )}
               </div>
+
+              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.tipo === 'banco' && (
+                <div className="space-y-4 mb-4">
+                  <div className="space-y-1 animate-in fade-in zoom-in-95 duration-200">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
+                    <AnimatedSelect
+                      value={subtipoOperacion || ''}
+                      onChange={(v) => setSubtipoOperacion(v === '' ? null : v)}
+                      options={
+                        selectedAccount.moneda === 'VES' ? [
+                          { value: '', label: 'Seleccione un método', disabled: true },
+                          { value: 'pm_p2p', label: '📱 Pago Móvil' },
+                          { value: 'punto_venta', label: '💳 Punto de Venta' },
+                          { value: 'transferencia_mismo_banco', label: '🏦 Transferencia (Mismo Banco)' },
+                          { value: 'transferencia_interbancaria', label: '⏳ Transferencia (Otros Bancos)' }
+                        ] : [
+                          { value: '', label: 'Seleccione un método', disabled: true },
+                          { value: 'tarjeta_usd_nacional', label: '💳 Tarjeta en Dólares (Aplica IGTF)' },
+                          { value: 'transferencia_usd', label: '🏦 Transferencia / Retiro' }
+                        ]
+                      }
+                      placeholder="Seleccione el método"
+                      accent="emerald"
+                    />
+                  </div>
+
+                  {subtipoOperacion && ['pm_p2p', 'transferencia_interbancaria'].includes(subtipoOperacion) && (
+                    <label className="flex items-center gap-2 cursor-pointer animate-in fade-in duration-200">
+                      <input 
+                        type="checkbox" 
+                        checked={esFallida}
+                        onChange={e => setEsFallida(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Operación fallida (solo cobra comisión por intento)
+                      </span>
+                    </label>
+                  )}
+
+                  {currentComision && (
+                    <div className="mt-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-lg text-sm text-indigo-800 dark:text-indigo-300 flex flex-col gap-1 transition-colors animate-in fade-in zoom-in-95 duration-200">
+                      <span className="font-semibold">Comisión estimada (BCV):</span>
+                      <span>Se cobrará una comisión de <strong className="text-indigo-900 dark:text-indigo-200 font-bold">{currentComision.comisionFinal} VES</strong>.</span>
+                      {Number(currentComision.comisionFinal) > 0 && currentRate && (
+                        <span className="mt-1 bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded inline-block w-max">
+                          Equivalente: <strong className="text-indigo-900 dark:text-indigo-200">≈ ${(Number(currentComision.comisionFinal) / currentRate).toFixed(2)} USD</strong>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {formData.tipo === 'transferencia' && (
                 <div className="space-y-1">
