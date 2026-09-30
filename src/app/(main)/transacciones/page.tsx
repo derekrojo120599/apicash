@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/useToast'
 import { Plus, X, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 import { CreatableCategorySelect } from '@/components/CreatableCategorySelect'
+import { useComisionesConfig } from '@/hooks/useComisionesConfig'
+import { previewComision } from '@/utils/comisiones'
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +30,7 @@ export default function TransaccionesPage() {
   const { data: accounts } = useCuentas()
   const { data: categories } = useCategorias()
   const { data: currentRate } = useTasaActual()
+  const { data: comisionesConfig } = useComisionesConfig()
   
   // Mutations
   const { mutateAsync: createTransaction } = useCrearTransaccion()

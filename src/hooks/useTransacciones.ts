@@ -80,13 +80,54 @@ export function useCrearTransaccion() {
       monto_original: number
       moneda_original: string
       descripcion: string
+      subtipo_operacion?: string | null
+      es_fallida?: boolean
+      tasa_cambio?: number | null
+      fecha?: string
+      comision_override?: number | null
     }) => {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No auth user')
 
+      // Lógica unificada para la RPC si es un gasto con comisiones (tiene subtipo) o falla forzada
+      if (nuevaTx.tipo === 'gasto' && nuevaTx.subtipo_operacion) {
+        const { data, error } = await supabase.rpc('registrar_operacion_con_comision', {
+          p_cuenta_id: nuevaTx.cuenta_id,
+          p_categoria_principal_id: nuevaTx.categoria_id || null,
+          p_tipo: nuevaTx.tipo,
+          p_monto: nuevaTx.monto_original,
+          p_moneda: nuevaTx.moneda_original,
+          p_subtipo_operacion: nuevaTx.subtipo_operacion || null,
+          p_tasa_cambio: nuevaTx.tasa_cambio || null,
+          p_fecha: nuevaTx.fecha || new Date().toISOString(),
+          p_descripcion: nuevaTx.descripcion || '',
+          p_override_comision: nuevaTx.comision_override || null,
+          p_es_fallida: nuevaTx.es_fallida || false
+        })
+        
+        if (error) {
+          throw new Error(error.message)
+        }
+        return data as any
+      }
+
+      // De lo contrario, usar el insert regular (transferencias o ingresos)
+      const insertPayload: any = {
+        cuenta_id: nuevaTx.cuenta_id,
+        categoria_id: nuevaTx.categoria_id,
+        tipo: nuevaTx.tipo,
+        monto_original: nuevaTx.monto_original,
+        moneda_original: nuevaTx.moneda_original,
+        descripcion: nuevaTx.descripcion,
+        user_id: userData.user.id
+      };
+
+      if (nuevaTx.subtipo_operacion) insertPayload.subtipo_operacion = nuevaTx.subtipo_operacion;
+      if (nuevaTx.tasa_cambio) insertPayload.tasa_al_momento = nuevaTx.tasa_cambio;
+
       const { data, error } = await supabase
         .from('transacciones')
-        .insert([{ ...nuevaTx, user_id: userData.user.id }])
+        .insert([insertPayload])
         .select()
         .single()
       
