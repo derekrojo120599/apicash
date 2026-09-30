@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
+import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, useMarcarOperacionFallida, Transaccion } from '@/hooks/useTransacciones'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
@@ -36,6 +36,7 @@ export default function TransaccionesPage() {
   const { mutateAsync: createTransaction } = useCrearTransaccion()
   const { mutateAsync: voidTransaction } = useAnularTransaccion()
   const { mutateAsync: restoreTransaction } = useRestaurarTransaccion()
+  const { mutateAsync: markAsFailed } = useMarcarOperacionFallida()
 
   // Form State
   const [formData, setFormData] = useState({
@@ -174,6 +175,19 @@ export default function TransaccionesPage() {
       } catch (err) {
         console.error("Error voiding transaction:", err)
         toastError({ title: 'Error al anular', message: 'No se pudo anular la transacción.' })
+      }
+    }
+  }
+
+  const handleMarkAsFailed = async (id: string) => {
+    if (confirm('¿Confirmas que esta operación fue rechazada por el banco? Se te devolverá el saldo y solo se cobrará la comisión mínima de intento.')) {
+      try {
+        await markAsFailed(id)
+        toastError({ title: 'Operación actualizada', message: 'Se marcó como fallida exitosamente.' })
+        setModalMode(null)
+      } catch (err) {
+        console.error("Error marking as failed:", err)
+        toastError({ title: 'Error', message: err instanceof Error ? err.message : 'No se pudo marcar como fallida.' })
       }
     }
   }

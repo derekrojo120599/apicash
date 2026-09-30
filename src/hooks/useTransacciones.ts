@@ -372,3 +372,25 @@ export function useRestaurarTransaccion() {
     }
   })
 }
+
+
+export function useMarcarOperacionFallida() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('marcar_operacion_como_fallida', {
+        p_transaccion_id: id
+      })
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['presupuestos'] })
+    }
+  })
+}
