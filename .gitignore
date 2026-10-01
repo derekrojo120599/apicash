@@ -43,6 +43,9 @@ next-env.d.ts
 # tests
 test-e2e.mjs
 
+# supabase
+supabase/.temp/
+
 # gentle-ai / opencode local artifacts
 .atl/
 
