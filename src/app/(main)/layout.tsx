@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { AnimatedNavLink, StaggerContainer, AnimatedButton } from '@/components/animations'
 
 import { InstallPrompt } from '@/components/InstallPrompt'
-import { MaintenanceModal } from '@/components/ui/MaintenanceModal'
+import { WhatsNewModal } from '@/components/ui/WhatsNewModal'
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -115,7 +115,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       {/* Prompts and Overlays */}
       <InstallPrompt />
-      <MaintenanceModal />
+      <WhatsNewModal />
 
       {/* Mobile Sidebar Drawer */}
       <div
