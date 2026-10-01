@@ -40,122 +40,122 @@ const guideSections: GuideSection[] = [
   {
     id: 'dashboard',
     title: 'Panel Principal (Dashboard)',
-    subtitle: 'Tu centro de control financiero',
+    subtitle: 'Centro de control financiero',
     icon: LayoutDashboard,
     color: 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400',
     steps: [
-      'Es la vista principal cada vez que inicias sesiÃ³n.',
-      'Muestra el Balance Neto total consolidado en dÃ³lares.',
-      'Permite ver de un vistazo: ingresos, gastos, ahorros y deudas.',
-      'Presenta el resumen de tus transacciones y movimientos recientes.'
+      'Es la vista principal cada vez que inicia sesión.',
+      'Muestra el Balance Neto total consolidado en dólares.',
+      'Permite consultar de un vistazo: ingresos, gastos, ahorros y deudas.',
+      'Presenta el resumen de las transacciones y movimientos recientes.'
     ],
     href: '/',
-    extra: 'Es el termÃ³metro de la salud financiera: permite saber de inmediato cuÃ¡l es tu situaciÃ³n actual.'
+    extra: 'Es el termómetro de la salud financiera: permite conocer de inmediato la situación actual.'
   },
   {
     id: 'cuentas',
     title: 'Cuentas',
-    subtitle: 'Administra billeteras y bancos',
+    subtitle: 'Administración de billeteras y bancos',
     icon: WalletCards,
     color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
     steps: [
-      'Antes de registrar transacciones, crea al menos una cuenta.',
-      'Puedes crear cuentas en USD (dÃ³lares) o VES (bolÃ­vares).',
-      'Ejemplos: Billetera de efectivo, Cuenta bancaria, Pago MÃ³vil, Zelle o Tarjeta.',
-      'Cada transacciÃ³n que agregues afectarÃ¡ el saldo de la cuenta seleccionada.'
+      'Antes de registrar transacciones, cree al menos una cuenta.',
+      'Puede crear cuentas en USD (dólares) o VES (bolívares).',
+      'Ejemplos: Billetera de efectivo, Cuenta bancaria, Pago Móvil, Zelle o Tarjeta.',
+      'Cada transacción registrada afectará el saldo de la cuenta seleccionada.'
     ],
     href: '/cuentas',
-    extra: 'Si manejas dinero en diferentes plataformas o bancos, crea una cuenta para cada una para mantener saldos exactos.'
+    extra: 'Si maneja fondos en diferentes plataformas o bancos, cree una cuenta para cada una a fin de mantener saldos exactos.'
   },
   {
     id: 'categorias',
-    title: 'CategorÃ­as',
-    subtitle: 'Organiza y clasifica movimientos',
+    title: 'Categorías',
+    subtitle: 'Organización y clasificación de movimientos',
     icon: FolderOpen,
     color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
     steps: [
-      'Crear etiquetas personalizadas para clasificar tus gastos e ingresos.',
-      'Ejemplos: AlimentaciÃ³n, Transporte, Servicios, Entretenimiento, Ropa.',
-      'Entre mÃ¡s especÃ­ficas sean tus categorÃ­as, mejor entenderÃ¡s tus hÃ¡bitos de consumo.',
-      'Sirven como base para generar grÃ¡ficas, estadÃ­sticas y presupuestos.'
+      'Permite crear etiquetas personalizadas para clasificar gastos e ingresos.',
+      'Ejemplos: Alimentación, Transporte, Servicios, Entretenimiento, Ropa.',
+      'Cuanto más específicas sean las categorías, mejor comprensión tendrá de los hábitos de consumo.',
+      'Sirven como base para generar gráficas, estadísticas y presupuestos.'
     ],
     href: '/categorias',
-    extra: 'Evitar agrupar todo en una categorÃ­a genÃ©rica como "Otros". Nombrar cada gasto con precisiÃ³n es la clave del control.'
+    extra: 'Evite agrupar todo en una categoría genérica. Nombrar cada gasto con precisión es la clave del control.'
   },
   {
     id: 'transacciones',
     title: 'Movimientos (Transacciones)',
-    subtitle: 'El registro diario de ingresos y gastos',
+    subtitle: 'Registro continuo de ingresos y gastos',
     icon: ArrowRightLeft,
     color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
     steps: [
-      'Registra cada ingreso o gasto en el momento en que ocurre.',
-      'Selecciona el tipo: Ingreso (dinero recibido) o Gasto (dinero que sale).',
-      'Asigna la cuenta de origen y la categorÃ­a correspondiente.',
-      'Si el movimiento es en bolÃ­vares, el sistema calcula la conversiÃ³n a dÃ³lares automÃ¡ticamente con la tasa del momento.'
+      'Registre cada ingreso o gasto en el momento en que ocurre.',
+      'Seleccione el tipo: Ingreso (dinero recibido) o Gasto (dinero que sale).',
+      'Asigne la cuenta de origen y la categoría correspondiente.',
+      'Si el movimiento es en bolívares, el sistema calcula la conversión a dólares automáticamente con la tasa del momento.'
     ],
     href: '/transacciones',
-    extra: 'Registrar compras en el mismo instante en que las realizas. EvitarÃ¡s olvidar montos pequeÃ±os que luego descuadran tu balance.'
+    extra: 'Registrar los consumos al instante evita olvidar montos pequeños que luego descuadran el balance.'
   },
   {
     id: 'presupuesto',
     title: 'Presupuesto',
-    subtitle: 'Establece lÃ­mites inteligentes de gasto',
+    subtitle: 'Límites inteligentes de gasto',
     icon: Target,
     color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
     steps: [
-      'Define un lÃ­mite mensual de gasto para cada categorÃ­a.',
-      'Por ejemplo: "MÃ¡ximo $50 al mes en Restaurantes y Salidas".',
-      'El sistema te indicarÃ¡ con barras de color cuando estÃ©s cerca del lÃ­mite o si lo has superado.',
-      'Te ayuda a planificar tus finanzas y evitar quedarte sin fondos antes de fin de mes.'
+      'Defina un límite mensual de gasto para cada categoría.',
+      'Por ejemplo: "Máximo $50 al mes en Restaurantes y Salidas".',
+      'El sistema indicará con barras de color la cercanía al límite o si este ha sido superado.',
+      'Facilita la planificación financiera y previene la falta de fondos antes de fin de mes.'
     ],
     href: '/presupuesto',
-    extra: 'Un presupuesto no es una limitaciÃ³n, es una herramienta para decidir conscientemente a dÃ³nde quieres que vaya el dinero.'
+    extra: 'Un presupuesto es una herramienta para decidir conscientemente hacia dónde destinar los recursos.'
   },
   {
     id: 'ahorros',
     title: 'Metas de Ahorro',
-    subtitle: 'Alcanza objetivos financieros',
+    subtitle: 'Objetivos financieros claros',
     icon: PiggyBank,
     color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
     steps: [
-      'Crea metas claras: un viaje, fondo de emergencia, estudios o un dispositivo nuevo.',
-      'Define el monto objetivo y la fecha estimada para completarlo.',
-      'Registra tus aportes periÃ³dicos y observa la barra de progreso avanzar.',
-      'MantÃ©n tu motivaciÃ³n visualizando quÃ© porcentaje te falta para cumplir tu meta.'
+      'Establezca metas claras: un viaje, fondo de emergencia, estudios o una adquisición.',
+      'Defina el monto objetivo y la fecha estimada de cumplimiento.',
+      'Registre aportes periódicos y observe el avance en la barra de progreso.',
+      'Mantenga la motivación visualizando el porcentaje restante para alcanzar la meta.'
     ],
     href: '/ahorros',
-    extra: 'La constancia vence a la cantidad: destinar una pequeÃ±a suma cada semana tiene un gran impacto a mediano y largo plazo.'
+    extra: 'La constancia supera a la cantidad: destinar una suma periódica genera un gran impacto en el mediano y largo plazo.'
   },
   {
     id: 'deudas',
     title: 'Control de Deudas',
-    subtitle: 'Cuentas claras y compromisos al dÃ­a',
+    subtitle: 'Cuentas claras y compromisos al día',
     icon: Receipt,
     color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
     steps: [
-      'Registra tanto el dinero que debes (Por Pagar) como el dinero que te deben (Por Cobrar).',
-      'Indica la persona o entidad, el monto, la fecha lÃ­mite y una descripciÃ³n.',
-      'Marca las deudas como pagadas o liquidadas a medida que se completen.',
-      'Evita olvidos y mantÃ©n el control exacto de tus compromisos crediticios.'
+      'Registre tanto las obligaciones pendientes (Por Pagar) como los cobros pendientes (Por Cobrar).',
+      'Indique la persona o entidad, el monto, la fecha límite y una descripción.',
+      'Marque las deudas como pagadas o liquidadas a medida que se completen.',
+      'Evite descuidos y mantenga el control exacto de sus compromisos crediticios.'
     ],
     href: '/deudas',
-    extra: 'Tener un registro claro de prÃ©stamos evita desacuerdos y te ayuda a priorizar el pago de tus obligaciones.'
+    extra: 'Llevar un registro ordenado previene diferencias y ayuda a priorizar el cumplimiento de obligaciones.'
   }
 ]
 
 const quickStartSteps: QuickStartStep[] = [
-  { number: '1', title: 'Crea cuentas', description: 'Define dÃ³nde tienes el dinero (efectivo, banco, etc.).' },
-  { number: '2', title: 'Crea tus CategorÃ­as', description: 'Clasifica en quÃ© sueles gastar o recibir ingresos.' },
-  { number: '3', title: 'Registra movimientos', description: 'Anota cada ingreso o gasto del dÃ­a a dÃ­a.' }
+  { number: '1', title: 'Crear cuentas', description: 'Defina dónde se encuentran los fondos (efectivo, banco, etc.).' },
+  { number: '2', title: 'Crear categorías', description: 'Clasifique los conceptos frecuentes de gastos o ingresos.' },
+  { number: '3', title: 'Registrar movimientos', description: 'Anote cada ingreso o gasto cotidiano.' }
 ]
 
 const goldenTips: string[] = [
-  'Registrar compras en el momento. Los pequeÃ±os gastos cotidianos son los que mÃ¡s rÃ¡pido reducen tu balance.',
-  'MantÃ©n la honestidad con tus nÃºmeros: registra cada detalle para que tus balances reflejen tu realidad financiera.',
-  'Revisa tu Panel Principal al menos una vez por semana para evaluar tu progreso.',
-  'Busca un equilibrio en tus categorÃ­as: no crees demasiadas para no complicarte, ni muy pocas para no perder visibilidad.',
-  'Utiliza las metas de ahorro para proteger tu capital de compras impulsivas.'
+  'Registrar los consumos al momento: los pequeños gastos diarios suelen ser los que más rápido reducen el balance.',
+  'Mantener la precisión en las cifras: registrar cada detalle permite que los saldos reflejen la realidad financiera.',
+  'Revisar el Panel Principal al menos una vez por semana para evaluar el progreso.',
+  'Buscar equilibrio en las categorías: evite un exceso innecesario o una síntesis que reste visibilidad.',
+  'Utilizar las metas de ahorro para resguardar capital frente a compras impulsivas.'
 ]
 
 export default function GuidePage() {
@@ -165,14 +165,14 @@ export default function GuidePage() {
       <div className="text-center md:text-left">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-sm font-medium mb-4">
           <Sparkles className="w-4 h-4" />
-          GuÃ­a de IntroducciÃ³n
+          Guía de Introducción
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3">
-          Â¡Bienvenido a tu Control Financiero! ðŸ’¸
+          Bienvenido al Control Financiero
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-lg max-w-3xl">
-          Gestionar el dinero de forma inteligente no tiene que ser complejo. En esta guÃ­a te explicamos
-          paso a paso cÃ³mo aprovechar al mÃ¡ximo cada herramienta de Apicash, en dÃ³lares (USD) y bolÃ­vares (VES).
+          Gestionar el dinero de forma ordenada no requiere complejidad. En esta guía se detalla
+          paso a paso cómo utilizar cada herramienta de Apicash, tanto en dólares (USD) como en bolívares (VES).
         </p>
       </div>
 
@@ -180,7 +180,7 @@ export default function GuidePage() {
       <div className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className="w-6 h-6 text-primary-100" />
-          <h2 className="text-xl font-bold">Â¿CÃ³mo empezar en 3 pasos?</h2>
+          <h2 className="text-xl font-bold">¿Cómo comenzar en 3 pasos?</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-4">
           {quickStartSteps.map((item) => (
@@ -192,7 +192,7 @@ export default function GuidePage() {
           ))}
         </div>
         <p className="mt-4 text-primary-100 text-sm">
-          Al completar estos tres pasos, el Panel Principal comenzarÃ¡ a actualizar tus estadÃ­sticas y balances de forma automÃ¡tica.
+          Al completar estos tres pasos, el Panel Principal comenzará a actualizar las estadísticas y balances de forma automática.
         </p>
       </div>
 
@@ -208,11 +208,11 @@ export default function GuidePage() {
                 <Sparkle className="w-3.5 h-3.5" />
                 Experiencia Recomendada
               </div>
-              <h2 className="text-2xl font-bold text-white">Instalar como AplicaciÃ³n Nativa</h2>
+              <h2 className="text-2xl font-bold text-white">Instalar como Aplicación</h2>
             </div>
           </div>
           <p className="text-sm text-slate-400 md:max-w-xs">
-            Disfruta de Apicash a pantalla completa, sin barras del navegador y con acceso instantÃ¡neo desde tu pantalla de inicio.
+            Utilice Apicash a pantalla completa, sin barras del navegador y con acceso directo desde su pantalla de inicio.
           </p>
         </div>
 
@@ -223,24 +223,24 @@ export default function GuidePage() {
               <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
                 <Download className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-white">En telÃ©fonos Android (Chrome / Brave)</h3>
+              <h3 className="text-lg font-bold text-white">En dispositivos Android (Chrome / Brave)</h3>
             </div>
             <ol className="space-y-3 text-sm text-slate-300">
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5">1</span>
-                <span>Abre <strong>Apicash</strong> en el navegador <strong>Google Chrome</strong> o <strong>Brave</strong>.</span>
+                <span>Abra <strong>Apicash</strong> en el navegador <strong>Google Chrome</strong> o <strong>Brave</strong>.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5">2</span>
-                <span>Toca el botÃ³n de los <strong>tres puntos (â‹®)</strong> en la esquina superior derecha del navegador.</span>
+                <span>Pulse el botón de opciones <strong>(⋮)</strong> en la esquina superior derecha del navegador.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5">3</span>
-                <span>Selecciona la opciÃ³n <strong>&quot;Instalar aplicaciÃ³n&quot;</strong> o <strong>&quot;Agregar a la pantalla principal&quot;</strong>.</span>
+                <span>Seleccione <strong>«Instalar aplicación»</strong> o <strong>«Agregar a la pantalla principal»</strong>.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5">4</span>
-                <span>Cierra el navegador y abre la app desde el <strong>icono de Apicash</strong> creado en tu escritorio.</span>
+                <span>Abra la aplicación desde el <strong>icono de Apicash</strong> en la pantalla de inicio.</span>
               </li>
             </ol>
           </div>
@@ -256,19 +256,19 @@ export default function GuidePage() {
             <ol className="space-y-3 text-sm text-slate-300">
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5">1</span>
-                <span>Abre el enlace de <strong>Apicash</strong> exclusivamente en el navegador <strong>Safari</strong>.</span>
+                <span>Abra el enlace de <strong>Apicash</strong> en el navegador <strong>Safari</strong>.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5">2</span>
-                <span>Toca el botÃ³n <strong>Compartir</strong> <Share2 className="inline w-3.5 h-3.5 mx-1" /> (el cuadro con la flecha hacia arriba en la barra inferior).</span>
+                <span>Pulse el botón <strong>Compartir</strong> <Share2 className="inline w-3.5 h-3.5 mx-1" /> en la barra inferior.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5">3</span>
-                <span>DesplÃ¡zate hacia abajo y pulsa <strong>&quot;Agregar al inicio&quot;</strong> <PlusSquare className="inline w-3.5 h-3.5 mx-1" /> (Add to Home Screen).</span>
+                <span>Desplácese hacia abajo y pulse <strong>«Agregar al inicio»</strong> <PlusSquare className="inline w-3.5 h-3.5 mx-1" />.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5">4</span>
-                <span>Confirma tocando <strong>&quot;Agregar&quot;</strong> en la esquina superior derecha y Ã¡brela desde tu pantalla principal.</span>
+                <span>Confirme pulsando <strong>«Agregar»</strong> en la esquina superior derecha y acceda desde su pantalla de inicio.</span>
               </li>
             </ol>
           </div>
@@ -277,14 +277,14 @@ export default function GuidePage() {
         <div className="p-4 bg-emerald-950/40 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-xs text-emerald-200/90">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span>
-            <strong>Ventajas de instalar la app:</strong> Ocupa menos de 2 MB de almacenamiento, no requiere descargas pesadas de tiendas y se ejecuta con animaciones fluidas sin barras de bÃºsqueda.
+            <strong>Ventajas de la instalación:</strong> Espacio de almacenamiento mínimo, acceso inmediato y ejecución optimizada a pantalla completa.
           </span>
         </div>
       </div>
 
       {/* Detailed Module Sections */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">MÃ³dulos de la AplicaciÃ³n</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Módulos de la Aplicación</h2>
         
         <div className="grid gap-6">
           {guideSections.map((section) => (
@@ -323,7 +323,7 @@ export default function GuidePage() {
                     
                     <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 border-primary-500">
                       <p className="text-sm text-slate-600 dark:text-slate-400 italic">
-                        ðŸ’¡ {section.extra}
+                        {section.extra}
                       </p>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ export default function GuidePage() {
       <div className="bg-slate-900 dark:bg-slate-800 rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <Lightbulb className="w-6 h-6 text-yellow-400" />
-          <h2 className="text-xl font-bold">Recomendaciones para el Ã©xito financiero</h2>
+          <h2 className="text-xl font-bold">Recomendaciones para la gestión financiera</h2>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           {goldenTips.map((tip, idx) => (
@@ -353,11 +353,11 @@ export default function GuidePage() {
       {/* Guide Footer Call-To-Action */}
       <div className="text-center p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-          Â¡Todo listo para comenzar! ðŸš€
+          Todo listo para comenzar
         </h3>
         <p className="text-slate-600 dark:text-slate-400 mb-4 max-w-xl mx-auto">
-          No necesitas ser un experto en finanzas. El secreto es la constancia en tus registros diarios.
-          Crea cuentas, define tus categorÃ­as y registra tu primer movimiento.
+          El control efectivo parte de la constancia en el registro cotidiano.
+          Cree sus cuentas, defina las categorías e ingrese su primer movimiento.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
@@ -365,19 +365,17 @@ export default function GuidePage() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl transition-colors"
           >
             <WalletCards className="w-5 h-5" />
-            Crear mi primera cuenta
+            Crear primera cuenta
           </Link>
           <Link
             href="/categorias"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-xl transition-colors"
           >
             <FolderOpen className="w-5 h-5" />
-            Crear categorÃ­as
+            Crear categorías
           </Link>
         </div>
       </div>
     </div>
   )
 }
-
-

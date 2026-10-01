@@ -227,7 +227,7 @@ export default function PerfilPage() {
     <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto pb-24 md:pb-8">
       <FadeIn as="header" className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Perfil</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administra tu información y preferencias</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administración de información y preferencias</p>
       </FadeIn>
 
       {mensajeExito && (
@@ -432,7 +432,7 @@ export default function PerfilPage() {
                 >
                   <div>
                     <p className="font-medium text-slate-900 dark:text-slate-100">Cambiar contraseña</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Te enviaremos un correo con instrucciones</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Se enviará un correo con instrucciones</p>
                   </div>
                   <Lock className="w-5 h-5 text-slate-400" />
                 </button>
@@ -443,7 +443,7 @@ export default function PerfilPage() {
                 >
                   <div>
                     <p className="font-medium text-slate-900 dark:text-slate-100">Exportar datos</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Descargar JSON con toda tu información</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Descargar archivo JSON con toda la información</p>
                   </div>
                   <Download className="w-5 h-5 text-slate-400" />
                 </button>
@@ -491,12 +491,12 @@ export default function PerfilPage() {
                 </div>
 
                 <a
-                  href="mailto:soporte@apicasch.com?subject=Soporte%20Apicasch"
+                  href="mailto:soporte@apicash.com?subject=Soporte%20Apicash"
                   className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div>
                     <p className="font-medium text-slate-900 dark:text-slate-100">Soporte / Reportar problema</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Escríbenos por correo</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Contacto por correo electrónico</p>
                   </div>
                   <HelpCircle className="w-5 h-5 text-slate-400" />
                 </a>
@@ -533,7 +533,7 @@ export default function PerfilPage() {
             <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 rounded-t-2xl z-10">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary-500" />
-                Elige tu avatar
+                Seleccionar avatar
               </h3>
               <button onClick={() => setModalAvatar(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                 <X className="w-5 h-5" />
@@ -588,7 +588,7 @@ export default function PerfilPage() {
             </div>
             <div className="p-5 space-y-4">
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Enviaremos un enlace seguro a <strong className="dark:text-slate-100">{perfil?.email}</strong> para que puedas crear una nueva contraseña.
+                Se enviará un enlace seguro a <strong className="dark:text-slate-100">{perfil?.email}</strong> para restablecer la contraseña.
               </p>
               <div className="flex gap-3 pt-2">
                 <button
@@ -637,7 +637,7 @@ export default function PerfilPage() {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Escribe <strong>ELIMINAR</strong> para confirmar
+                  Escriba <strong>ELIMINAR</strong> para confirmar
                 </label>
                 <input
                   type="text"
@@ -694,7 +694,7 @@ export default function PerfilPage() {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Escribe <strong>BORRAR</strong> para confirmar
+                  Escriba <strong>BORRAR</strong> para confirmar
                 </label>
                 <input
                   type="text"

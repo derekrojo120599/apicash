@@ -142,9 +142,9 @@ export default function PresupuestoPage() {
           ) : progreso?.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center text-slate-500 dark:text-slate-400">
               <Target className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
-              <p className="text-lg font-medium text-slate-900 dark:text-slate-200 mb-2">No has definido presupuestos</p>
+              <p className="text-lg font-medium text-slate-900 dark:text-slate-200 mb-2">No hay presupuestos definidos</p>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
-                Empieza a planificar los gastos para este mes y toma el control de las finanzas.
+                Comience a planificar los gastos para este mes y tome el control de sus finanzas.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <AnimatedButton onClick={() => handleOpenEdit()}>

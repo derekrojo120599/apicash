@@ -27,7 +27,7 @@ export default function LoginPage() {
             <ApicashLogo className="w-8 h-8 text-primary-600 dark:text-primary-400" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Bienvenido de nuevo</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Ingresa a tu cuenta para gestionar tus gastos</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Ingrese a su cuenta para gestionar sus finanzas</p>
         </div>
 
         <form action={formAction} className="space-y-4">
@@ -79,9 +79,9 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-          ¿No tienes una cuenta?{' '}
+          ¿No tiene una cuenta?{' '}
           <Link href="/register" className="text-primary-600 dark:text-primary-400 font-medium hover:underline">
-            Regístrate aquí
+            Regístrese aquí
           </Link>
         </p>
       </div>

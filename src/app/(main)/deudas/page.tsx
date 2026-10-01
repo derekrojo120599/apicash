@@ -81,7 +81,7 @@ export default function DeudasPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Confirmas la eliminación de esta deuda? Esta acción no se puede deshacer.')) {
+    if (confirm('¿Confirma la eliminación de esta deuda? Esta acción no se puede deshacer.')) {
       try {
         await eliminarDeuda(id)
       } catch (err) {

@@ -103,7 +103,7 @@ export default function CuentasPage() {
           <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
             <WalletCards className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
             <p className="text-lg font-medium text-slate-900 dark:text-slate-200">Sin cuentas registradas</p>
-            <p className="text-sm mt-1 mb-6">Crea una cuenta para empezar a registrar transacciones.</p>
+            <p className="text-sm mt-1 mb-6">Cree una cuenta para comenzar a registrar transacciones.</p>
             <AnimatedButton variant="secondary" onClick={openCreateModal}>
               Crear primera cuenta
             </AnimatedButton>

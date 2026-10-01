@@ -15,16 +15,16 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Información que recopilamos</h2>
           <p className="text-sm leading-relaxed">
-            Apicasch recopila únicamente la información necesaria para el funcionamiento de la aplicación: tu correo electrónico,
-            nombre opcional, y los datos financieros que ingreses voluntariamente (cuentas, transacciones, metas y deudas).
+            Apicash recopila únicamente la información necesaria para el funcionamiento de la aplicación: correo electrónico,
+            nombre opcional y los datos financieros ingresados voluntariamente (cuentas, transacciones, metas y deudas).
           </p>
         </section>
 
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Uso de la información</h2>
           <p className="text-sm leading-relaxed">
-            Tu información se utiliza exclusivamente para mostrarte tus finanzas personales dentro de la aplicación.
-            No vendemos ni compartimos tus datos con terceros con fines comerciales.
+            La información se utiliza exclusivamente para presentar las finanzas personales dentro de la aplicación.
+            No vendemos ni compartimos sus datos con terceros con fines comerciales.
           </p>
         </section>
 
@@ -37,19 +37,19 @@ export default function PrivacidadPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Tus derechos</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Sus derechos</h2>
           <p className="text-sm leading-relaxed">
-            Podés acceder, modificar o eliminar tus datos en cualquier momento desde la sección de Perfil.
-            Al eliminar tu cuenta, todos tus datos personales y financieros se borran de nuestros sistemas.
+            Puede acceder, modificar o eliminar sus datos en cualquier momento desde la sección de Perfil.
+            Al eliminar su cuenta, todos los datos personales y financieros se borran de nuestros sistemas.
           </p>
         </section>
 
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">5. Contacto</h2>
           <p className="text-sm leading-relaxed">
-            Si tenés preguntas sobre esta política, escribinos a{' '}
-            <a href="mailto:soporte@apicasch.com" className="text-primary-600 dark:text-primary-400 hover:underline">
-              soporte@apicasch.com
+            Si tiene preguntas sobre esta política, escriba a{' '}
+            <a href="mailto:soporte@apicash.com" className="text-primary-600 dark:text-primary-400 hover:underline">
+              soporte@apicash.com
             </a>.
           </p>
         </section>

@@ -165,7 +165,7 @@ export default function AhorrosPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Confirmas la eliminación de esta meta? Esta acción no se puede deshacer.')) {
+    if (confirm('¿Confirma la eliminación de esta meta? Esta acción no se puede deshacer.')) {
       try {
         await eliminarMeta(id)
       } catch (err) {
@@ -181,7 +181,7 @@ export default function AhorrosPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Metas de Ahorro</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registra y sigue el progreso para alcanzar objetivos</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registro y seguimiento del progreso hacia sus objetivos</p>
         </div>
         <AnimatedButton onClick={openCreate}>
           <Plus className="w-5 h-5" />

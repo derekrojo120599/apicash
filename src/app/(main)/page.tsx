@@ -97,7 +97,7 @@ export default function DashboardPage() {
                       />
                     </p>
                     <p className="text-xs text-primary-200">
-                      â‰ˆ <AnimatedNumber value={balance?.ves_en_usd || 0} formatter={formatUSD} duration={1200} delay={400} /> a tasa de {balance?.tasa_usada || 0}
+                      ≈ <AnimatedNumber value={balance?.ves_en_usd || 0} formatter={formatUSD} duration={1200} delay={400} /> a tasa de {balance?.tasa_usada || 0}
                     </p>
                   </div>
                 )}
@@ -193,8 +193,8 @@ export default function DashboardPage() {
           ) : !transacciones || transacciones.length === 0 ? (
             <div className="p-8 text-center text-slate-500 dark:text-slate-400">
               <ArrowRightLeft className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-              <p>AÃºn no hay transacciones para mostrar.</p>
-              <p className="text-sm mt-1">Registra el primer movimiento para visualizar el historial aquíÃ­.</p>
+              <p>Aún no hay transacciones para mostrar.</p>
+              <p className="text-sm mt-1">Registre el primer movimiento para visualizar el historial aquí.</p>
             </div>
           ) : (
             <StaggerContainer
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0">
                       <h4 className={`font-medium truncate ${tx.anulada ? 'line-through text-slate-500' : 'text-slate-900 dark:text-slate-200'}`}>
-                        {tx.descripcion || tx.categorias?.nombre || 'Sin categorÃ­a'}
+                        {tx.descripcion || tx.categorias?.nombre || 'Sin categoría'}
                       </h4>
                       <div className="flex flex-col text-xs text-slate-500 dark:text-slate-400 mt-1 gap-y-0.5">
                         <span className="font-medium text-slate-600 dark:text-slate-300">{tx.cuentas?.nombre}</span>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                     </p>
                     {tx.moneda_original === 'VES' && (
                       <p className="text-xs text-slate-400 dark:text-slate-500">
-                        â‰ˆ {formatUSD(tx.monto_usd_calculado)}
+                        ≈ {formatUSD(tx.monto_usd_calculado)}
                       </p>
                     )}
                     </div>

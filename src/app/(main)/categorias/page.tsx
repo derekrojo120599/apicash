@@ -56,7 +56,7 @@ export default function CategoriesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Confirmas la eliminación de esta categoría? Solo es posible si no posee transacciones asociadas.')) {
+    if (confirm('¿Confirma la eliminación de esta categoría? Solo es posible si no posee transacciones asociadas.')) {
       try {
         await deleteCategory(id)
       } catch (err: unknown) {
@@ -71,7 +71,7 @@ export default function CategoriesPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Categorías</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administra las clasificaciones de los movimientos</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Administración de clasificaciones de movimientos</p>
         </div>
         <AnimatedButton onClick={openCreate}>
           <Plus className="w-5 h-5" />
@@ -86,7 +86,7 @@ export default function CategoriesPage() {
           <AnimatedCard className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center cursor-default">
             <FolderOpen className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
             <p className="text-lg font-medium text-slate-900 dark:text-slate-200">No hay categorías</p>
-            <p className="text-sm mt-1 mb-6">Crea categorías para organizar mejor las finanzas.</p>
+            <p className="text-sm mt-1 mb-6">Cree categorías para organizar mejor sus finanzas.</p>
             <AnimatedButton variant="secondary" onClick={openCreate}>
               Crear primera categoría
             </AnimatedButton>

@@ -112,11 +112,11 @@ export function InstallPrompt() {
         </div>
 
         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 relative">
-          Instala Apicash
+          Instalar Apicash
         </h2>
         
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 relative">
-          Para una experiencia inmersiva y rápida, instala la app en tu dispositivo. ¡Ocupa muy poco espacio!
+          Para una experiencia inmersiva y rápida, instale la aplicación en su dispositivo. Ocupa un espacio mínimo.
         </p>
 
         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-6 border border-slate-100 dark:border-slate-800">
@@ -126,13 +126,13 @@ export function InstallPrompt() {
                 <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
                   <Share className="w-4 h-4 text-blue-500" />
                 </div>
-                <span>1. Toca el botón <strong>Compartir</strong> en la barra inferior.</span>
+                <span>1. Pulse el botón <strong>Compartir</strong> en la barra inferior.</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
                   <PlusSquare className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 </div>
-                <span>2. Selecciona <strong>Añadir a pantalla de inicio</strong>.</span>
+                <span>2. Seleccione <strong>Añadir a pantalla de inicio</strong>.</span>
               </div>
             </div>
           )}
@@ -143,13 +143,13 @@ export function InstallPrompt() {
                 <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
                   <MoreVertical className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 </div>
-                <span>1. Toca el <strong>Menú</strong> en la esquina del navegador.</span>
+                <span>1. Pulse el botón de <strong>Menú (⋮)</strong> en el navegador.</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
                   <Download className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 </div>
-                <span>2. Selecciona <strong>Instalar aplicación</strong>.</span>
+                <span>2. Seleccione <strong>Instalar aplicación</strong>.</span>
               </div>
             </div>
           )}
@@ -160,7 +160,7 @@ export function InstallPrompt() {
                 <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
                   <MonitorDown className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 </div>
-                <span>Haz clic en el <strong>icono de instalar</strong> en el extremo derecho de la barra de direcciones.</span>
+                <span>Haga clic en el <strong>icono de instalar</strong> en la barra de direcciones.</span>
               </div>
             </div>
           )}

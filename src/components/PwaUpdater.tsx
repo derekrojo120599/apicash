@@ -58,7 +58,7 @@ export function PwaUpdater() {
       </div>
       <div className="flex-1">
         <h3 className="font-bold text-sm">Nueva versión disponible</h3>
-        <p className="text-xs text-slate-300 mt-1">Actualiza la aplicación para obtener las últimas mejoras y correcciones.</p>
+        <p className="text-xs text-slate-300 mt-1">Actualice la aplicación para obtener las últimas mejoras y correcciones.</p>
         <div className="flex gap-2 mt-3">
           <button 
             onClick={handleUpdate}

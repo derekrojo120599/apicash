@@ -71,7 +71,7 @@ export function MaintenanceModal() {
             Hemos implementado un nuevo motor matemático estricto para calcular las comisiones bancarias y asegurar que no haya errores de precisión.
           </p>
           <p>
-            Es posible que notes comportamientos inusuales mientras migramos la base de datos de producción a esta nueva versión. Agradecemos tu paciencia.
+            Es posible que observe comportamientos inusuales mientras migramos la base de datos de producción a esta nueva versión. Agradecemos su paciencia.
           </p>
         </div>
 

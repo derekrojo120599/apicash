@@ -169,7 +169,7 @@ export default function TransaccionesPage() {
   }
 
   const handleVoidTransaction = async (id: string) => {
-    if (confirm('¿Confirmas la anulación de esta transacción?')) {
+    if (confirm('¿Confirma la anulación de esta transacción?')) {
       try {
         await voidTransaction(id)
       } catch (err) {
@@ -180,7 +180,7 @@ export default function TransaccionesPage() {
   }
 
   const handleMarkAsFailed = async (id: string) => {
-    if (confirm('¿Confirmas que esta operación fue rechazada por el banco? Se te devolverá el saldo y solo se cobrará la comisión mínima de intento.')) {
+    if (confirm('¿Confirma que esta operación fue rechazada por el banco? Se reintegrará el saldo y solo se cobrará la comisión mínima de intento.')) {
       try {
         await markAsFailed(id)
         toastError({ title: 'Operación actualizada', message: 'Se marcó como fallida exitosamente.' })
@@ -193,7 +193,7 @@ export default function TransaccionesPage() {
   }
 
   const handleRestoreTransaction = async (id: string) => {
-    if (confirm('¿Deseas restaurar esta transacción? Esto devolverá el balance a como estaba antes de anularla.')) {
+    if (confirm('¿Desea restaurar esta transacción? Esto restablecerá el balance previo a la anulación.')) {
       try {
         await restoreTransaction(id)
       } catch (err) {

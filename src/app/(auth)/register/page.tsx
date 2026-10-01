@@ -27,7 +27,7 @@ export default function RegisterPage() {
             <ApicashLogo className="w-8 h-8 text-primary-600 dark:text-primary-400" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Crear cuenta</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Comienza a tener el control total de tu dinero</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Comience a tomar el control total de sus finanzas</p>
         </div>
 
         <form action={formAction} className="space-y-4">
@@ -94,9 +94,9 @@ export default function RegisterPage() {
         </form>
 
         <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-          ¿Ya tienes una cuenta?{' '}
+          ¿Ya tiene una cuenta?{' '}
           <Link href="/login" className="text-primary-600 dark:text-primary-400 font-medium hover:underline">
-            Inicia sesión
+            Iniciar sesión
           </Link>
         </p>
       </div>

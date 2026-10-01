@@ -15,15 +15,15 @@ export default function TerminosPage() {
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Aceptación de los términos</h2>
           <p className="text-sm leading-relaxed">
-            Al usar Apicasch, aceptás estos términos de servicio. Si no estás de acuerdo, no utilices la aplicación.
+            Al usar Apicash, acepta estos términos de servicio. Si no está de acuerdo, no utilice la aplicación.
           </p>
         </section>
 
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Uso de la aplicación</h2>
           <p className="text-sm leading-relaxed">
-            Apicasch es una herramienta personal de control de gastos. Es tu responsabilidad ingresar datos correctos y
-            mantener la confidencialidad de tu contraseña. No utilices la aplicación para actividades ilegales.
+            Apicash es una herramienta personal de control de finanzas. Es su responsabilidad ingresar datos correctos y
+            mantener la confidencialidad de su contraseña. No utilice la aplicación para actividades ilícitas.
           </p>
         </section>
 
@@ -38,7 +38,7 @@ export default function TerminosPage() {
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Limitación de responsabilidad</h2>
           <p className="text-sm leading-relaxed">
-            Apicasch se proporciona &quot;tal cual&quot; sin garantías de precisión financiera. Las conversiones de moneda dependen
+            Apicash se proporciona &quot;tal cual&quot; sin garantías de precisión financiera. Las conversiones de moneda dependen
             de tasas de terceros y deben usarse solo como referencia.
           </p>
         </section>
@@ -46,9 +46,9 @@ export default function TerminosPage() {
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">5. Contacto</h2>
           <p className="text-sm leading-relaxed">
-            Para consultas sobre estos términos, escribinos a{' '}
-            <a href="mailto:soporte@apicasch.com" className="text-primary-600 dark:text-primary-400 hover:underline">
-              soporte@apicasch.com
+            Para consultas sobre estos términos, escriba a{' '}
+            <a href="mailto:soporte@apicash.com" className="text-primary-600 dark:text-primary-400 hover:underline">
+              soporte@apicash.com
             </a>.
           </p>
         </section>
