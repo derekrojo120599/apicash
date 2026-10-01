@@ -1,9 +1,11 @@
 ﻿'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
 import { useUltimasTransacciones } from '@/hooks/useTransacciones'
 import { ApicashLogo } from '@/components/ApicashLogo'
+import { ModalNuevaTransaccion } from '@/components/ModalNuevaTransaccion'
 import { TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft, Plus } from 'lucide-react'
 import {
   FadeIn,
@@ -17,6 +19,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
+  const [modalAbierto, setModalAbierto] = useState(false)
   const { data: balance, isLoading: loadingBalance } = useBalanceNeto()
   const { data: resumen, isLoading: loadingResumen } = useResumenMes()
   const { data: transacciones, isLoading: loadingTx } = useUltimasTransacciones(5)
@@ -36,12 +39,10 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Resumen Financiero</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control de finanzas en USD y VES</p>
         </div>
-        <Link href="/transacciones">
-          <AnimatedButton>
-            <Plus className="w-4 h-4" />
-            Nuevo movimiento
-          </AnimatedButton>
-        </Link>
+        <AnimatedButton onClick={() => setModalAbierto(true)}>
+          <Plus className="w-4 h-4" />
+          Nuevo movimiento
+        </AnimatedButton>
       </FadeIn>
 
       {/* Main Balance Card */}
@@ -248,6 +249,12 @@ export default function DashboardPage() {
           )}
         </div>
       </FadeIn>
+
+      {/* Modal para registrar nueva transacción */}
+      <ModalNuevaTransaccion
+        isOpen={modalAbierto}
+        onClose={() => setModalAbierto(false)}
+      />
     </div>
   )
 }
