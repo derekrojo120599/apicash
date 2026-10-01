@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useBalanceNeto, useResumenMes } from '@/hooks/useDashboard'
 import { useUltimasTransacciones } from '@/hooks/useTransacciones'
 import { ApicashLogo } from '@/components/ApicashLogo'
-import { ModalNuevaTransaccion } from '@/components/ModalNuevaTransaccion'
+import { NewTransactionModal } from '@/components/NewTransactionModal'
 import { TrendingUp, TrendingDown, PiggyBank, Receipt, ArrowRightLeft, Plus } from 'lucide-react'
 import {
   FadeIn,
@@ -19,10 +19,10 @@ import {
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
-  const [modalAbierto, setModalAbierto] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: balance, isLoading: loadingBalance } = useBalanceNeto()
-  const { data: resumen, isLoading: loadingResumen } = useResumenMes()
-  const { data: transacciones, isLoading: loadingTx } = useUltimasTransacciones(5)
+  const { data: summary, isLoading: loadingSummary } = useResumenMes()
+  const { data: transactions, isLoading: loadingTx } = useUltimasTransacciones(5)
 
   const formatUSD = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
@@ -39,7 +39,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Resumen Financiero</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control de finanzas en USD y VES</p>
         </div>
-        <AnimatedButton onClick={() => setModalAbierto(true)}>
+        <AnimatedButton onClick={() => setIsModalOpen(true)}>
           <Plus className="w-4 h-4" />
           Nuevo movimiento
         </AnimatedButton>
@@ -110,7 +110,7 @@ export default function DashboardPage() {
 
       {/* Grid of smaller cards */}
       <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-4" staggerDelay={120}>
-        {/* Ingresos del Mes */}
+        {/* Monthly Income */}
         <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-full">
@@ -118,16 +118,16 @@ export default function DashboardPage() {
             </div>
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ingresos del mes</p>
           </div>
-          {loadingResumen ? (
+          {loadingSummary ? (
             <AnimatedLoader size={28} color="#10b981" />
           ) : (
             <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              <AnimatedNumber value={resumen?.ingresos || 0} formatter={formatUSD} duration={1200} />
+              <AnimatedNumber value={summary?.ingresos || 0} formatter={formatUSD} duration={1200} />
             </p>
           )}
         </AnimatedCard>
 
-        {/* Gastos del Mes */}
+        {/* Monthly Expenses */}
         <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full">
@@ -135,16 +135,16 @@ export default function DashboardPage() {
             </div>
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Gastos del mes</p>
           </div>
-          {loadingResumen ? (
+          {loadingSummary ? (
             <AnimatedLoader size={28} color="#ef4444" />
           ) : (
             <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              <AnimatedNumber value={resumen?.gastos || 0} formatter={formatUSD} duration={1200} />
+              <AnimatedNumber value={summary?.gastos || 0} formatter={formatUSD} duration={1200} />
             </p>
           )}
         </AnimatedCard>
 
-        {/* Ahorros */}
+        {/* Savings */}
         <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full">
@@ -152,16 +152,16 @@ export default function DashboardPage() {
             </div>
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ahorros</p>
           </div>
-          {loadingResumen ? (
+          {loadingSummary ? (
             <AnimatedLoader size={28} color="#3b82f6" />
           ) : (
             <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              <AnimatedNumber value={resumen?.ahorros || 0} formatter={formatUSD} duration={1200} />
+              <AnimatedNumber value={summary?.ahorros || 0} formatter={formatUSD} duration={1200} />
             </p>
           )}
         </AnimatedCard>
 
-        {/* Deuda */}
+        {/* Debt */}
         <AnimatedCard data-anime className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between cursor-default">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-full">
@@ -169,17 +169,17 @@ export default function DashboardPage() {
             </div>
             <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Deuda actual</p>
           </div>
-          {loadingResumen ? (
+          {loadingSummary ? (
             <AnimatedLoader size={28} color="#f97316" />
           ) : (
             <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              <AnimatedNumber value={resumen?.deuda || 0} formatter={formatUSD} duration={1200} />
+              <AnimatedNumber value={summary?.deuda || 0} formatter={formatUSD} duration={1200} />
             </p>
           )}
         </AnimatedCard>
       </StaggerContainer>
 
-      {/* Transacciones Recientes */}
+      {/* Recent Transactions */}
       <FadeIn delay={400} className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Transacciones Recientes</h3>
@@ -191,7 +191,7 @@ export default function DashboardPage() {
               <AnimatedLoader size={40} color="#10b981" className="mb-3" />
               <p>Cargando transacciones...</p>
             </div>
-          ) : !transacciones || transacciones.length === 0 ? (
+          ) : !transactions || transactions.length === 0 ? (
             <div className="p-8 text-center text-slate-500 dark:text-slate-400">
               <ArrowRightLeft className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
               <p>Aún no hay transacciones para mostrar.</p>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
               staggerDelay={80}
               duration={500}
             >
-              {transacciones.slice(0, 5).map(tx => (
+              {transactions.slice(0, 5).map((tx) => (
                 <AnimatedCard
                   data-anime
                   key={tx.id}
@@ -250,10 +250,10 @@ export default function DashboardPage() {
         </div>
       </FadeIn>
 
-      {/* Modal para registrar nueva transacción */}
-      <ModalNuevaTransaccion
-        isOpen={modalAbierto}
-        onClose={() => setModalAbierto(false)}
+      {/* Modal for new transaction */}
+      <NewTransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </div>
   )
