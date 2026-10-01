@@ -137,7 +137,7 @@ export function WhatsNewModal() {
                 Novedades del sistema
               </span>
               <h2 id="whats-new-title" className="text-xl font-bold text-slate-900 dark:text-white">
-                Mejoras recientes en Apicash
+                Mejoras recientes en El Sencillo
               </h2>
             </div>
           </div>

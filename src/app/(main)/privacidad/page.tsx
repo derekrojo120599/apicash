@@ -15,7 +15,7 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Información que recopilamos</h2>
           <p className="text-sm leading-relaxed">
-            Apicash recopila únicamente la información necesaria para el funcionamiento de la aplicación: correo electrónico,
+            El Sencillo recopila únicamente la información necesaria para el funcionamiento de la aplicación: correo electrónico,
             nombre opcional y los datos financieros ingresados voluntariamente (cuentas, transacciones, metas y deudas).
           </p>
         </section>
@@ -48,8 +48,8 @@ export default function PrivacidadPage() {
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">5. Contacto</h2>
           <p className="text-sm leading-relaxed">
             Si tiene preguntas sobre esta política, escriba a{' '}
-            <a href="mailto:soporte@apicash.com" className="text-primary-600 dark:text-primary-400 hover:underline">
-              soporte@apicash.com
+            <a href="mailto:soporte@elsencillo.com" className="text-primary-600 dark:text-primary-400 hover:underline">
+              soporte@elsencillo.com
             </a>.
           </p>
         </section>

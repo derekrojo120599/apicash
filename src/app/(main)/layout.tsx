@@ -41,7 +41,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg">
               <ApicashLogo className="w-5 h-5 md:w-6 md:h-6 text-primary-600 dark:text-primary-400" />
             </div>
-            <span className="font-bold text-lg md:text-xl text-slate-900 dark:text-white">Apicash</span>
+            <span className="font-bold text-lg md:text-xl text-slate-900 dark:text-white">El Sencillo</span>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <div className="bg-primary-100 dark:bg-primary-900/30 p-1.5 rounded-lg">
               <ApicashLogo className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
-            <span className="font-bold text-lg text-slate-900 dark:text-white">Apicash</span>
+            <span className="font-bold text-lg text-slate-900 dark:text-white">El Sencillo</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -130,7 +130,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg">
               <ApicashLogo className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
-            <span className="font-bold text-lg text-slate-900 dark:text-white">Apicash</span>
+            <span className="font-bold text-lg text-slate-900 dark:text-white">El Sencillo</span>
           </div>
           <button
             onClick={handleCloseMobileSidebar}

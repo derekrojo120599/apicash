@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Apicash - Finanzas Personales',
-    short_name: 'Apicash',
+    name: 'El Sencillo - Finanzas Personales',
+    short_name: 'El Sencillo',
     description: 'Control de gastos, ingresos y presupuestos multimoneda en USD y VES con tasas de cambio en tiempo real.',
     start_url: '/',
     id: '/',
@@ -75,14 +75,14 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: '1280x720',
         type: 'image/png',
         form_factor: 'wide',
-        label: 'Panel Principal Apicash'
+        label: 'Panel Principal El Sencillo'
       },
       {
         src: '/screenshot-mobile.png',
         sizes: '720x1280',
         type: 'image/png',
         form_factor: 'narrow',
-        label: 'Vista Móvil Apicash'
+        label: 'Vista Móvil El Sencillo'
       }
     ]
   }

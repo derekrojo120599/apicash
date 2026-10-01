@@ -112,7 +112,7 @@ export function InstallPrompt() {
         </div>
 
         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 relative">
-          Instalar Apicash
+          Instalar El Sencillo
         </h2>
         
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 relative">

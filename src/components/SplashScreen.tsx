@@ -109,7 +109,7 @@ export function SplashScreen() {
       {/* Brand title and slogan */}
       <div ref={textRef} className="opacity-0 translate-y-4 text-center space-y-2 z-10 px-4">
         <h1 className="text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-200 to-emerald-400 uppercase">
-          Apicash
+          El Sencillo
         </h1>
         <p className="text-xs font-medium tracking-wider text-slate-400 uppercase">
           Tus finanzas en USD & VES

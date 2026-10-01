@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Apicash",
-  description: "Apicash - Control de gastos en USD y VES",
+  title: "El Sencillo",
+  description: "El Sencillo - Control de gastos en USD y VES",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/apicash.svg",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Apicash",
+    title: "El Sencillo",
   },
   other: {
     "mobile-web-app-capable": "yes",
@@ -63,7 +63,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Apicash" />
+        <meta name="apple-mobile-web-app-title" content="El Sencillo" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script

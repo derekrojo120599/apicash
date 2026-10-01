@@ -491,7 +491,7 @@ export default function PerfilPage() {
                 </div>
 
                 <a
-                  href="mailto:soporte@apicash.com?subject=Soporte%20Apicash"
+                  href="mailto:soporte@elsencillo.com?subject=Soporte%20El%20Sencillo"
                   className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div>

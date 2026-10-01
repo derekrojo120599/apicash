@@ -189,10 +189,10 @@ export default function GuidePage() {
           <span>Guía de Introducción</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Bienvenido al Control Financiero de Apicash
+          Bienvenido al Control Financiero de El Sencillo
         </h1>
         <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg max-w-3xl leading-relaxed">
-          Esta guía interactiva detalla el funcionamiento paso a paso de cada módulo de Apicash. 
+          Esta guía interactiva detalla el funcionamiento paso a paso de cada módulo de El Sencillo. 
           Aprenda a gestionar sus finanzas bimonetarias con precisión, tanto en dólares (USD) como en bolívares (VES).
         </p>
       </header>
@@ -259,7 +259,7 @@ export default function GuidePage() {
             </div>
           </div>
           <p className="text-sm text-slate-400 md:max-w-xs">
-            Disfrute de Apicash a pantalla completa, sin barras del navegador y con acceso instantáneo desde su pantalla de inicio.
+            Disfrute de El Sencillo a pantalla completa, sin barras del navegador y con acceso instantáneo desde su pantalla de inicio.
           </p>
         </div>
 
@@ -275,7 +275,7 @@ export default function GuidePage() {
             <ol className="space-y-3 text-sm text-slate-300">
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">1</span>
-                <span>Abra <strong>Apicash</strong> en el navegador <strong>Google Chrome</strong> o <strong>Brave</strong>.</span>
+                <span>Abra <strong>El Sencillo</strong> en el navegador <strong>Google Chrome</strong> o <strong>Brave</strong>.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">2</span>
@@ -287,7 +287,7 @@ export default function GuidePage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">4</span>
-                <span>Abra la aplicación desde el <strong>icono de Apicash</strong> en su pantalla de inicio.</span>
+                <span>Abra la aplicación desde el <strong>icono de El Sencillo</strong> en su pantalla de inicio.</span>
               </li>
             </ol>
           </div>
@@ -303,7 +303,7 @@ export default function GuidePage() {
             <ol className="space-y-3 text-sm text-slate-300">
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">1</span>
-                <span>Abra el enlace de <strong>Apicash</strong> en el navegador <strong>Safari</strong>.</span>
+                <span>Abra el enlace de <strong>El Sencillo</strong> en el navegador <strong>Safari</strong>.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">2</span>
@@ -337,7 +337,7 @@ export default function GuidePage() {
               Módulos del Sistema
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-              Guía descriptiva de cada sección de Apicash y sus funciones clave
+              Guía descriptiva de cada sección de El Sencillo y sus funciones clave
             </p>
           </div>
         </div>
