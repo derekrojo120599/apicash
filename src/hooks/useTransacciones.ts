@@ -14,6 +14,9 @@ export interface Transaccion {
   descripcion: string
   fecha: string
   anulada: boolean
+  deuda_id?: string | null
+  meta_id?: string | null
+  monto_impacto_auxiliar?: number | null
   
   cuentas?: { nombre: string, moneda: string }
   categorias?: { nombre: string, icono: string, tipo: string }
@@ -290,6 +293,8 @@ export function useAnularTransaccion() {
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
       queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['deudas'] })
+      queryClient.invalidateQueries({ queryKey: ['metas'] })
       queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
       queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
     }
@@ -367,6 +372,8 @@ export function useRestaurarTransaccion() {
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
       queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['deudas'] })
+      queryClient.invalidateQueries({ queryKey: ['metas'] })
       queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
       queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
     }
