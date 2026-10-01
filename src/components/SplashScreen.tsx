@@ -20,42 +20,42 @@ export function SplashScreen() {
       return;
     }
 
-    // Entrance animation timeline
+    // Entrance animation timeline - fast & punchy
     const logoAnim = animate(logoRef.current!, {
-      scale: [0.75, 1],
+      scale: [0.8, 1],
       opacity: [0, 1],
-      duration: 650,
+      duration: 350,
       ease: 'outExpo',
     });
 
     const ringAnim = animate(ringRef.current!, {
-      scale: [0.6, 1.25],
-      opacity: [0, 0.45, 0.1],
-      duration: 900,
+      scale: [0.7, 1.2],
+      opacity: [0, 0.4, 0.05],
+      duration: 500,
       ease: 'outQuad',
     });
 
     const textAnim = animate(textRef.current!, {
-      translateY: [16, 0],
+      translateY: [12, 0],
       opacity: [0, 1],
-      duration: 550,
-      delay: 150,
+      duration: 300,
+      delay: 80,
       ease: 'outCubic',
     });
 
     const progressAnim = animate(progressRef.current!, {
       width: ['0%', '100%'],
-      duration: 950,
+      duration: 500,
       ease: 'inOutQuad',
     });
 
-    // Exit animation after splash completes
+    // Exit animation as soon as the brand is presented
     const timer = setTimeout(() => {
       if (containerRef.current) {
         animate(containerRef.current, {
           opacity: [1, 0],
-          scale: [1, 1.03],
-          duration: 400,
+          scale: [1, 1.02],
+          duration: 250,
           ease: 'inOutCubic',
           onComplete: () => {
             sessionStorage.setItem('apicash_splash_shown', 'true');
@@ -66,7 +66,7 @@ export function SplashScreen() {
         sessionStorage.setItem('apicash_splash_shown', 'true');
         setShow(false);
       }
-    }, 1100);
+    }, 600);
 
     return () => {
       clearTimeout(timer);

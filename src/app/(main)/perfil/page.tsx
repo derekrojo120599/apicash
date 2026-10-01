@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamicImport from 'next/dynamic'
 import { usePerfil, useActualizarPerfil, useSolicitarCambioPassword, useEliminarCuenta, useBorrarDatos } from '@/hooks/usePerfil'
 import { useTasasFuentes } from '@/hooks/useTasasFuentes'
 import { useStatsPerfil } from '@/hooks/useStatsPerfil'
@@ -9,8 +10,22 @@ import { useToast } from '@/hooks/useToast'
 import { createClient } from '@/utils/supabase/client'
 import { AvatarDiceBear } from '@/components/AvatarDiceBear'
 import { ThemeSelector } from '@/components/ThemeSelector'
-import { PerfilStatsSection } from '@/components/PerfilStatsSection'
 import { FadeIn, AnimatedCard, AnimatedLoader, AnimatedSelect } from '@/components/animations'
+
+const PerfilStatsSection = dynamicImport(
+  () => import('@/components/PerfilStatsSection').then((mod) => mod.PerfilStatsSection),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-6 bg-surface border border-border rounded-2xl flex items-center justify-center min-h-[220px]">
+        <div className="flex items-center gap-2 text-text-secondary text-sm">
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span>Cargando estadísticas...</span>
+        </div>
+      </div>
+    ),
+  }
+)
 import { User, Mail, Calendar, RefreshCw, Lock, Trash2, Package, HelpCircle, Save, X, AlertTriangle, Loader2, Sparkles, TrendingUp, Download, FileText, Shield, BarChart3, Pencil } from 'lucide-react'
 
 export const dynamic = 'force-dynamic';
