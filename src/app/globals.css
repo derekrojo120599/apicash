@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -100,6 +101,7 @@
 .dark {
   --background: #020617; /* slate-950 */
   --foreground: #f8fafc; /* slate-50 */
+  color-scheme: dark;
 }
 
 body {

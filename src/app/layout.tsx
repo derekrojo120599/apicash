@@ -74,6 +74,13 @@ export default function RootLayout({
                 if (savedTheme) {
                   document.documentElement.setAttribute('data-theme', savedTheme);
                 }
+                var colorMode = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (colorMode === 'dark' || ((!colorMode || colorMode === 'system') && prefersDark)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
                 if (sessionStorage.getItem('apicash_splash_shown')) {
                   document.documentElement.classList.add('splash-hidden');
                 }
