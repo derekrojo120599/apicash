@@ -34,6 +34,7 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
   const [operationSubtype, setOperationSubtype] = useState<string | null>(null)
   const [isFailed, setIsFailed] = useState(false)
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Sync default account when opening the modal if no account is selected
   const activeAccountId = useMemo(() => {
@@ -77,6 +78,7 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (isSubmitting) return
     setError('')
     
     const currentAccount = selectedAccount
@@ -107,6 +109,7 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
       return
     }
 
+    setIsSubmitting(true)
     try {
       if (formData.tipo === 'transferencia') {
         const destinationAccount = accounts?.find(c => c.id === formData.cuenta_destino_id)
@@ -154,6 +157,8 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al guardar la transacción'
       setError(msg.includes('No hay tasa de cambio') ? 'No hay tasa de cambio disponible. Contacte a soporte.' : msg)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -372,15 +377,17 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Guardar
+              {isSubmitting ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </form>

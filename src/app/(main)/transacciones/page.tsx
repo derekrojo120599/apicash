@@ -1,23 +1,18 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { useTransacciones, useCrearTransaccion, useAnularTransaccion, useRestaurarTransaccion, useMarcarOperacionFallida, Transaccion } from '@/hooks/useTransacciones'
-import { useCuentas } from '@/hooks/useCuentas'
-import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
+import { useState, useEffect } from 'react'
+import { useTransacciones, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
+import { useCategorias } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
 import { Plus, X, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
-import { CreatableCategorySelect } from '@/components/CreatableCategorySelect'
-import { useComisionesConfig } from '@/hooks/useComisionesConfig'
-import { previewComision } from '@/utils/comisiones'
+import { NewTransactionModal } from '@/components/NewTransactionModal'
 
 export const dynamic = 'force-dynamic';
 
-type ModalMode = 'create' | null
-
 export default function TransaccionesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [modalMode, setModalMode] = useState<ModalMode>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedTx, setSelectedTx] = useState<Transaccion | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -27,146 +22,16 @@ export default function TransaccionesPage() {
   
   // Data Fetching
   const { data: transactions, isLoading: loadingTx } = useTransacciones(currentMonth)
-  const { data: accounts } = useCuentas()
   const { data: categories } = useCategorias()
-  const { data: currentRate } = useTasaActual()
-  const { data: commissionsConfig } = useComisionesConfig()
   
   // Mutations
-  const { mutateAsync: createTransaction } = useCrearTransaccion()
   const { mutateAsync: voidTransaction } = useAnularTransaccion()
   const { mutateAsync: restoreTransaction } = useRestaurarTransaccion()
-  const { mutateAsync: markAsFailed } = useMarcarOperacionFallida()
 
-  // Form State
-  const [formData, setFormData] = useState({
-    cuenta_id: '',
-    cuenta_destino_id: '', // Added for transferences
-    categoria_id: '',
-    tipo: 'gasto',
-    monto_original: '',
-    descripcion: ''
-  })
-  const [operationSubtype, setOperationSubtype] = useState<string | null>(null)
-  const [isFailed, setIsFailed] = useState(false)
-  const [error, setError] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
 
   const { error: toastError } = useToast()
-
-  const openCreateModal = () => {
-    setFormData({
-      cuenta_id: accounts?.find(c => c.activa)?.id || '',
-      cuenta_destino_id: '',
-      categoria_id: '',
-      tipo: 'gasto',
-      monto_original: '',
-      descripcion: ''
-    })
-    setError('')
-    setModalMode('create')
-  }
-
-  const closeModal = () => {
-    setModalMode(null)
-  }
-
-  const selectedAccount = useMemo(() => {
-    return accounts?.find(c => c.id === formData.cuenta_id)
-  }, [formData.cuenta_id, accounts])
-
-  const currentCommission = useMemo(() => {
-    if (!operationSubtype || !formData.monto_original || !commissionsConfig) return null;
-    const config = commissionsConfig.find(c => c.subtipo_operacion === operationSubtype);
-    if (!config) return null;
-
-    try {
-      return previewComision(
-        formData.monto_original,
-        config,
-        isFailed
-      );
-    } catch {
-      return null;
-    }
-  }, [operationSubtype, formData.monto_original, commissionsConfig, isFailed])
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError('')
-    
-    if (!selectedAccount) {
-      setError('Seleccione una cuenta válida')
-      return
-    }
-
-    if (formData.tipo !== 'transferencia' && !formData.categoria_id) {
-      setError('Seleccione una categoría')
-      return
-    }
-
-    if (formData.tipo === 'transferencia' && !formData.cuenta_destino_id) {
-      setError('Seleccione una cuenta de destino')
-      return
-    }
-
-    if (formData.tipo === 'transferencia' && formData.cuenta_id === formData.cuenta_destino_id) {
-      setError('La cuenta origen y destino no pueden ser la misma')
-      return
-    }
-
-    if ((formData.tipo === 'gasto' || formData.tipo === 'transferencia') && Number(formData.monto_original) > selectedAccount.saldo_cache) {
-      // Soft check on principal. The backend RPC does a strict check including commissions.
-      setError(`El monto principal supera el saldo disponible. Hay ${formatMoney(selectedAccount.saldo_cache, selectedAccount.moneda)} en esta cuenta.`)
-      return
-    }
-
-    try {
-      if (formData.tipo === 'transferencia') {
-        const destinationAccount = accounts?.find(c => c.id === formData.cuenta_destino_id)
-        if (!destinationAccount) throw new Error('Cuenta destino inválida')
-        
-        if (selectedAccount.moneda !== destinationAccount.moneda) {
-          setError('Por ahora solo se permiten transferencias entre cuentas con la misma moneda')
-          return
-        }
-
-        // Create the expense transaction (outgoing) for the origin account
-        await createTransaction({
-          cuenta_id: formData.cuenta_id,
-          tipo: 'gasto',
-          monto_original: Number(formData.monto_original),
-          moneda_original: selectedAccount.moneda,
-          descripcion: formData.descripcion || `Transferencia a ${destinationAccount.nombre}`
-        })
-
-        // Create the income transaction for the destination account
-        await createTransaction({
-          cuenta_id: formData.cuenta_destino_id,
-          tipo: 'ingreso',
-          monto_original: Number(formData.monto_original),
-          moneda_original: destinationAccount.moneda,
-          descripcion: formData.descripcion || `Transferencia desde ${selectedAccount.nombre}`
-        })
-
-      } else {
-        await createTransaction({
-          cuenta_id: formData.cuenta_id,
-          categoria_id: formData.categoria_id || undefined,
-          tipo: formData.tipo,
-          monto_original: Number(formData.monto_original),
-          moneda_original: selectedAccount.moneda,
-          descripcion: formData.descripcion
-        })
-      }
-      closeModal()
-    } catch (err) {
-      // Handle custom trigger error or other errors
-      const msg = err instanceof Error ? err.message : 'Error al guardar la transacción'
-      setError(msg.includes('No hay tasa de cambio') ? 'No hay tasa de cambio disponible. Contacte soporte.' : msg)
-    }
-  }
 
   const handleVoidTransaction = async (id: string) => {
     if (confirm('¿Confirma la anulación de esta transacción?')) {
@@ -175,19 +40,6 @@ export default function TransaccionesPage() {
       } catch (err) {
         console.error("Error voiding transaction:", err)
         toastError({ title: 'Error al anular', message: 'No se pudo anular la transacción.' })
-      }
-    }
-  }
-
-  const handleMarkAsFailed = async (id: string) => {
-    if (confirm('¿Confirma que esta operación fue rechazada por el banco? Se reintegrará el saldo y solo se cobrará la comisión mínima de intento.')) {
-      try {
-        await markAsFailed(id)
-        toastError({ title: 'Operación actualizada', message: 'Se marcó como fallida exitosamente.' })
-        setModalMode(null)
-      } catch (err) {
-        console.error("Error marking as failed:", err)
-        toastError({ title: 'Error', message: err instanceof Error ? err.message : 'No se pudo marcar como fallida.' })
       }
     }
   }
@@ -229,7 +81,7 @@ export default function TransaccionesPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transacciones</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registro y revisión de movimientos del mes</p>
         </div>
-        <AnimatedButton onClick={openCreateModal}>
+        <AnimatedButton onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="w-5 h-5" />
           Nueva transacción
         </AnimatedButton>
@@ -400,234 +252,10 @@ export default function TransaccionesPage() {
       </div>
 
       {/* Create Modal */}
-      {modalMode === 'create' && (
-        <div className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/80 flex items-end md:items-center justify-center md:p-4 z-50 transition-all">
-          <div className="bg-white dark:bg-slate-900 rounded-t-2xl md:rounded-2xl w-full md:max-w-md shadow-xl overflow-visible mt-auto md:my-8 border-t md:border border-slate-200 dark:border-slate-800 max-h-[90vh] md:max-h-none flex flex-col">
-            <div className="flex justify-between items-center p-4 md:p-6 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 bg-white dark:bg-slate-900 rounded-t-2xl z-10 transition-colors">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Nueva Transacción</h2>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 overflow-y-auto">
-              <div className="flex flex-wrap gap-2 mb-4">
-      <div className="flex-1 min-w-[100px]">
-        <button
-          type="button"
-          onClick={() => setFormData({...formData, tipo: 'gasto'})}
-          className={`w-full py-2 px-2 rounded-lg font-medium border-2 transition-all text-sm sm:text-base ${
-            formData.tipo === 'gasto' ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          Gasto
-        </button>
-      </div>
-      <div className="flex-1 min-w-[100px]">
-        <button
-          type="button"
-          onClick={() => setFormData({...formData, tipo: 'ingreso'})}
-          className={`w-full py-2 px-2 rounded-lg font-medium border-2 transition-all text-sm sm:text-base ${
-            formData.tipo === 'ingreso' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          Ingreso
-        </button>
-      </div>
-      <div className="flex-1 min-w-[100px]">
-        <button
-          type="button"
-          onClick={() => setFormData({...formData, tipo: 'transferencia'})}
-          className={`w-full py-2 px-2 rounded-lg font-medium border-2 transition-all text-sm sm:text-base ${
-            formData.tipo === 'transferencia' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'border-transparent bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          Traspaso
-        </button>
-      </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {formData.tipo === 'transferencia' ? 'Cuenta origen' : 'Cuenta origen/destino'}
-                </label>
-                <AnimatedSelect
-                  value={formData.cuenta_id}
-                  onChange={(v) => setFormData({...formData, cuenta_id: v})}
-                  options={[
-                    { value: '', label: 'Seleccione una cuenta', disabled: true },
-                    ...(accounts?.filter(c => c.activa).map(c => ({
-                      value: c.id,
-                      label: `${c.nombre} (${c.moneda}) - ${formatMoney(c.saldo_cache, c.moneda)}`
-                    })) || [])
-                  ]}
-                  placeholder="Seleccione una cuenta"
-                  required
-                  accent="emerald"
-                />
-                
-                {/* IMPORTANT EXCHANGE RATE WARNING */}
-                {selectedAccount?.moneda === 'VES' && (
-                  <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-lg text-sm text-blue-800 dark:text-blue-300 flex flex-col gap-1 transition-colors">
-                    <span className="font-semibold">Información de conversión:</span>
-                    {currentRate ? (
-                      <>
-                        <span>Tasa actual: <strong className="text-blue-900 dark:text-blue-200 font-bold">{currentRate} VES/USD</strong>.</span>
-                        {formData.monto_original && Number(formData.monto_original) > 0 && (
-                          <span className="mt-1 bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded inline-block w-max">
-                            Equivalente estimado: <strong className="text-primary-700 dark:text-primary-400">≈ ${(Number(formData.monto_original) / currentRate).toFixed(2)} USD</strong>
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-red-600 dark:text-red-400 font-bold">¡Atención! No hay tasa de cambio registrada en el sistema. La transacción fallará.</span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.tipo === 'banco' && (
-                <div className="space-y-4 mb-4">
-                  <div className="space-y-1 animate-in fade-in zoom-in-95 duration-200">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>
-                    <AnimatedSelect
-                      value={operationSubtype || ''}
-                      onChange={(v) => setOperationSubtype(v === '' ? null : v)}
-                      options={
-                        selectedAccount.moneda === 'VES' ? [
-                          { value: '', label: 'Seleccione un método', disabled: true },
-                          { value: 'pm_p2p', label: '📱 Pago Móvil' },
-                          { value: 'pm_p2c', label: '🏢 Pago Móvil Empresa (P2C)' },
-                          { value: 'punto_venta', label: '💳 Punto de Venta' },
-                          { value: 'transferencia_mismo_banco', label: '🏦 Transferencia (Mismo Banco)' },
-                          { value: 'transferencia_interbancaria', label: '⏳ Transferencia (Otros Bancos)' }
-                        ] : [
-                          { value: '', label: 'Seleccione un método', disabled: true },
-                          { value: 'tarjeta_usd_nacional', label: '💳 Tarjeta en Dólares (Aplica IGTF)' },
-                          { value: 'transferencia_usd', label: '🏦 Transferencia / Retiro' }
-                        ]
-                      }
-                      placeholder="Seleccione el método"
-                      accent="emerald"
-                    />
-                  </div>
-
-                  {operationSubtype && ['pm_p2p', 'pm_p2c', 'transferencia_interbancaria'].includes(operationSubtype) && (
-                    <label className="flex items-center gap-2 cursor-pointer animate-in fade-in duration-200">
-                      <input 
-                        type="checkbox" 
-                        checked={isFailed}
-                        onChange={e => setIsFailed(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Operación fallida (solo cobra comisión por intento)
-                      </span>
-                    </label>
-                  )}
-
-                  {currentCommission && (
-                    <div className="mt-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-lg text-sm text-indigo-800 dark:text-indigo-300 flex flex-col gap-1 transition-colors animate-in fade-in zoom-in-95 duration-200">
-                      <span className="font-semibold">Comisión estimada (BCV):</span>
-                      <span>Se cobrará una comisión de <strong className="text-indigo-900 dark:text-indigo-200 font-bold">{currentCommission.comisionFinal} VES</strong>.</span>
-                      {Number(currentCommission.comisionFinal) > 0 && currentRate && (
-                        <span className="mt-1 bg-white/50 dark:bg-slate-950/50 px-2 py-1 rounded inline-block w-max">
-                          Equivalente: <strong className="text-indigo-900 dark:text-indigo-200">≈ ${(Number(currentCommission.comisionFinal) / currentRate).toFixed(2)} USD</strong>
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {formData.tipo === 'transferencia' && (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cuenta destino</label>
-                  <AnimatedSelect
-                    value={formData.cuenta_destino_id}
-                    onChange={(v) => setFormData({...formData, cuenta_destino_id: v})}
-                    options={[
-                      { value: '', label: 'Seleccione cuenta destino', disabled: true },
-                      ...(accounts?.filter(c => c.activa && c.moneda === selectedAccount?.moneda && c.id !== formData.cuenta_id).map(c => ({
-                        value: c.id,
-                        label: `${c.nombre} (${c.moneda})`
-                      })) || [])
-                    ]}
-                    placeholder="Seleccione cuenta destino"
-                    required
-                    accent="emerald"
-                  />
-                  {formData.tipo === 'transferencia' && selectedAccount && accounts?.filter(c => c.activa && c.moneda === selectedAccount.moneda && c.id !== formData.cuenta_id).length === 0 && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                      No tienes otra cuenta en {selectedAccount.moneda} diferente a la de origen para recibir la transferencia.
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto ({selectedAccount?.moneda || '...'})</label>
-                <input
-                  type="number"
-                  required
-                  step="0.01"
-                  min="0.01"
-                  value={formData.monto_original}
-                  onChange={e => setFormData({...formData, monto_original: e.target.value})}
-                  className="w-full px-4 py-2 text-xl font-bold border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {formData.tipo !== 'transferencia' && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Categoría</label>
-                  <CreatableCategorySelect
-                    value={formData.categoria_id}
-                    onChange={(v) => setFormData({...formData, categoria_id: v})}
-                    categories={categories || []}
-                    tipo={formData.tipo as 'gasto' | 'ingreso'}
-                    placeholder="Seleccionar Categoría..."
-                  />
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Descripción (Opcional)</label>
-                <input
-                  type="text"
-                  value={formData.descripcion}
-                  onChange={e => setFormData({...formData, descripcion: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 transition-colors"
-                  placeholder="Ej: Mercado quincenal"
-                />
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-100 dark:border-red-900/50">
-                  {error}
-                </div>
-              )}
-
-              <div className="pt-4 flex gap-3 pb-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium flex justify-center items-center"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <NewTransactionModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
 
       {/* Details Modal */}
       {selectedTx && (
