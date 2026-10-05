@@ -131,6 +131,7 @@ export default function TransaccionesPage() {
                 { value: '', label: 'Todos los tipos' },
                 { value: 'ingreso', label: 'Solo Ingresos' },
                 { value: 'gasto', label: 'Solo Gastos' },
+                { value: 'transferencia', label: 'Solo Traspasos' },
                 { value: 'ahorro', label: 'Solo Ahorros' }
               ]}
               placeholder="Todos los tipos"
@@ -180,8 +181,8 @@ export default function TransaccionesPage() {
               >
                 <div className="flex items-start gap-4 min-w-0">
                   <div className={`shrink-0 p-3 rounded-full ${
-                    tx.tipo === 'ingreso' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' :
-                    tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                    tx.tipo === 'ingreso' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' :
+                    tx.tipo === 'gasto' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'salida') ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
                     'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                   }`}>
                     <ArrowRightLeft className="w-5 h-5" />
@@ -207,9 +208,9 @@ export default function TransaccionesPage() {
                 <div className="flex items-start justify-end gap-4 shrink-0 pl-4">
                   <div className="text-right flex-none">
                     <p className={`font-bold ${
-                      tx.tipo === 'ingreso' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-slate-200'
+                      tx.tipo === 'ingreso' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
-                      {tx.tipo === 'ingreso' ? '+' : '-'}
+                      {tx.tipo === 'ingreso' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') ? '+' : '-'}
                       <AnimatedNumber
                         value={tx.monto_original}
                         formatter={(v) => formatMoney(v, tx.moneda_original)}
@@ -275,9 +276,9 @@ export default function TransaccionesPage() {
               <div className="text-center pb-4 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1 uppercase tracking-wider">{selectedTx.tipo}</p>
                 <p className={`text-4xl font-bold ${
-                  selectedTx.tipo === 'ingreso' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-white'
+                  selectedTx.tipo === 'ingreso' || (selectedTx.tipo === 'transferencia' && selectedTx.transferencia_direccion === 'entrada') ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-white'
                 } ${selectedTx.anulada ? 'line-through text-slate-400 dark:text-slate-500' : ''}`}>
-                  {selectedTx.tipo === 'ingreso' ? '+' : '-'}
+                  {selectedTx.tipo === 'ingreso' || (selectedTx.tipo === 'transferencia' && selectedTx.transferencia_direccion === 'entrada') ? '+' : '-'}
                   {formatMoney(selectedTx.monto_original, selectedTx.moneda_original)}
                 </p>
                 {selectedTx.moneda_original === 'VES' && (

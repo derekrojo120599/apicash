@@ -211,8 +211,8 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start gap-4 min-w-0">
                     <div className={`shrink-0 p-3 rounded-full ${
-                      tx.tipo === 'ingreso' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' :
-                      tx.tipo === 'gasto' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                      tx.tipo === 'ingreso' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' :
+                      tx.tipo === 'gasto' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'salida') ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
                       'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                     }`}>
                       <ArrowRightLeft className="w-5 h-5" />
@@ -232,9 +232,9 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-end gap-4 shrink-0 pl-4">
                     <div className="text-right flex-none">
                     <p className={`font-bold ${
-                      tx.tipo === 'ingreso' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-slate-200'
+                      tx.tipo === 'ingreso' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-slate-200'
                     } ${tx.anulada ? 'line-through' : ''}`}>
-                      {tx.tipo === 'ingreso' ? '+' : '-'}{tx.moneda_original === 'USD' ? formatUSD(tx.monto_original) : formatVES(tx.monto_original)}
+                      {tx.tipo === 'ingreso' || (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') ? '+' : '-'}{tx.moneda_original === 'USD' ? formatUSD(tx.monto_original) : formatVES(tx.monto_original)}
                     </p>
                     {tx.moneda_original === 'VES' && (
                       <p className="text-xs text-slate-400 dark:text-slate-500">

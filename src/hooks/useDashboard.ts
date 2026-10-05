@@ -92,12 +92,13 @@ export function useResumenMes() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('No user found')
 
-      // Ejecutar las 4 queries en paralelo en lugar de secuencial
+      // Ejecutar las queries en paralelo, incluyendo la tasa para normalizar ahorros y deudas multimoneda
       const [
         { data: gastos },
         { data: ingresos },
         { data: ahorros },
-        { data: deudas }
+        { data: deudas },
+        { data: tasaRes }
       ] = await Promise.all([
         supabase
           .from('transacciones')
@@ -115,19 +116,43 @@ export function useResumenMes() {
           .gte('fecha', inicioMesISO),
         supabase
           .from('metas')
-          .select('monto_actual')
+          .select('monto_actual, moneda')
           .eq('user_id', userData.user.id),
         supabase
           .from('deudas')
-          .select('saldo_pendiente')
-          .eq('user_id', userData.user.id)
+          .select('saldo_pendiente, moneda')
+          .eq('user_id', userData.user.id),
+        supabase
+          .from('tasas_cambio')
+          .select('tasa')
+          .order('fecha', { ascending: false })
+          .limit(1)
+          .maybeSingle()
       ])
+
+      const tasa = Number(tasaRes?.tasa) || 1
+
+      const totalAhorrosUsd = ahorros?.reduce((acc, m) => {
+        const monto = Number(m.monto_actual) || 0
+        if (m.moneda === 'VES') {
+          return acc + (tasa > 0 ? monto / tasa : 0)
+        }
+        return acc + monto
+      }, 0) || 0
+
+      const totalDeudasUsd = deudas?.reduce((acc, d) => {
+        const saldo = Number(d.saldo_pendiente) || 0
+        if (d.moneda === 'VES') {
+          return acc + (tasa > 0 ? saldo / tasa : 0)
+        }
+        return acc + saldo
+      }, 0) || 0
 
       return {
         ingresos: ingresos?.reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0) || 0,
         gastos: gastos?.reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0) || 0,
-        ahorros: ahorros?.reduce((acc, m) => acc + Number(m.monto_actual), 0) || 0,
-        deuda: deudas?.reduce((acc, d) => acc + Number(d.saldo_pendiente), 0) || 0
+        ahorros: totalAhorrosUsd,
+        deuda: totalDeudasUsd
       }
     },
     // Derivar optimistamente desde el caché de transacciones del mes actual

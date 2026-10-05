@@ -20,7 +20,7 @@ export default function AhorrosPage() {
   const { mutateAsync: eliminarMeta } = useEliminarMeta()
   const { mutateAsync: retirarAhorro } = useRetirarAhorro()
 
-  const { error: toastError, warning: toastWarning } = useToast()
+  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast()
 
   const [modalMode, setModalMode] = useState<'create' | 'aporte' | 'retiro' | null>(null)
   const [metaActual, setMetaActual] = useState<Meta | null>(null)
@@ -159,6 +159,7 @@ export default function AhorrosPage() {
         fecha: new Date(),
         descripcion: retiroData.descripcion.trim() || undefined
       })
+      toastSuccess({ title: 'Retiro exitoso', message: 'El monto ha sido acreditado en la cuenta destino.' })
     } catch (err) {
       toastError({ title: 'Error al retirar', message: err instanceof Error ? err.message : 'No se pudo registrar el retiro.' })
     }

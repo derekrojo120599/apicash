@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { X } from 'lucide-react'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
-import { useCrearTransaccion } from '@/hooks/useTransacciones'
+import { useCrearTransaccion, useCrearTransferencia } from '@/hooks/useTransacciones'
 import { useComisionesConfig } from '@/hooks/useComisionesConfig'
 import { previewComision } from '@/utils/comisiones'
 import { AnimatedSelect } from '@/components/animations'
@@ -22,6 +22,7 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
   const { data: currentRate } = useTasaActual()
   const { data: commissionsConfig } = useComisionesConfig()
   const { mutateAsync: createTransaction } = useCrearTransaccion()
+  const { mutateAsync: createTransfer } = useCrearTransferencia()
 
   const [formData, setFormData] = useState({
     cuenta_id: '',
@@ -120,22 +121,14 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
           return
         }
 
-        // Create the expense transaction (outgoing) for the origin account
-        await createTransaction({
-          cuenta_id: accountId,
-          tipo: 'gasto',
-          monto_original: Number(formData.monto_original),
-          moneda_original: currentAccount.moneda,
-          descripcion: formData.descripcion || `Transferencia a ${destinationAccount.nombre}`
-        })
-
-        // Create the income transaction for the destination account
-        await createTransaction({
-          cuenta_id: formData.cuenta_destino_id,
-          tipo: 'ingreso',
-          monto_original: Number(formData.monto_original),
-          moneda_original: destinationAccount.moneda,
-          descripcion: formData.descripcion || `Transferencia desde ${currentAccount.nombre}`
+        // Registrar transferencia atómica (partida doble con tipo='transferencia')
+        await createTransfer({
+          cuenta_origen_id: accountId,
+          cuenta_destino_id: formData.cuenta_destino_id,
+          monto: Number(formData.monto_original),
+          moneda: currentAccount.moneda,
+          descripcion: formData.descripcion || undefined,
+          tasa_cambio: currentRate || null
         })
 
       } else {
@@ -250,7 +243,7 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
             )}
           </div>
 
-          {(formData.tipo === 'gasto' || formData.tipo === 'transferencia') && selectedAccount?.tipo === 'banco' && (
+          {formData.tipo === 'gasto' && selectedAccount?.tipo === 'banco' && (
             <div className="space-y-4 mb-4">
               <div className="space-y-1 animate-in fade-in zoom-in-95 duration-200">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Método de pago</label>

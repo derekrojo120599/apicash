@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useDeudas, useCrearDeuda, useRegistrarPagoDeuda, useEliminarDeuda, Deuda } from '@/hooks/useDeudas'
 import { useCuentas } from '@/hooks/useCuentas'
+import { useTasaActual } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
 import { Receipt, Plus, X, Loader2, ArrowDownCircle, Trash2 } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedProgressBar, AnimatedSelect, AnimatedDatePicker } from '@/components/animations'
@@ -12,12 +13,13 @@ export const dynamic = 'force-dynamic';
 export default function DeudasPage() {
   const { data: deudas, isLoading } = useDeudas()
   const { data: cuentas } = useCuentas()
+  const { data: tasaActual } = useTasaActual()
   
   const { mutateAsync: crearDeuda } = useCrearDeuda()
   const { mutateAsync: registrarPago } = useRegistrarPagoDeuda()
   const { mutateAsync: eliminarDeuda } = useEliminarDeuda()
 
-  const { error: toastError } = useToast()
+  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast()
 
   const [modalMode, setModalMode] = useState<'create' | 'pago' | null>(null)
   const [deudaActual, setDeudaActual] = useState<Deuda | null>(null)
@@ -60,21 +62,51 @@ export default function DeudasPage() {
     }
   }
 
+  const calcularMaximoPago = (deuda: Deuda, cuentaMoneda: string) => {
+    const pendiente = deuda.saldo_pendiente || 0
+    if (!tasaActual || tasaActual <= 0 || deuda.moneda === cuentaMoneda) {
+      return pendiente
+    }
+    if (deuda.moneda === 'USD' && cuentaMoneda === 'VES') {
+      return pendiente * tasaActual
+    }
+    if (deuda.moneda === 'VES' && cuentaMoneda === 'USD') {
+      return pendiente / tasaActual
+    }
+    return pendiente
+  }
+
   const handlePagoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!deudaActual) return
     const cuenta = cuentas?.find(c => c.id === pagoData.cuenta_id)
-    if (!cuenta) return
+    if (!cuenta) {
+      toastWarning({ title: 'Cuenta requerida', message: 'Seleccione una cuenta de origen.' })
+      return
+    }
+
+    const monto = Number(pagoData.monto)
+    if (!monto || monto <= 0) {
+      toastWarning({ title: 'Monto inválido', message: 'Ingrese un monto válido.' })
+      return
+    }
+
+    const maximo = calcularMaximoPago(deudaActual, cuenta.moneda)
+    if (monto > maximo + 0.001) {
+      toastWarning({ title: 'Monto excedido', message: `El monto máximo a pagar es ${formatMoney(maximo, cuenta.moneda)}.` })
+      return
+    }
 
     try {
       setModalMode(null)
       await registrarPago({
         deuda_id: deudaActual.id,
         cuenta_id: cuenta.id,
-        monto: Number(pagoData.monto),
+        monto: monto,
         moneda_cuenta: cuenta.moneda,
         fecha: new Date()
       })
+      toastSuccess({ title: 'Pago registrado', message: 'El pago de la deuda ha sido procesado con éxito.' })
     } catch (err) {
       toastError({ title: 'Error al registrar pago', message: err instanceof Error ? err.message : 'No se pudo registrar el pago.' })
     }
@@ -273,8 +305,29 @@ export default function DeudasPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Monto del Pago</label>
-                <input required type="number" step="0.01" min="0.01" max={deudaActual?.saldo_pendiente} value={pagoData.monto} onChange={e => setPagoData({...pagoData, monto: e.target.value})} className="w-full px-4 py-2 text-xl font-bold border dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 bg-transparent text-slate-900 dark:text-slate-100 transition-colors" placeholder="0.00" />
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Monto del Pago
+                  {(() => {
+                    const cuenta = cuentas?.find(c => c.id === pagoData.cuenta_id)
+                    if (!cuenta || !deudaActual) return null
+                    const maximo = calcularMaximoPago(deudaActual, cuenta.moneda)
+                    return (
+                      <span className="block text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                        Máximo para liquidar: {formatMoney(maximo, cuenta.moneda)}
+                      </span>
+                    )
+                  })()}
+                </label>
+                <input 
+                  required 
+                  type="number" 
+                  step="0.01" 
+                  min="0.01" 
+                  value={pagoData.monto} 
+                  onChange={e => setPagoData({...pagoData, monto: e.target.value})} 
+                  className="w-full px-4 py-2 text-xl font-bold border dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-orange-500 bg-transparent text-slate-900 dark:text-slate-100 transition-colors" 
+                  placeholder="0.00" 
+                />
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Saldo pendiente: {formatMoney(deudaActual?.saldo_pendiente || 0, deudaActual?.moneda || 'USD')}</p>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-100 dark:border-orange-900/50 transition-colors">

@@ -7,6 +7,9 @@ export interface Transaccion {
   cuenta_id: string
   categoria_id: string | null
   tipo: 'ingreso' | 'gasto' | 'transferencia' | 'ajuste'
+  transferencia_direccion?: 'salida' | 'entrada' | null
+  transferencia_vinculada_id?: string | null
+  cuenta_destino_id?: string | null
   monto_original: number
   moneda_original: 'USD' | 'VES'
   tasa_al_momento: number | null
@@ -219,6 +222,137 @@ export function useCrearTransaccion() {
   })
 }
 
+export function useCrearTransferencia() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      cuenta_origen_id,
+      cuenta_destino_id,
+      monto,
+      moneda,
+      descripcion,
+      tasa_cambio,
+      fecha
+    }: {
+      cuenta_origen_id: string
+      cuenta_destino_id: string
+      monto: number
+      moneda: 'USD' | 'VES'
+      descripcion?: string
+      tasa_cambio?: number | null
+      fecha?: string
+    }) => {
+      const { data, error } = await supabase.rpc('registrar_transferencia', {
+        p_cuenta_origen_id: cuenta_origen_id,
+        p_cuenta_destino_id: cuenta_destino_id,
+        p_monto: monto,
+        p_moneda: moneda,
+        p_descripcion: descripcion || null,
+        p_fecha: fecha || new Date().toISOString(),
+        p_tasa_cambio: tasa_cambio || null
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+      return data
+    },
+    onMutate: async ({ cuenta_origen_id, cuenta_destino_id, monto, moneda, descripcion }) => {
+      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
+      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+
+      const previousCuentas = queryClient.getQueryData(['cuentas']) as any[]
+      const ctaOrigen = previousCuentas?.find(c => c.id === cuenta_origen_id)
+      const ctaDestino = previousCuentas?.find(c => c.id === cuenta_destino_id)
+
+      const idSalida = `temp-salida-${Date.now()}`
+      const idEntrada = `temp-entrada-${Date.now()}`
+
+      const txSalida: any = {
+        id: idSalida,
+        user_id: 'optimistic',
+        cuenta_id: cuenta_origen_id,
+        cuenta_destino_id,
+        transferencia_vinculada_id: idEntrada,
+        tipo: 'transferencia',
+        transferencia_direccion: 'salida',
+        monto_original: monto,
+        moneda_original: moneda,
+        tasa_al_momento: null,
+        monto_usd_calculado: moneda === 'USD' ? monto : 0,
+        descripcion: descripcion || `Transferencia a ${ctaDestino?.nombre || 'Cuenta destino'}`,
+        fecha: new Date().toISOString(),
+        anulada: false,
+        cuentas: { nombre: ctaOrigen?.nombre || 'Origen', moneda },
+        categorias: undefined
+      }
+
+      const txEntrada: any = {
+        id: idEntrada,
+        user_id: 'optimistic',
+        cuenta_id: cuenta_destino_id,
+        cuenta_destino_id: cuenta_origen_id,
+        transferencia_vinculada_id: idSalida,
+        tipo: 'transferencia',
+        transferencia_direccion: 'entrada',
+        monto_original: monto,
+        moneda_original: moneda,
+        tasa_al_momento: null,
+        monto_usd_calculado: moneda === 'USD' ? monto : 0,
+        descripcion: descripcion || `Transferencia desde ${ctaOrigen?.nombre || 'Cuenta origen'}`,
+        fecha: new Date().toISOString(),
+        anulada: false,
+        cuentas: { nombre: ctaDestino?.nombre || 'Destino', moneda },
+        categorias: undefined
+      }
+
+      queryClient.setQueriesData({ queryKey: ['transacciones'] }, (old: any) => {
+        if (!Array.isArray(old)) return old
+        return [txSalida, txEntrada, ...old].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+      })
+
+      queryClient.setQueriesData({ queryKey: ['ultimasTransacciones'] }, (old: any) => {
+        if (!Array.isArray(old)) return old
+        return [txSalida, txEntrada, ...old].slice(0, 5)
+      })
+
+      if (previousCuentas) {
+        queryClient.setQueriesData({ queryKey: ['cuentas'] }, (old: any) => {
+          if (!Array.isArray(old)) return old
+          return old.map((c: any) => {
+            if (c.id === cuenta_origen_id) {
+              return { ...c, saldo_cache: c.saldo_cache - monto }
+            }
+            if (c.id === cuenta_destino_id) {
+              return { ...c, saldo_cache: c.saldo_cache + monto }
+            }
+            return c
+          })
+        })
+      }
+
+      return { previousCuentas }
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
+      if (context?.previousCuentas) {
+        queryClient.setQueryData(['cuentas'], context.previousCuentas)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
+    }
+  })
+}
+
 export function useAnularTransaccion() {
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -266,8 +400,13 @@ export function useAnularTransaccion() {
       if (txAnulada && previousCuentas) {
         queryClient.setQueryData(['cuentas'], previousCuentas.map((c: any) => {
           if (c.id !== txAnulada.cuenta_id) return c
-          // Anular = deshacer: si era gasto devolvemos el monto, si era ingreso lo quitamos
-          const factor = txAnulada.tipo === 'gasto' ? 1 : (txAnulada.tipo === 'ingreso' ? -1 : 0)
+          // Anular = deshacer
+          let factor = 0
+          if (txAnulada.tipo === 'gasto') factor = 1
+          else if (txAnulada.tipo === 'ingreso') factor = -1
+          else if (txAnulada.tipo === 'transferencia') {
+            factor = txAnulada.transferencia_direccion === 'salida' ? 1 : -1
+          }
           return { ...c, saldo_cache: c.saldo_cache + (txAnulada.monto_original * factor) }
         }))
       }
@@ -346,7 +485,12 @@ export function useRestaurarTransaccion() {
       if (txRestaurada && previousCuentas) {
         queryClient.setQueryData(['cuentas'], previousCuentas.map((c: any) => {
           if (c.id !== txRestaurada.cuenta_id) return c
-          const factor = txRestaurada.tipo === 'gasto' ? -1 : (txRestaurada.tipo === 'ingreso' ? 1 : 0)
+          let factor = 0
+          if (txRestaurada.tipo === 'gasto') factor = -1
+          else if (txRestaurada.tipo === 'ingreso') factor = 1
+          else if (txRestaurada.tipo === 'transferencia') {
+            factor = txRestaurada.transferencia_direccion === 'salida' ? -1 : 1
+          }
           return { ...c, saldo_cache: c.saldo_cache + (txRestaurada.monto_original * factor) }
         }))
       }
