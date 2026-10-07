@@ -181,6 +181,57 @@ describe('Auditoría Integral de Lógica de Negocio (Apicasch)', () => {
       expect(ingresosMes).toBe(1000);
       expect(gastosMes).toBe(350);
     });
+
+    it('traspaso entre cuentas en VES (BANCARIBE -> BANCO DE VENEZUELA) actualiza saldos correctamente', () => {
+      // Simulación del comportamiento del trigger actualizar_saldo_cuenta() y registrar_transferencia()
+      const cuentaOrigen = { id: 'cta-bancaribe', nombre: 'BANCARIBE', moneda: 'VES', saldo_cache: new Decimal(10000) };
+      const cuentaDestino = { id: 'cta-bdv', nombre: 'BANCO DE VENEZUELA', moneda: 'VES', saldo_cache: new Decimal(2000) };
+      const monto = new Decimal(5000);
+      const descripcion = 'Gasolina';
+
+      // Validación previa
+      expect(cuentaOrigen.id).not.toBe(cuentaDestino.id);
+      expect(monto.toNumber()).toBeGreaterThan(0);
+      expect(cuentaOrigen.saldo_cache.greaterThanOrEqualTo(monto)).toBe(true);
+
+      // Movimientos generados por la RPC
+      const txSalida = {
+        cuenta_id: cuentaOrigen.id,
+        cuenta_destino_id: cuentaDestino.id,
+        tipo: 'transferencia',
+        transferencia_direccion: 'salida',
+        monto_original: monto,
+        moneda_original: 'VES',
+        descripcion
+      };
+
+      const txEntrada = {
+        cuenta_id: cuentaDestino.id,
+        cuenta_destino_id: cuentaOrigen.id,
+        tipo: 'transferencia',
+        transferencia_direccion: 'entrada',
+        monto_original: monto,
+        moneda_original: 'VES',
+        descripcion
+      };
+
+      // Simulación de actualización de saldos según actualizar_saldo_cuenta
+      const actualizarSaldo = (saldoPrevio: Decimal, tx: typeof txSalida) => {
+        if (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'salida') {
+          return saldoPrevio.minus(tx.monto_original);
+        } else if (tx.tipo === 'transferencia' && tx.transferencia_direccion === 'entrada') {
+          return saldoPrevio.plus(tx.monto_original);
+        }
+        return saldoPrevio;
+      };
+
+      cuentaOrigen.saldo_cache = actualizarSaldo(cuentaOrigen.saldo_cache, txSalida);
+      cuentaDestino.saldo_cache = actualizarSaldo(cuentaDestino.saldo_cache, txEntrada);
+
+      // Verificación de saldos
+      expect(cuentaOrigen.saldo_cache.toNumber()).toBe(5000);
+      expect(cuentaDestino.saldo_cache.toNumber()).toBe(7000);
+    });
   });
 
 });

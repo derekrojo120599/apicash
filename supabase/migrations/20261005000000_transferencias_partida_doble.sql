@@ -109,6 +109,10 @@ DECLARE
   v_cta_destino RECORD;
   v_desc_origen TEXT;
   v_desc_destino TEXT;
+  -- Variables para cálculo multimoneda si difieren
+  v_monto_destino NUMERIC := p_monto;
+  v_moneda_destino moneda_enum := p_moneda;
+  v_tasa_efectiva NUMERIC := p_tasa_cambio;
 BEGIN
   IF v_user_id IS NULL THEN RAISE EXCEPTION 'No autenticado'; END IF;
   IF p_cuenta_origen_id = p_cuenta_destino_id THEN RAISE EXCEPTION 'La cuenta origen y destino deben ser distintas'; END IF;
@@ -128,12 +132,47 @@ BEGIN
   FROM cuentas WHERE id = p_cuenta_destino_id AND user_id = v_user_id;
   IF NOT FOUND OR NOT v_cta_destino.activa THEN RAISE EXCEPTION 'Cuenta destino inválida o inactiva'; END IF;
 
-  IF v_cta_origen.moneda != p_moneda OR v_cta_destino.moneda != p_moneda THEN
-    RAISE EXCEPTION 'Por el momento las transferencias deben ser en la misma moneda de las cuentas';
+  -- Validar que la moneda indicada coincida con la cuenta de origen
+  IF v_cta_origen.moneda != p_moneda THEN
+    RAISE EXCEPTION 'La moneda de la transferencia debe coincidir con la de la cuenta origen';
   END IF;
 
   IF v_cta_origen.saldo_cache < p_monto THEN
     RAISE EXCEPTION 'Saldo insuficiente en la cuenta de origen';
+  END IF;
+
+  -- Manejo de monedas: misma moneda o multimoneda con conversión
+  IF v_cta_origen.moneda = v_cta_destino.moneda THEN
+    v_monto_destino := p_monto;
+    v_moneda_destino := v_cta_destino.moneda;
+  ELSE
+    -- Cuentas con distinta moneda (USD <-> VES)
+    IF v_tasa_efectiva IS NULL OR v_tasa_efectiva <= 0 THEN
+      -- Buscar tasa preferida o más reciente si no fue provista
+      SELECT t.tasa INTO v_tasa_efectiva
+      FROM tasas_cambio t
+      JOIN perfiles p ON p.id = v_user_id AND p.fuente_tasa_preferida = t.fuente
+      ORDER BY t.fecha DESC
+      LIMIT 1;
+
+      IF v_tasa_efectiva IS NULL THEN
+        SELECT tasa INTO v_tasa_efectiva FROM tasas_cambio ORDER BY fecha DESC LIMIT 1;
+      END IF;
+
+      IF v_tasa_efectiva IS NULL OR v_tasa_efectiva <= 0 THEN
+        RAISE EXCEPTION 'Se requiere una tasa de cambio válida para transferencias entre distintas monedas';
+      END IF;
+    END IF;
+
+    IF v_cta_origen.moneda = 'USD' AND v_cta_destino.moneda = 'VES' THEN
+      -- Origen USD, Destino VES: multiplicar por la tasa
+      v_monto_destino := ROUND(p_monto * v_tasa_efectiva, 2);
+      v_moneda_destino := 'VES';
+    ELSIF v_cta_origen.moneda = 'VES' AND v_cta_destino.moneda = 'USD' THEN
+      -- Origen VES, Destino USD: dividir entre la tasa
+      v_monto_destino := ROUND(p_monto / v_tasa_efectiva, 2);
+      v_moneda_destino := 'USD';
+    END IF;
   END IF;
 
   v_desc_origen := COALESCE(NULLIF(p_descripcion, ''), 'Transferencia a ' || v_cta_destino.nombre);
@@ -147,7 +186,7 @@ BEGIN
   ) VALUES (
     v_tx_origen_id, v_user_id, p_cuenta_origen_id, p_cuenta_destino_id, NULL,
     'transferencia', 'salida', p_monto, p_moneda,
-    p_tasa_cambio, v_desc_origen, v_fecha
+    v_tasa_efectiva, v_desc_origen, v_fecha
   );
 
   -- 2. Pierna Entrante (Destino) - vinculando a la pierna origen ya insertada
@@ -157,8 +196,8 @@ BEGIN
     tasa_al_momento, descripcion, fecha
   ) VALUES (
     v_tx_destino_id, v_user_id, p_cuenta_destino_id, p_cuenta_origen_id, v_tx_origen_id,
-    'transferencia', 'entrada', p_monto, p_moneda,
-    p_tasa_cambio, v_desc_destino, v_fecha
+    'transferencia', 'entrada', v_monto_destino, v_moneda_destino,
+    v_tasa_efectiva, v_desc_destino, v_fecha
   );
 
   -- 3. Vincular de vuelta la pierna de origen con la de destino
@@ -169,8 +208,14 @@ BEGIN
   RETURN jsonb_build_object(
     'origen_id', v_tx_origen_id,
     'destino_id', v_tx_destino_id,
-    'monto', p_monto,
-    'moneda', p_moneda
+    'monto_origen', p_monto,
+    'moneda_origen', p_moneda,
+    'monto_destino', v_monto_destino,
+    'moneda_destino', v_moneda_destino,
+    'tasa_cambio', v_tasa_efectiva
   );
 END;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.registrar_transferencia(UUID, UUID, NUMERIC, moneda_enum, TEXT, TIMESTAMPTZ, NUMERIC) TO authenticated;
+NOTIFY pgrst, 'reload schema';
