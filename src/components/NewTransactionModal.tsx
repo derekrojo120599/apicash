@@ -24,7 +24,14 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
   const { mutateAsync: createTransaction } = useCrearTransaccion()
   const { mutateAsync: createTransfer } = useCrearTransferencia()
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    cuenta_id: string
+    cuenta_destino_id: string
+    categoria_id: string
+    tipo: 'ingreso' | 'gasto' | 'transferencia' | 'ajuste'
+    monto_original: string
+    descripcion: string
+  }>({
     cuenta_id: '',
     cuenta_destino_id: '',
     categoria_id: '',
@@ -121,7 +128,7 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
           return
         }
 
-        // Registrar transferencia atómica (partida doble con tipo='transferencia')
+        // Register atomic double-entry transfer (type='transferencia')
         await createTransfer({
           cuenta_origen_id: accountId,
           cuenta_destino_id: formData.cuenta_destino_id,
