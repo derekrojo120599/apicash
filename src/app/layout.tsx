@@ -4,7 +4,6 @@ import "./globals.css";
 import Providers from "@/components/providers";
 import { PwaUpdater } from "@/components/PwaUpdater";
 import { ToastProvider } from "@/components/ui/ToastProvider";
-import { SplashScreenClient as SplashScreen } from "@/components/SplashScreenClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -81,16 +80,12 @@ export default function RootLayout({
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
-                if (sessionStorage.getItem('apicash_splash_shown')) {
-                  document.documentElement.classList.add('splash-hidden');
-                }
               } catch (e) {}
             `,
           }}
         />
       </head>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-        <SplashScreen />
         <ToastProvider>
           <Providers>
             {children}

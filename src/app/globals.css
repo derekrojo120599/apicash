@@ -144,7 +144,3 @@ input, textarea {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Hide splash screen immediately if already shown in this session */
-html.splash-hidden #apicash-splash {
-  display: none !important;
-}

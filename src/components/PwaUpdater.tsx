@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react'
 import { RefreshCw, X } from 'lucide-react'
 
 interface WorkboxLike {
-  addEventListener(event: string, callback: () => void): void
+  addEventListener(
+    event: string,
+    callback: () => void,
+    options?: AddEventListenerOptions | boolean
+  ): void
   register(): Promise<void>
   messageSkipWaiting(): void
 }
@@ -23,11 +27,6 @@ export function PwaUpdater() {
           setShowUpdate(true)
         })
 
-        // Triggers when the Service Worker takes control after skipWaiting()
-        wb.addEventListener('controlling', () => {
-          window.location.reload()
-        })
-
         wb.register().catch((err: unknown) => {
           console.warn('Workbox registration failed:', err)
         })
@@ -43,6 +42,10 @@ export function PwaUpdater() {
   const handleUpdate = () => {
     if (typeof window !== 'undefined' && window.workbox !== undefined) {
       const wb = window.workbox
+      // Reload only after explicit user-triggered update
+      wb.addEventListener('controlling', () => {
+        window.location.reload()
+      }, { once: true })
       // Request waiting Service Worker to take immediate control
       wb.messageSkipWaiting()
       setShowUpdate(false)
