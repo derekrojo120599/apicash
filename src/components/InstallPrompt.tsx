@@ -1,11 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { SVGProps, useEffect, useState } from 'react'
 import { FadeIn, AnimatedButton } from '@/components/animations'
 import { X, MoreVertical } from 'lucide-react'
 
-// Iconos customizados para compatibilidad
-function Share(props: any) {
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+function detectPlatform(): 'ios' | 'android' | 'desktop' | 'other' {
+  if (typeof window === 'undefined') return 'other'
+  const ua = navigator.userAgent.toLowerCase()
+  if (/iphone|ipad|ipod/.test(ua)) return 'ios'
+  if (/android/.test(ua)) return 'android'
+  return 'desktop'
+}
+
+// Custom icons for compatibility
+function Share(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -15,7 +28,7 @@ function Share(props: any) {
   )
 }
 
-function Download(props: any) {
+function Download(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -25,7 +38,7 @@ function Download(props: any) {
   )
 }
 
-function MonitorDown(props: any) {
+function MonitorDown(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <rect width="20" height="14" x="2" y="3" rx="2" />
@@ -39,39 +52,31 @@ function MonitorDown(props: any) {
 
 export function InstallPrompt() {
   const [show, setShow] = useState(false)
-  const [platform, setPlatform] = useState<'ios' | 'android' | 'desktop' | 'other'>('other')
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [platform] = useState<'ios' | 'android' | 'desktop' | 'other'>(detectPlatform)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
     // 1. Listen for the install prompt on supported browsers (Chrome/Edge/Android)
-    window.addEventListener('beforeinstallprompt', (e) => {
+    const handleBeforeInstall = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e)
-    })
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
 
     // 2. Check if already running as standalone (installed)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone
     if (isStandalone) return
 
     // 3. Check if user already dismissed the prompt
     const dismissed = localStorage.getItem('apicash-install-prompt')
     if (dismissed) return
 
-    // 4. Detect platform for specific instructions
-    const ua = navigator.userAgent.toLowerCase()
-    let initialPlatform: 'ios' | 'android' | 'desktop' | 'other' = 'other'
-    if (/iphone|ipad|ipod/.test(ua)) {
-      initialPlatform = 'ios'
-    } else if (/android/.test(ua)) {
-      initialPlatform = 'android'
-    } else {
-      initialPlatform = 'desktop'
-    }
-    setPlatform(initialPlatform)
-
     // Wait a brief moment before showing to not be too aggressive
     const timer = setTimeout(() => setShow(true), 2000)
-    return () => clearTimeout(timer)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      clearTimeout(timer)
+    }
   }, [])
 
   const handleDismiss = () => {
@@ -174,7 +179,7 @@ export function InstallPrompt() {
             Más tarde
           </button>
           
-          {/* Si el navegador soporta disparar el prompt nativo (Chrome Android/Desktop), mostramos el botón de instalación directa */}
+          {/* Render direct install button if native prompt is supported */}
           {deferredPrompt ? (
             <AnimatedButton onClick={handleInstallClick} className="flex-1">
               Instalar ahora
@@ -190,7 +195,7 @@ export function InstallPrompt() {
   )
 }
 
-function PlusSquare(props: any) {
+function PlusSquare(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <rect width="18" height="18" x="3" y="3" rx="2" />

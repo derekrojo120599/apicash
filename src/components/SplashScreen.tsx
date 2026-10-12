@@ -5,7 +5,12 @@ import { animate } from 'animejs';
 import { ApicashLogo } from './ApicashLogo';
 
 export function SplashScreen() {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('apicash_splash_shown');
+    }
+    return true;
+  });
   const containerRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -13,12 +18,7 @@ export function SplashScreen() {
   const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Check if splash has already been shown in this browser session
-    const hasShown = sessionStorage.getItem('apicash_splash_shown');
-    if (hasShown) {
-      setShow(false);
-      return;
-    }
+    if (!show) return;
 
     // Entrance animation timeline - fast & punchy
     const logoAnim = animate(logoRef.current!, {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { useTransacciones, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
 import { useCategorias } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
@@ -14,11 +14,11 @@ export default function TransaccionesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedTx, setSelectedTx] = useState<Transaccion | null>(null)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
   
   // Data Fetching
   const { data: transactions, isLoading: loadingTx } = useTransacciones(currentMonth)
