@@ -18,6 +18,7 @@ import { CalculadoraScreen } from './src/screens/CalculadoraScreen';
 import { GuiaScreen } from './src/screens/GuiaScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
 import { SidebarDrawer, ScreenTab } from './src/components/SidebarDrawer';
+import { AppUpdateModal } from './src/components/AppUpdateModal';
 
 function MainApp() {
   const { colors, isDarkMode } = useAppTheme();
@@ -133,6 +134,7 @@ function MainApp() {
             onSelectTab={setCurrentTab}
             onLogout={handleLogout}
           />
+          <AppUpdateModal />
         </>
       ) : (
         <LoginScreen onSuccess={() => {}} />

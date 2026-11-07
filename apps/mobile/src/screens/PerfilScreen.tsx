@@ -23,6 +23,7 @@ import { FadeIn, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
 import { triggerSuccessNotification, scheduleDailyReminders } from '../lib/notifications';
+import { manualCheckUpdate } from '../components/AppUpdateModal';
 
 interface PerfilScreenProps {
   onOpenMenu: () => void;
@@ -931,6 +932,34 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
                   </Text>
                 </View>
                 <Ionicons name="time-outline" size={20} color={colors.p500} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.manageBtn}
+                onPress={async () => {
+                  showToast('Buscando actualizaciones...');
+                  const res = await manualCheckUpdate();
+                  if (res.hasUpdate && res.downloadUrl) {
+                    Alert.alert(
+                      '¡Nueva versión disponible!',
+                      `Hay una nueva versión de Apicash (${res.version}). ¿Deseas descargarla ahora?`,
+                      [
+                        { text: 'Más tarde', style: 'cancel' },
+                        { text: 'Descargar APK', onPress: () => Linking.openURL(res.downloadUrl!) },
+                      ]
+                    );
+                  } else {
+                    showToast('Tu aplicación está al día (v1.0.0)');
+                  }
+                }}
+              >
+                <View>
+                  <Text style={[styles.manageTitle, !isDarkMode && styles.textDark]}>
+                    Buscar actualizaciones
+                  </Text>
+                  <Text style={styles.manageDesc}>Verificar si hay un nuevo APK disponible</Text>
+                </View>
+                <Ionicons name="refresh-outline" size={20} color="#94a3b8" />
               </TouchableOpacity>
 
               <TouchableOpacity
