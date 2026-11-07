@@ -1,0 +1,106 @@
+name: Compilar y Publicar APK Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Nombre de la versión (ej: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 3. Configurar Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 4. Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 5. Instalar dependencias del monorepo
+        run: npm install
+
+      - name: 6. Configurar variables de entorno móviles
+        run: |
+          cat << 'EOF' > apps/mobile/.env
+          EXPO_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://jkoxmyefjmokdycjlfqb.supabase.co' }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imprb3hteWVmam1va2R5Y2psZnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1NDc4MjcsImV4cCI6MjEwNDEyMzgyN30.bHXjMvEIOylLCX1WiPf1zg5Z7WX1NLESN1UgZhbwz90' }}
+          EOF
+
+      - name: 7. Generar proyecto nativo Android con Expo
+        run: |
+          cd apps/mobile
+          npx expo prebuild --platform android --no-install
+
+      - name: 8. Compilar APK Release con Gradle
+        run: |
+          cd apps/mobile/android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: 9. Preparar archivo APK
+        run: |
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk apicash.apk
+          ls -lh apicash.apk
+
+      - name: 10. Subir APK como artefacto de compilación
+        uses: actions/upload-artifact@v4
+        with:
+          name: apicash-apk
+          path: apicash.apk
+          retention-days: 30
+
+      - name: 11. Determinar Tag del Release
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "TAG_NAME=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          fi
+
+      - name: 12. Publicar Release en GitHub con el APK adjunto
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: "Apicash ${{ env.TAG_NAME }} (Android APK)"
+          body: |
+            ## 📱 Apicash para Android (${{ env.TAG_NAME }})
+
+            ¡Descarga directa del instalador nativo APK de Apicash!
+
+            ### Novedades:
+            - Gestión financiera bimonetaria completa (USD y VES)
+            - Tarifario bancario BCV vigente (Gaceta Oficial N.º 46.427)
+            - 3 alertas diarias inteligentes de gastos para cuadre de cuentas
+            - Nuevo tema **Dorado Ámbar** y paridad visual con la versión web
+            - Soporte para actualizaciones remotas silenciosas (OTA Updates)
+
+            ### Instalación:
+            1. Descarga el archivo `apicash.apk` a continuación.
+            2. Si tu teléfono solicita permisos para instalar apps externas, selecciona **Permitir**.
+            3. ¡Abre Apicash e inicia sesión!
+          files: apicash.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
