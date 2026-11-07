@@ -22,7 +22,7 @@ import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
-import { triggerSuccessNotification, scheduleDailyReminders } from '../lib/notifications';
+import { triggerSuccessNotification, scheduleDailyReminders, schedulePaydayReminders } from '../lib/notifications';
 import { manualCheckUpdate } from '../components/AppUpdateModal';
 
 interface PerfilScreenProps {
@@ -915,9 +915,10 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
               <TouchableOpacity
                 style={styles.manageBtn}
                 onPress={async () => {
-                  const ok = await scheduleDailyReminders();
-                  if (ok) {
-                    showToast('3 alertas diarias programadas (Mañana, Tarde, Noche)');
+                  const ok1 = await scheduleDailyReminders();
+                  const ok2 = await schedulePaydayReminders();
+                  if (ok1 && ok2) {
+                    showToast('Alertas diarias (10:30, 15:30, 21:30) y de quincena programadas');
                   } else {
                     showToast('No se pudieron programar los recordatorios');
                   }
@@ -925,10 +926,10 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
               >
                 <View>
                   <Text style={[styles.manageTitle, !isDarkMode && styles.textDark]}>
-                    Alertas diarias de gastos (3 al día)
+                    Alertas de gastos y quincena (3 al día + días 15 y 30)
                   </Text>
                   <Text style={styles.manageDesc}>
-                    Recordatorios aleatorios a las 10:30, 15:30 y 21:30
+                    Recordatorios de gastos (10:30, 15:30, 21:30) y de cobro (días 15 y 30)
                   </Text>
                 </View>
                 <Ionicons name="time-outline" size={20} color={colors.p500} />

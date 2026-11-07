@@ -96,8 +96,9 @@ export async function initNotificationsPermission() {
     permissionsInitialized = finalStatus === 'granted';
 
     if (permissionsInitialized) {
-      // Programar silenciosamente las 3 alertas diarias al obtener permisos
+      // Programar silenciosamente las alertas diarias y de quincena al obtener permisos
       scheduleDailyReminders().catch(() => {});
+      schedulePaydayReminders().catch(() => {});
     }
 
     return permissionsInitialized;
@@ -188,6 +189,65 @@ export async function scheduleDailyReminders(): Promise<boolean> {
     return true;
   } catch (e) {
     console.warn('Error programando recordatorios diarios:', e);
+    return false;
+  }
+}
+
+/**
+ * Programa recordatorios de ingresos para los días 15 y fin de mes (días de cobro)
+ */
+export async function schedulePaydayReminders(): Promise<boolean> {
+  try {
+    const hasPermission = await initNotificationsPermission();
+    if (!hasPermission) return false;
+
+    // 1. Limpiar recordatorios de cobro previos
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    for (const notif of scheduled) {
+      if (notif.content.data?.type === 'payday_reminder') {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+      }
+    }
+
+    // 2. Alerta de Quincena (Día 15 a las 11:00 AM)
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '💰 ¡Llegó la quincena! ¿Cobraste hoy?',
+        body: 'Registrá tus ingresos de sueldo o pagos del 15 para mantener tu saldo y metas al día.',
+        sound: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+        data: { type: 'payday_reminder', moment: 'quincena' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.MONTHLY,
+        day: 15,
+        hour: 11,
+        minute: 0,
+        channelId: Platform.OS === 'android' ? 'default' : undefined,
+      },
+    });
+
+    // 3. Alerta de Fin de Mes (Día 30 a las 11:00 AM)
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '💵 ¡Cierre de mes: Día de cobro!',
+        body: 'Registrá tus ingresos, bonos o cobros de fin de mes para arrancar el próximo ciclo con las cuentas claras.',
+        sound: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+        data: { type: 'payday_reminder', moment: 'fin_de_mes' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.MONTHLY,
+        day: 30,
+        hour: 11,
+        minute: 0,
+        channelId: Platform.OS === 'android' ? 'default' : undefined,
+      },
+    });
+
+    return true;
+  } catch (e) {
+    console.warn('Error programando recordatorios de quincena/fin de mes:', e);
     return false;
   }
 }
