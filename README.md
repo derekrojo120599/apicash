@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Apicash — Monorepo (Web & Mobile)
 
-## Getting Started
+Aplicación de gestión de finanzas personales en USD y VES (bolívares venezolanos).
 
-First, run the development server:
+## Estructura del Proyecto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```text
+apicash/
+├── apps/
+│   ├── web/          # Aplicación Next.js 16 (App Router, Tailwind CSS, PWA)
+│   └── mobile/       # Aplicación React Native con Expo 58 y TypeScript
+├── packages/
+│   └── shared/       # Lógica compartida: utilidades de dinero (NUMERIC 18,2/4), cálculos VES/USD, comisiones y tipos
+└── odd/              # Registro de tareas y especificaciones ODD
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Requisitos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js 20+ (recomendado Node 22+)
+- npm 10+
+- Teléfono móvil con la app **Expo Go** instalada (Android o iOS)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Cómo empezar
 
-## Learn More
+### 1. Instalar dependencias
+Desde la raíz del monorepo:
+```bash
+npm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Probar la app en tu teléfono móvil (React Native / Expo)
+1. Instala la app **Expo Go** en tu teléfono (disponible gratis en Google Play Store y Apple App Store).
+2. Asegúrate de que tu teléfono y tu PC estén conectados a la **misma red Wi-Fi**.
+3. Inicia el servidor de desarrollo de la app mobile:
+   ```bash
+   npm run dev:mobile
+   # O directamente:
+   cd apps/mobile && npx expo start
+   ```
+4. Se mostrará un código QR en tu terminal.
+   - En **Android**: abre la app Expo Go y toca "Scan QR code".
+   - En **iOS**: abre la app Cámara nativa y escanea el código QR para abrir Expo Go.
+5. Los cambios que hagas en `apps/mobile/App.tsx` o en `packages/shared/` se recargarán automáticamente en tu teléfono.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Ejecutar la app Web (Next.js)
+```bash
+npm run dev:web
+# O directamente:
+cd apps/web && npm run dev
+```
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Tests y Validación
+```bash
+npm test
+```
+Ejecuta las pruebas unitarias y de integración del monorepo.
