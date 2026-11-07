@@ -41,6 +41,8 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
   })
   const [operationSubtype, setOperationSubtype] = useState<string | null>(null)
   const [isFailed, setIsFailed] = useState(false)
+  const [asumirComisionComercio, setAsumirComisionComercio] = useState(false)
+  const [comisionOverride, setComisionOverride] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -60,15 +62,18 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
     if (!config) return null;
 
     try {
+      const overrideVal = comisionOverride ? Number(comisionOverride) : null;
       return previewComision(
         formData.monto_original,
         config,
-        isFailed
+        isFailed,
+        overrideVal,
+        asumirComisionComercio
       );
     } catch {
       return null;
     }
-  }, [operationSubtype, formData.monto_original, commissionsConfig, isFailed])
+  }, [operationSubtype, formData.monto_original, commissionsConfig, isFailed, comisionOverride, asumirComisionComercio])
 
   const formatMoney = (monto: number, moneda: string) => {
     return new Intl.NumberFormat(moneda === 'USD' ? 'en-US' : 'es-VE', { 
@@ -81,6 +86,8 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
     setError('')
     setOperationSubtype(null)
     setIsFailed(false)
+    setAsumirComisionComercio(false)
+    setComisionOverride('')
     onClose()
   }
 
@@ -109,6 +116,11 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
 
     if (formData.tipo === 'transferencia' && accountId === formData.cuenta_destino_id) {
       setError('La cuenta origen y destino no pueden ser la misma')
+      return
+    }
+
+    if (comisionOverride && Number(comisionOverride) > 54 && operationSubtype === 'transferencia_mismo_banco') {
+      setError('La comisión para transferencias del mismo banco no puede superar los 54,00 VES permitidos por el BCV')
       return
     }
 
@@ -148,6 +160,8 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
           descripcion: formData.descripcion,
           subtipo_operacion: operationSubtype || null,
           es_fallida: isFailed,
+          comision_override: comisionOverride ? Number(comisionOverride) : null,
+          asumir_comision_comercio: asumirComisionComercio,
           tasa_cambio: currentRate || null
         })
       }
@@ -290,7 +304,49 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
                 </label>
               )}
 
-              {currentComision && (
+              {operationSubtype && ['pm_p2c', 'pm_c2p_interbancario', 'pm_c2p_mismo_banco'].includes(operationSubtype) && (
+                <div className="space-y-1.5 animate-in fade-in duration-200">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={asumirComisionComercio}
+                      onChange={e => setAsumirComisionComercio(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Asumí la comisión del comercio (1,50% / mín. Bs. 14)
+                    </span>
+                  </label>
+                  {!asumirComisionComercio && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 pl-6">
+                      Por normativa del BCV, esta comisión la asume el comercio receptor. Tu cuenta no tendrá débito por comisión.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {operationSubtype === 'transferencia_mismo_banco' && (
+                <div className="space-y-1.5 animate-in fade-in duration-200">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Comisión del banco (Opcional, máx. 54,00 VES)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="54"
+                    value={comisionOverride}
+                    onChange={(e) => setComisionOverride(e.target.value)}
+                    placeholder="0.00 (dejar vacío si tu banco no cobra)"
+                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-transparent text-slate-900 dark:text-slate-100 text-sm"
+                  />
+                  <p className="text-[11px] text-slate-400">
+                    La mayoría de los bancos cobran Bs. 0. Ingresa un monto solo si tu banco te cobra comisión (tope BCV: Bs. 54).
+                  </p>
+                </div>
+              )}
+
+              {currentComision && Number(currentComision.comisionFinal) > 0 ? (
                 <div className="mt-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-lg text-sm text-indigo-800 dark:text-indigo-300 flex flex-col gap-1 transition-colors animate-in fade-in zoom-in-95 duration-200">
                   <span className="font-semibold">Comisión estimada (BCV):</span>
                   <span>Se cobrará una comisión de <strong className="text-indigo-900 dark:text-indigo-200 font-bold">{currentComision.comisionFinal} VES</strong>.</span>
@@ -300,7 +356,11 @@ export function NewTransactionModal({ isOpen, onClose, onSuccess }: NewTransacti
                     </span>
                   )}
                 </div>
-              )}
+              ) : currentComision && ['pm_p2c', 'pm_c2p_interbancario', 'pm_c2p_mismo_banco'].includes(operationSubtype || '') && !asumirComisionComercio ? (
+                <div className="mt-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-800/40 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                  <span>✓ Comisión asumida por el comercio (0,00 VES debitados a tu cuenta).</span>
+                </div>
+              ) : null}
             </div>
           )}
 

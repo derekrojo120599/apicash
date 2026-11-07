@@ -8,6 +8,7 @@ export interface ComisionConfig {
   maximo_ves?: number | string | Decimal | null;
   permite_override?: boolean;
   aplica_a_fallidas?: boolean;
+  asume_usuario?: boolean;
 }
 
 export interface CalculoComisionResult {
@@ -25,7 +26,8 @@ export function previewComision(
   montoPrincipal: number | string | Decimal,
   config: ComisionConfig | null | undefined,
   esFallida: boolean = false,
-  overrideComision?: number | string | Decimal | null
+  overrideComision?: number | string | Decimal | null,
+  asumirComisionComercio: boolean = false
 ): CalculoComisionResult {
   if (!config) {
     return {
@@ -35,8 +37,6 @@ export function previewComision(
     };
   }
 
-  // Se asume que montoPrincipal ya está redondeado a 2 decimales en el backend,
-  // pero lo forzamos aquí para la lógica.
   const monto = roundMoney(montoPrincipal);
   const porcentaje = new Decimal(config.porcentaje);
   const minimoVes = new Decimal(config.minimo_ves);
@@ -45,8 +45,16 @@ export function previewComision(
   let comisionFinal = new Decimal(0);
   let topeCalculado = new Decimal(0);
 
+  // Si la comisión no la asume el usuario y NO activó el flag excepcional de asumirla
+  if (config.asume_usuario === false && !asumirComisionComercio) {
+    return {
+      comisionCalculada: '0.00',
+      comisionFinal: '0.00',
+      topeCalculado: '0.00',
+    };
+  }
+
   if (esFallida && !config.aplica_a_fallidas) {
-    // Si es fallida pero no aplica a fallidas, la comisión es 0
     return {
       comisionCalculada: comisionCalculada.toFixed(2),
       comisionFinal: comisionFinal.toFixed(2),
@@ -58,24 +66,21 @@ export function previewComision(
     if (overrideComision !== undefined && overrideComision !== null) {
       throw new Error('No se permite override de comisión en operaciones fallidas');
     }
-    // Operación fallida: cobra solo el mínimo, sin porcentaje ni override
     comisionFinal = minimoVes;
     topeCalculado = minimoVes;
   } else {
-    // Cálculo normal
-    // ROUND(v_monto_principal * v_config.porcentaje, 2)
     comisionCalculada = roundMoney(monto.times(porcentaje));
-    
-    // GREATEST(v_comision_calculada, v_config.minimo_ves)
     comisionFinal = Decimal.max(comisionCalculada, minimoVes);
 
-    // Calcular tope estricto para posibles overrides
-    topeCalculado = comisionFinal;
-    if (config.maximo_ves !== undefined && config.maximo_ves !== null) {
-      const maximoVes = new Decimal(config.maximo_ves);
-      // LEAST(v_comision_final, v_config.maximo_ves)
-      topeCalculado = Decimal.min(comisionFinal, maximoVes);
-      comisionFinal = topeCalculado;
+    const maximoVes = config.maximo_ves !== undefined && config.maximo_ves !== null
+      ? new Decimal(config.maximo_ves)
+      : null;
+
+    if (maximoVes !== null) {
+      topeCalculado = maximoVes;
+      comisionFinal = Decimal.min(comisionFinal, maximoVes);
+    } else {
+      topeCalculado = comisionFinal;
     }
 
     if (overrideComision !== undefined && overrideComision !== null) {
@@ -85,7 +90,7 @@ export function previewComision(
 
       const overrideValue = new Decimal(overrideComision);
       if (overrideValue.lt(0) || overrideValue.gt(topeCalculado)) {
-        throw new Error(`Override rechazado: monto fuera del rango permitido`);
+        throw new Error(`Override rechazado: monto fuera del rango permitido (0 a ${topeCalculado.toFixed(2)})`);
       }
       
       comisionFinal = roundMoney(overrideValue);

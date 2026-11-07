@@ -8,6 +8,7 @@ export interface ComisionConfig {
   maximo_ves?: number | string | Decimal | null;
   permite_override?: boolean;
   aplica_a_fallidas?: boolean;
+  asume_usuario?: boolean;
 }
 
 export interface CalculoComisionResult {
@@ -24,7 +25,8 @@ export function previewComision(
   montoPrincipal: number | string | Decimal,
   config: ComisionConfig | null | undefined,
   esFallida: boolean = false,
-  overrideComision?: number | string | Decimal | null
+  overrideComision?: number | string | Decimal | null,
+  asumirComisionComercio: boolean = false
 ): CalculoComisionResult {
   if (!config) {
     return {
@@ -41,6 +43,15 @@ export function previewComision(
   let comisionCalculada = new Decimal(0);
   let comisionFinal = new Decimal(0);
   let topeCalculado = new Decimal(0);
+
+  // Si la comisión la asume el comercio y el usuario NO activó el flag excepcional de asumirla
+  if (config.asume_usuario === false && !asumirComisionComercio) {
+    return {
+      comisionCalculada: '0.00',
+      comisionFinal: '0.00',
+      topeCalculado: '0.00',
+    };
+  }
 
   if (esFallida && !config.aplica_a_fallidas) {
     return {
@@ -59,12 +70,16 @@ export function previewComision(
   } else {
     comisionCalculada = roundMoney(monto.times(porcentaje));
     comisionFinal = Decimal.max(comisionCalculada, minimoVes);
-    topeCalculado = comisionFinal;
 
-    if (config.maximo_ves !== undefined && config.maximo_ves !== null) {
-      const maximoVes = new Decimal(config.maximo_ves);
-      topeCalculado = Decimal.min(comisionFinal, maximoVes);
-      comisionFinal = topeCalculado;
+    const maximoVes = config.maximo_ves !== undefined && config.maximo_ves !== null
+      ? new Decimal(config.maximo_ves)
+      : null;
+
+    if (maximoVes !== null) {
+      topeCalculado = maximoVes;
+      comisionFinal = Decimal.min(comisionFinal, maximoVes);
+    } else {
+      topeCalculado = comisionFinal;
     }
 
     if (overrideComision !== undefined && overrideComision !== null) {
@@ -74,7 +89,7 @@ export function previewComision(
 
       const overrideValue = new Decimal(overrideComision);
       if (overrideValue.lt(0) || overrideValue.gt(topeCalculado)) {
-        throw new Error(`Override rechazado: monto fuera del rango permitido`);
+        throw new Error(`Override rechazado: monto fuera del rango permitido (0 a ${topeCalculado.toFixed(2)})`);
       }
       
       comisionFinal = roundMoney(overrideValue);

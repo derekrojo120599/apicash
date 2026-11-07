@@ -38,6 +38,7 @@ export interface CreateTransactionParams {
   tasa_cambio?: number | null
   fecha?: string
   comision_override?: number | null
+  asumir_comision_comercio?: boolean
 }
 
 export interface CreateTransferParams {
@@ -121,7 +122,8 @@ export function useCrearTransaccion() {
           p_fecha: newTx.fecha || new Date().toISOString(),
           p_descripcion: newTx.descripcion || '',
           p_override_comision: newTx.comision_override || null,
-          p_es_fallida: newTx.es_fallida || false
+          p_es_fallida: newTx.es_fallida || false,
+          p_asumir_comision_comercio: newTx.asumir_comision_comercio || false
         })
         
         if (error) {

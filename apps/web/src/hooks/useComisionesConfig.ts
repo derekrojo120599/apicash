@@ -8,8 +8,10 @@ export interface ComisionConfig {
   porcentaje: number
   minimo_ves: number
   maximo_ves: number | null
+  es_tope: boolean
   permite_override: boolean
   aplica_a_fallidas: boolean
+  asume_usuario: boolean
   vigente_desde: string
   vigente_hasta: string | null
 }

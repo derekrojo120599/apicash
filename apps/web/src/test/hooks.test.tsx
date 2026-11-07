@@ -270,6 +270,7 @@ describe('Hooks de Integración de Datos (React Query + Supabase RPC)', () => {
         p_tasa_cambio: null,
         p_fecha: expect.any(String),
         p_override_comision: null,
+        p_asumir_comision_comercio: false,
       });
     });
   });

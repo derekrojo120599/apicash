@@ -51,6 +51,8 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
   const [descripcion, setDescripcion] = useState('');
   const [operationSubtype, setOperationSubtype] = useState<string | null>(null);
   const [isFailed, setIsFailed] = useState(false);
+  const [asumirComisionComercio, setAsumirComisionComercio] = useState(false);
+  const [comisionOverride, setComisionOverride] = useState('');
 
   const [cuentas, setCuentas] = useState<CuentaItem[]>([]);
   const [categorias, setCategorias] = useState<CategoriaItem[]>([]);
@@ -74,7 +76,7 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
         supabase.from('cuentas').select('id, nombre, tipo, moneda, saldo_cache').eq('user_id', user.id).eq('activa', true).order('nombre'),
         supabase.from('categorias').select('id, nombre, tipo').eq('user_id', user.id).order('nombre'),
         supabase.from('tasas_cambio').select('tasa').order('fecha', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('config_comisiones').select('*'),
+        supabase.from('comisiones_config').select('*'),
       ]);
 
       if (cuentasRes.data && cuentasRes.data.length > 0) {
@@ -135,11 +137,12 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
     const cfg = commissionsConfig.find((c) => c.subtipo_operacion === operationSubtype);
     if (!cfg) return null;
     try {
-      return previewComision(monto, cfg, isFailed);
+      const overrideVal = comisionOverride ? Number(comisionOverride) : null;
+      return previewComision(monto, cfg, isFailed, overrideVal, asumirComisionComercio);
     } catch {
       return null;
     }
-  }, [operationSubtype, monto, commissionsConfig, isFailed]);
+  }, [operationSubtype, monto, commissionsConfig, isFailed, comisionOverride, asumirComisionComercio]);
 
   const metodosPagoVES = [
     { value: '', label: 'Sin comisión bancaria' },
@@ -191,6 +194,11 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
       return;
     }
 
+    if (comisionOverride && Number(comisionOverride) > 54 && operationSubtype === 'transferencia_mismo_banco') {
+      setErrorMsg('La comisión máxima para transferencias del mismo banco es de 54,00 VES según tarifario BCV');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
 
@@ -231,8 +239,9 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
           p_tasa_cambio: tasaActual || null,
           p_fecha: new Date().toISOString(),
           p_descripcion: descripcion.trim() || '',
-          p_override_comision: null,
+          p_override_comision: comisionOverride ? Number(comisionOverride) : null,
           p_es_fallida: isFailed,
+          p_asumir_comision_comercio: asumirComisionComercio,
         });
 
         if (comErr) throw comErr;
@@ -399,10 +408,64 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
                   </View>
                 ) : null}
 
-                {currentComision ? (
-                  <View style={styles.comisionPreviewBox}>
-                    <Text style={styles.comisionPreviewText}>
-                      Comisión estimada (BCV): Se cobrará {currentComision.comisionFinal} VES
+                {operationSubtype &&
+                ['pm_p2c', 'pm_c2p_interbancario', 'pm_c2p_mismo_banco'].includes(operationSubtype) ? (
+                  <View style={{ gap: 4 }}>
+                    <View style={styles.switchRow}>
+                      <Switch
+                        value={asumirComisionComercio}
+                        onValueChange={setAsumirComisionComercio}
+                        trackColor={{ false: '#334155', true: colors.p500 }}
+                      />
+                      <Text style={[styles.switchLabel, !isDarkMode && styles.textDark]}>
+                        Asumí la comisión del comercio (1,50% / mín. Bs. 14)
+                      </Text>
+                    </View>
+                    {!asumirComisionComercio ? (
+                      <Text style={styles.switchHelpText}>
+                        Por normativa del BCV, esta comisión la asume el comercio. Tu cuenta no tendrá débito por comisión.
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {operationSubtype === 'transferencia_mismo_banco' ? (
+                  <View style={{ gap: 4 }}>
+                    <Text style={[styles.subLabel, !isDarkMode && styles.textDark]}>
+                      Comisión del banco (Opcional, máx. 54,00 VES)
+                    </Text>
+                    <View style={[styles.inputWrap, !isDarkMode && styles.inputLight]}>
+                      <TextInput
+                        style={[styles.textInput, !isDarkMode && styles.textDark]}
+                        value={comisionOverride}
+                        onChangeText={setComisionOverride}
+                        keyboardType="decimal-pad"
+                        placeholder="0.00 (dejar vacío si tu banco no cobra)"
+                        placeholderTextColor="#64748b"
+                      />
+                    </View>
+                    <Text style={styles.switchHelpText}>
+                      La mayoría de los bancos cobran Bs. 0. Ingresa un monto solo si tu banco te cobra comisión (tope BCV: Bs. 54).
+                    </Text>
+                  </View>
+                ) : null}
+
+                {currentComision && Number(currentComision.comisionFinal) > 0 ? (
+                  <View style={[styles.comisionPreviewBox, !isDarkMode && styles.comisionPreviewLight]}>
+                    <Text style={[styles.comisionPreviewText, !isDarkMode && { color: '#3730a3' }]}>
+                      Se cobrará una comisión de{' '}
+                      <Text style={{ fontWeight: 'bold' }}>{currentComision.comisionFinal} VES</Text>.
+                    </Text>
+                    {Number(currentComision.comisionFinal) > 0 && tasaActual ? (
+                      <Text style={[styles.comisionUsdText, !isDarkMode && { color: '#4338ca' }]}>
+                        Equivalente: ≈ ${(Number(currentComision.comisionFinal) / tasaActual).toFixed(2)} USD
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : currentComision && ['pm_p2c', 'pm_c2p_interbancario', 'pm_c2p_mismo_banco'].includes(operationSubtype || '') && !asumirComisionComercio ? (
+                  <View style={[styles.comisionFreeBox, !isDarkMode && styles.comisionFreeLight]}>
+                    <Text style={[styles.comisionFreeText, !isDarkMode && { color: '#065f46' }]}>
+                      ✓ Comisión asumida por el comercio (0,00 VES debitados a tu cuenta).
                     </Text>
                   </View>
                 ) : null}
@@ -601,17 +664,57 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     flex: 1,
   },
+  switchHelpText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginLeft: 4,
+    lineHeight: 15,
+  },
+  subLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginTop: 2,
+  },
   comisionPreviewBox: {
     backgroundColor: '#312e8144',
     borderColor: '#6366f155',
     borderWidth: 1,
-    padding: 10,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 4,
+  },
+  comisionPreviewLight: {
+    backgroundColor: '#eef2ff',
+    borderColor: '#c7d2fe',
   },
   comisionPreviewText: {
-    color: '#818cf8',
+    color: '#a5b4fc',
     fontSize: 12,
+    fontWeight: '500',
+  },
+  comisionUsdText: {
+    color: '#818cf8',
+    fontSize: 11,
     fontWeight: '600',
+  },
+  comisionFreeBox: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 6,
+  },
+  comisionFreeLight: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#a7f3d0',
+  },
+  comisionFreeText: {
+    color: '#34d399',
+    fontSize: 12,
+    fontWeight: '500',
   },
   inputWrap: {
     flexDirection: 'row',
