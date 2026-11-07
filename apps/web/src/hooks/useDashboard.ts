@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import type { Cuenta } from './useCuentas'
 import type { Transaccion } from './useTransacciones'
@@ -37,35 +37,7 @@ export function useBalanceNeto() {
         tasa_fecha: result?.tasa_fecha || new Date().toISOString()
       } as BalanceNeto
     },
-    // Mientras el refetch de fondo ocurre, derivar una estimación parcial desde
-    // el cache de cuentas (ya optimista) para evitar mostrar datos obsoletos
-    placeholderData: () => {
-      const cuentas = queryClient.getQueryData<Cuenta[]>(['cuentas'])
-      if (!cuentas?.length) return undefined
-
-      const usd_fijo = cuentas
-        .filter(c => c.moneda === 'USD' && c.activa)
-        .reduce((acc, c) => acc + Number(c.saldo_cache), 0)
-
-      const ves_total = cuentas
-        .filter(c => c.moneda === 'VES' && c.activa)
-        .reduce((acc, c) => acc + Number(c.saldo_cache), 0)
-
-      // Sin tasa actualizada no podemos derivar ves_en_usd exacto,
-      // usamos el último valor conocido de balanceNeto si existe
-      const prev = queryClient.getQueryData<BalanceNeto>(['balanceNeto'])
-      const tasa_usada = prev?.tasa_usada || 0
-      const ves_en_usd = tasa_usada > 0 ? ves_total / tasa_usada : 0
-
-      return {
-        usd_fijo,
-        ves_total,
-        ves_en_usd,
-        balance_neto: usd_fijo + ves_en_usd,
-        tasa_usada,
-        tasa_fecha: prev?.tasa_fecha || new Date().toISOString()
-      } satisfies BalanceNeto
-    }
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -132,7 +104,7 @@ export function useResumenMes() {
 
       const tasa = Number(tasaRes?.tasa) || 1
 
-      const totalAhorrosUsd = ahorros?.reduce((acc, m) => {
+      const totalAhorrosUsd = ahorros?.reduce((acc: number, m: any) => {
         const monto = Number(m.monto_actual) || 0
         if (m.moneda === 'VES') {
           return acc + (tasa > 0 ? monto / tasa : 0)
@@ -140,7 +112,7 @@ export function useResumenMes() {
         return acc + monto
       }, 0) || 0
 
-      const totalDeudasUsd = deudas?.reduce((acc, d) => {
+      const totalDeudasUsd = deudas?.reduce((acc: number, d: any) => {
         const saldo = Number(d.saldo_pendiente) || 0
         if (d.moneda === 'VES') {
           return acc + (tasa > 0 ? saldo / tasa : 0)
@@ -149,38 +121,12 @@ export function useResumenMes() {
       }, 0) || 0
 
       return {
-        ingresos: ingresos?.reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0) || 0,
-        gastos: gastos?.reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0) || 0,
+        ingresos: ingresos?.reduce((acc: number, t: any) => acc + Number(t.monto_usd_calculado), 0) || 0,
+        gastos: gastos?.reduce((acc: number, t: any) => acc + Number(t.monto_usd_calculado), 0) || 0,
         ahorros: totalAhorrosUsd,
         deuda: totalDeudasUsd
       }
     },
-    // Derivar optimistamente desde el caché de transacciones del mes actual
-    placeholderData: (): ResumenMes | undefined => {
-      const prev = queryClient.getQueryData<ResumenMes>(['resumenMes'])
-      
-      // Buscar transacciones cacheadas del mes actual para aproximar gastos/ingresos
-      const todasTxs = queryClient.getQueriesData<Transaccion[]>({ queryKey: ['transacciones'] })
-      let txsDelMes: Transaccion[] = []
-      for (const [, data] of todasTxs) {
-        if (Array.isArray(data)) {
-          txsDelMes = data.filter(t => !t.anulada && new Date(t.fecha) >= inicioMes)
-          if (txsDelMes.length > 0) break
-        }
-      }
-
-      if (!txsDelMes.length) return prev
-
-      return {
-        ingresos: txsDelMes
-          .filter(t => t.tipo === 'ingreso')
-          .reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0),
-        gastos: txsDelMes
-          .filter(t => t.tipo === 'gasto')
-          .reduce((acc, t) => acc + Number(t.monto_usd_calculado), 0),
-        ahorros: prev?.ahorros || 0,
-        deuda: prev?.deuda || 0
-      }
-    }
+    placeholderData: keepPreviousData,
   })
 }

@@ -19,8 +19,10 @@ web-build/
 /coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
+apps/web/public/sw*
+apps/web/public/workbox-*
 
 # production
 /build

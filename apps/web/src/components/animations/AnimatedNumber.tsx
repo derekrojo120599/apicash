@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { animate } from 'animejs';
 
 interface AnimatedNumberProps {
@@ -19,9 +19,11 @@ export function AnimatedNumber({
   className = '',
 }: AnimatedNumberProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [displayValue, setDisplayValue] = useState(0);
+  const formatterRef = useRef(formatter);
+  formatterRef.current = formatter;
 
   useEffect(() => {
+    if (!ref.current) return;
     const animatedObject = { value: 0 };
 
     const animation = animate(animatedObject, {
@@ -31,16 +33,20 @@ export function AnimatedNumber({
       ease: 'outExpo',
       modifier: (v: number) => Math.round(v * 100) / 100,
       onUpdate: () => {
-        setDisplayValue(animatedObject.value);
+        if (ref.current) {
+          ref.current.textContent = formatterRef.current(animatedObject.value);
+        }
       },
     });
 
-    return () => { animation.pause(); };
+    return () => {
+      animation.pause();
+    };
   }, [value, duration, delay]);
 
   return (
     <span ref={ref} className={className}>
-      {formatter(displayValue)}
+      {formatter(value)}
     </span>
   );
 }

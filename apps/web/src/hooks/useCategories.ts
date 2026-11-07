@@ -122,7 +122,7 @@ export function useDeleteCategory() {
       
       if (txError) throw txError
 
-      const activeTransactions = transactions?.filter(tx => !tx.anulada) || []
+      const activeTransactions = transactions?.filter((tx: any) => !tx.anulada) || []
 
       if (activeTransactions.length > 0) {
         throw new Error('No se puede eliminar: esta categoría tiene movimientos activos asociados.')

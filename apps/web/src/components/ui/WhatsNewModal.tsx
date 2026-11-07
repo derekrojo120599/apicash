@@ -72,24 +72,29 @@ export function WhatsNewModal() {
     // Display modal if not seen this week
     const timer = setTimeout(() => {
       setIsOpen(true);
-      requestAnimationFrame(() => {
-        animate('.whats-new-overlay', {
-          opacity: [0, 1],
-          duration: 300,
-          ease: 'outQuad'
-        });
-        animate('.whats-new-content', {
-          scale: [0.92, 1],
-          opacity: [0, 1],
-          translateY: [16, 0],
-          duration: 400,
-          ease: 'outCubic'
-        });
-      });
     }, 120);
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    requestAnimationFrame(() => {
+      animate('.whats-new-overlay', {
+        opacity: [0, 1],
+        duration: 300,
+        ease: 'outQuad',
+      });
+      animate('.whats-new-content', {
+        scale: [0.92, 1],
+        opacity: [0, 1],
+        translateY: [16, 0],
+        duration: 400,
+        ease: 'outCubic',
+      });
+    });
+  }, [isOpen]);
 
   const handleClose = () => {
     const STORAGE_KEY = 'apicash_whats_new_v1';
