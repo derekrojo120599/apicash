@@ -27,19 +27,37 @@ function MainApp() {
   const [currentTab, setCurrentTab] = useState<ScreenTab>('dashboard');
 
   useEffect(() => {
-    initNotificationsPermission();
+    initNotificationsPermission().catch(() => {});
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setCheckingAuth(false);
-    });
+    let mounted = true;
+
+    // Timeout de seguridad: si Supabase tarda en responder o no hay sesión previa, liberamos la pantalla en 800ms
+    const safetyTimer = setTimeout(() => {
+      if (mounted) setCheckingAuth(false);
+    }, 800);
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (mounted) {
+          setSession(session);
+          setCheckingAuth(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('Error al obtener sesión:', err);
+        if (mounted) setCheckingAuth(false);
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setCheckingAuth(false);
+      if (mounted) {
+        setSession(session);
+        setCheckingAuth(false);
+      }
     });
 
     return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);

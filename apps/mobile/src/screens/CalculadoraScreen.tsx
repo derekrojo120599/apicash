@@ -15,6 +15,8 @@ import { formatMoney } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface CalculadoraScreenProps {
   onOpenMenu: () => void;
@@ -90,25 +92,8 @@ export function CalculadoraScreen({ onOpenMenu }: CalculadoraScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>
-            Calculadora de Divisas
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Calculadora de Divisas" onOpenMenu={onOpenMenu} />
 
       <ScrollView contentContainerStyle={styles.container}>
         {/* Switch de Dirección */}
@@ -189,26 +174,44 @@ export function CalculadoraScreen({ onOpenMenu }: CalculadoraScreenProps) {
               ]}
             />
 
-            {/* Resultado */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View>
-                <Text style={styles.inputLabel}>Resultado Estimado</Text>
-                <Text style={[styles.resultAmount, { color: colors.p500 }]}>
-                  {direccion === 'USD_A_VES' ? 'Bs. ' : '$'}
-                  {formatMoney(resultado)}
-                </Text>
+            {/* Tarjeta de Resultado Elegante con Gradiente idéntica a la Web */}
+            <LinearGradient
+              colors={[colors.p600, colors.p700, '#0f766e']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientResultCard}
+            >
+              <View style={styles.resultCardHeader}>
+                <Text style={styles.resultCardSubtitle}>RESULTADO DE LA CONVERSIÓN</Text>
+                <View style={styles.sourceBadge}>
+                  <Text style={styles.sourceBadgeText}>
+                    {customMode ? 'Tasa manual' : fuenteNombre}
+                  </Text>
+                </View>
               </View>
-              <TouchableOpacity
-                style={[styles.shareBtn, { backgroundColor: `${colors.p500}22` }]}
-                onPress={compartirResultado}
-              >
-                <Ionicons name="share-social-outline" size={20} color={colors.p500} />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.rateUsedSubtext}>
-              Calculado con {customMode ? 'Tasa personalizada' : fuenteNombre}: Bs.{' '}
-              {formatMoney(rateActiva)} / USD
-            </Text>
+
+              <View style={styles.resultAmountRow}>
+                <View style={{ flex: 1, marginRight: 10 }}>
+                  <Text style={styles.resultAmountText} numberOfLines={1} adjustsFontSizeToFit>
+                    {direccion === 'USD_A_VES' ? 'Bs. ' : '$'}
+                    {formatMoney(resultado)}
+                  </Text>
+                  <Text style={styles.resultCalcDetail}>
+                    {direccion === 'USD_A_VES'
+                      ? `$${formatMoney(parseFloat(monto) || 0)} calculados a ${formatMoney(rateActiva)} VES/USD`
+                      : `Bs. ${formatMoney(parseFloat(monto) || 0)} divididos entre ${formatMoney(rateActiva)} VES/USD`}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.gradientShareBtn}
+                  onPress={compartirResultado}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="share-social-outline" size={20} color="#ffffff" />
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
           </View>
         </FadeIn>
 
@@ -282,7 +285,7 @@ export function CalculadoraScreen({ onOpenMenu }: CalculadoraScreenProps) {
           <Ionicons name="create-outline" size={20} color={colors.p500} />
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -407,6 +410,61 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#1e293b',
     marginVertical: 18,
+  },
+  gradientResultCard: {
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  resultCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  resultCardSubtitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#e2e8f0',
+    letterSpacing: 0.5,
+  },
+  sourceBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  sourceBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  resultAmountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  resultAmountText: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#ffffff',
+  },
+  resultCalcDetail: {
+    fontSize: 11,
+    color: '#e2e8f0',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  gradientShareBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   resultAmount: {
     fontSize: 32,

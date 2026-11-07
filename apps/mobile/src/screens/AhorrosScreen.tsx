@@ -20,6 +20,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedNumber, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
 
 interface AhorrosScreenProps {
   onOpenMenu: () => void;
@@ -32,6 +33,7 @@ interface Meta {
   monto_actual: number;
   monto_objetivo: number | null;
   moneda: 'USD' | 'VES';
+  fecha_objetivo?: string | null;
 }
 
 interface CuentaOption {
@@ -289,23 +291,8 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>Ahorros y Metas</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Ahorros y Metas" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -353,92 +340,146 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
           </View>
         ) : (
           metas.map((m, idx) => {
-            const hasTarget = m.monto_objetivo && m.monto_objetivo > 0;
-            const progress = hasTarget
+            const tieneObjetivo = m.monto_objetivo !== null && m.monto_objetivo > 0;
+            const progreso = tieneObjetivo
               ? Math.min(100, Math.round((m.monto_actual / m.monto_objetivo!) * 100))
               : 0;
+            const completado = tieneObjetivo ? progreso >= 100 : false;
+            const puedeRetirar = (m.monto_actual || 0) > 0;
 
             return (
               <FadeIn key={m.id} delay={idx * 80}>
                 <View style={[styles.metaCard, !isDarkMode && styles.cardLight]}>
-                  <View style={styles.metaHeader}>
-                    <View style={[styles.metaIcon, { backgroundColor: `${colors.p500}22` }]}>
-                      <Ionicons name="cube-outline" size={22} color={colors.p500} />
-                    </View>
-                    <View style={styles.metaInfo}>
-                      <Text style={[styles.metaTitle, !isDarkMode && styles.textDark]}>
+                  {/* Fila superior: Título + Badge + Botón de eliminar */}
+                  <View style={styles.metaHeaderRow}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={[styles.metaTitle, !isDarkMode && styles.textDark]} numberOfLines={1}>
                         {m.nombre}
                       </Text>
-                      <Text style={styles.metaCurrency}>Moneda: {m.moneda}</Text>
-                    </View>
-                    <View style={styles.metaRight}>
-                      <AnimatedNumber
-                        value={Number(m.monto_actual || 0)}
-                        formatter={(v) => `${m.moneda === 'USD' ? '$' : 'Bs. '}${formatMoney(v)}`}
-                        duration={1100}
-                        style={[styles.currentAmount, !isDarkMode && styles.textDark]}
-                      />
-                      {hasTarget ? (
-                        <Text style={styles.targetAmount}>
-                          de {m.moneda === 'USD' ? '$' : 'Bs. '}
-                          {formatMoney(m.monto_objetivo!)}
+                      {m.fecha_objetivo ? (
+                        <Text style={styles.metaDueDate}>
+                          Objetivo: {new Date(m.fecha_objetivo).toLocaleDateString('es-ES')}
                         </Text>
                       ) : null}
                     </View>
+
+                    {/* Badge de porcentaje / Ahorro Libre */}
+                    <View
+                      style={[
+                        styles.metaPctBadge,
+                        {
+                          backgroundColor: tieneObjetivo
+                            ? (isDarkMode ? '#1e3a8a30' : '#eff6ff')
+                            : (isDarkMode ? `${colors.p500}22` : colors.p100),
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.metaPctText,
+                          {
+                            color: tieneObjetivo
+                              ? (isDarkMode ? '#60a5fa' : '#2563eb')
+                              : (isDarkMode ? colors.p400 : colors.p600),
+                          },
+                        ]}
+                      >
+                        {tieneObjetivo ? `${Math.round(progreso)}%` : 'Ahorro Libre'}
+                      </Text>
+                    </View>
+
+                    {/* Botón eliminar */}
+                    <TouchableOpacity
+                      style={styles.deleteIconBtn}
+                      onPress={() => handleDeleteMeta(m)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons name="trash-outline" size={17} color="#94a3b8" />
+                    </TouchableOpacity>
                   </View>
 
-                  {hasTarget ? (
-                    <View style={styles.progressContainer}>
-                      <AnimatedProgressBar
-                        progress={progress}
-                        color={colors.p500}
-                        bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
-                        height={8}
-                      />
-                      <Text style={styles.progressText}>{progress}% alcanzado</Text>
-                    </View>
-                  ) : null}
+                  {/* Fila de montos: Actual vs Objetivo */}
+                  <View style={styles.metaAmountsRow}>
+                    <Text style={[styles.metaCurrentLabel, !isDarkMode && { color: '#475569' }]}>
+                      {tieneObjetivo ? (
+                        <Text style={[styles.metaCurrentBold, !isDarkMode && styles.textDark]}>
+                          {m.moneda === 'USD' ? '$' : 'Bs. '}{formatMoney(m.monto_actual)}
+                        </Text>
+                      ) : (
+                        <Text style={[styles.metaCurrentLabel, !isDarkMode && { color: '#475569' }]}>
+                          Total ahorrado:{' '}
+                          <Text style={[styles.metaCurrentBold, !isDarkMode && styles.textDark]}>
+                            {m.moneda === 'USD' ? '$' : 'Bs. '}{formatMoney(m.monto_actual)}
+                          </Text>
+                        </Text>
+                      )}
+                    </Text>
+                    {tieneObjetivo ? (
+                      <Text style={styles.metaTargetLabel}>
+                        / {m.moneda === 'USD' ? '$' : 'Bs. '}{formatMoney(m.monto_objetivo!)}
+                      </Text>
+                    ) : null}
+                  </View>
 
-                  <View
-                    style={[
-                      styles.actionsRow,
-                      !isDarkMode && { borderTopColor: '#e2e8f0' },
-                    ]}
-                  >
+                  {/* Barra de progreso */}
+                  {tieneObjetivo ? (
+                    <AnimatedProgressBar
+                      progress={progreso}
+                      color={completado ? colors.p500 : '#3b82f6'}
+                      bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
+                      height={10}
+                      delay={idx * 80}
+                    />
+                  ) : (
+                    <View style={{ height: 6 }} />
+                  )}
+
+                  {/* Botones de acción idénticos a la Web */}
+                  <View style={styles.metaActionsRow}>
                     <TouchableOpacity
-                      style={[styles.actionBtnGreen, { backgroundColor: `${colors.p500}22` }]}
+                      style={[
+                        styles.aporteBtn,
+                        completado && styles.aporteBtnCompleted,
+                        !isDarkMode && styles.aporteBtnLight,
+                      ]}
+                      disabled={completado}
                       onPress={() => {
                         setSelectedMeta(m);
                         setMontoAporte('');
                         setEsFuenteExterna(false);
                         setModalAporte(true);
                       }}
+                      activeOpacity={0.8}
                     >
-                      <Ionicons name="arrow-up-circle-outline" size={16} color={colors.p500} />
-                      <Text style={[styles.actionTextGreen, { color: colors.p500 }]}>
-                        Aportar
-                      </Text>
+                      {completado ? (
+                        <Text style={[styles.aporteBtnCompletedText, { color: colors.p500 }]}>
+                          🎉 ¡Meta Completada!
+                        </Text>
+                      ) : (
+                        <>
+                          <Ionicons name="arrow-up-circle-outline" size={18} color={colors.p500} />
+                          <Text style={[styles.aporteBtnText, !isDarkMode && styles.textDark]}>
+                            Agregar Aporte
+                          </Text>
+                        </>
+                      )}
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                      style={styles.actionBtnBlue}
-                      onPress={() => {
-                        setSelectedMeta(m);
-                        setMontoRetiro('');
-                        setDescRetiro('');
-                        setModalRetiro(true);
-                      }}
-                    >
-                      <Ionicons name="arrow-down-circle-outline" size={16} color="#38bdf8" />
-                      <Text style={styles.actionTextBlue}>Retirar</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.actionBtnRed}
-                      onPress={() => handleDeleteMeta(m)}
-                    >
-                      <Ionicons name="trash-outline" size={16} color="#f87171" />
-                    </TouchableOpacity>
+                    {puedeRetirar ? (
+                      <TouchableOpacity
+                        style={[styles.retiroBtn, !isDarkMode && styles.retiroBtnLight]}
+                        onPress={() => {
+                          setSelectedMeta(m);
+                          setMontoRetiro('');
+                          setDescRetiro('');
+                          setModalRetiro(true);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="arrow-down-circle-outline" size={18} color="#f97316" />
+                        <Text style={styles.retiroBtnText}>Retirar</Text>
+                      </TouchableOpacity>
+                    ) : null}
                   </View>
                 </View>
               </FadeIn>
@@ -696,7 +737,7 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -785,53 +826,127 @@ const styles = StyleSheet.create({
   },
   metaCard: {
     backgroundColor: '#0f172a',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardLight: {
     backgroundColor: '#ffffff',
     borderColor: '#e2e8f0',
   },
-  metaHeader: {
+  metaHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metaIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  metaInfo: {
-    flex: 1,
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 12,
   },
   metaTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
   },
-  metaCurrency: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  metaRight: {
-    alignItems: 'flex-end',
-  },
-  currentAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  targetAmount: {
+  metaDueDate: {
     fontSize: 11,
     color: '#94a3b8',
     marginTop: 2,
+    fontWeight: '500',
+  },
+  metaPctBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  metaPctText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  deleteIconBtn: {
+    padding: 4,
+    marginLeft: 4,
+  },
+  metaAmountsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  metaCurrentLabel: {
+    fontSize: 13,
+    color: '#cbd5e1',
+  },
+  metaCurrentBold: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  metaTargetLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  metaActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 14,
+  },
+  aporteBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  aporteBtnLight: {
+    backgroundColor: '#ffffff',
+    borderColor: '#cbd5e1',
+  },
+  aporteBtnCompleted: {
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  aporteBtnCompletedText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  aporteBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  retiroBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(249, 115, 22, 0.3)',
+  },
+  retiroBtnLight: {
+    backgroundColor: '#fff7ed',
+    borderColor: '#fed7aa',
+  },
+  retiroBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ea580c',
   },
   progressContainer: {
     marginTop: 14,

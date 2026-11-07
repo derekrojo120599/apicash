@@ -18,6 +18,8 @@ import { NewTransactionModal } from '../components/NewTransactionModal';
 import { FadeIn, AnimatedNumber, AnimatedScalePressable } from '../components/Animations';
 import { useMobileRealtime } from '../context/RealtimeContext';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface DashboardScreenProps {
   onLogout: () => void;
@@ -192,24 +194,8 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      {/* Mobile Top Bar */}
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandContainer}>
-          <View style={[styles.brandLogo, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && { color: '#0f172a' }]}>El Sencillo</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="El Sencillo" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -245,7 +231,12 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
 
         {/* Tarjeta de Balance Neto con AnimatedNumber y FadeIn igual a la Web */}
         <FadeIn delay={100}>
-          <View style={[styles.gradientCard, { backgroundColor: colors.p700 }]}>
+          <LinearGradient
+            colors={[colors.p600, colors.p800]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientCard}
+          >
             <View style={styles.watermarkLogo}>
               <ApicashLogo size={140} color="rgba(255, 255, 255, 0.12)" />
             </View>
@@ -286,7 +277,7 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
                 ) : null}
               </View>
             </View>
-          </View>
+          </LinearGradient>
         </FadeIn>
 
         {/* Grid 2x2 de métricas mensuales con Stagger FadeIn y AnimatedNumber */}
@@ -295,10 +286,21 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           <FadeIn delay={150} style={styles.metricCardWrap}>
             <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
               <View style={styles.metricHeader}>
-                <View style={[styles.metricIconWrap, { backgroundColor: `${colors.p500}25` }]}>
-                  <Ionicons name="trending-up" size={18} color={colors.p500} />
+                <View
+                  style={[
+                    styles.metricIconWrap,
+                    { backgroundColor: isDarkMode ? `${colors.p500}25` : colors.p100 },
+                  ]}
+                >
+                  <Ionicons
+                    name="trending-up"
+                    size={18}
+                    color={isDarkMode ? colors.p400 : colors.p600}
+                  />
                 </View>
-                <Text style={styles.metricLabel}>Ingresos del mes</Text>
+                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
+                  Ingresos del mes
+                </Text>
               </View>
               <AnimatedNumber
                 value={summary.ingresos}
@@ -313,10 +315,21 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           <FadeIn delay={220} style={styles.metricCardWrap}>
             <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
               <View style={styles.metricHeader}>
-                <View style={[styles.metricIconWrap, { backgroundColor: '#ef444425' }]}>
-                  <Ionicons name="trending-down" size={18} color="#ef4444" />
+                <View
+                  style={[
+                    styles.metricIconWrap,
+                    { backgroundColor: isDarkMode ? '#ef444425' : '#fee2e2' },
+                  ]}
+                >
+                  <Ionicons
+                    name="trending-down"
+                    size={18}
+                    color={isDarkMode ? '#f87171' : '#dc2626'}
+                  />
                 </View>
-                <Text style={styles.metricLabel}>Gastos del mes</Text>
+                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
+                  Gastos del mes
+                </Text>
               </View>
               <AnimatedNumber
                 value={summary.gastos}
@@ -331,10 +344,21 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           <FadeIn delay={290} style={styles.metricCardWrap}>
             <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
               <View style={styles.metricHeader}>
-                <View style={[styles.metricIconWrap, { backgroundColor: '#3b82f625' }]}>
-                  <Ionicons name="wallet-outline" size={18} color="#3b82f6" />
+                <View
+                  style={[
+                    styles.metricIconWrap,
+                    { backgroundColor: isDarkMode ? '#3b82f625' : '#dbeafe' },
+                  ]}
+                >
+                  <Ionicons
+                    name="wallet-outline"
+                    size={18}
+                    color={isDarkMode ? '#60a5fa' : '#2563eb'}
+                  />
                 </View>
-                <Text style={styles.metricLabel}>Ahorros</Text>
+                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
+                  Ahorros
+                </Text>
               </View>
               <AnimatedNumber
                 value={summary.ahorros}
@@ -349,10 +373,21 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           <FadeIn delay={360} style={styles.metricCardWrap}>
             <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
               <View style={styles.metricHeader}>
-                <View style={[styles.metricIconWrap, { backgroundColor: '#f9731625' }]}>
-                  <Ionicons name="receipt-outline" size={18} color="#f97316" />
+                <View
+                  style={[
+                    styles.metricIconWrap,
+                    { backgroundColor: isDarkMode ? '#f9731625' : '#ffedd5' },
+                  ]}
+                >
+                  <Ionicons
+                    name="receipt-outline"
+                    size={18}
+                    color={isDarkMode ? '#fb923c' : '#ea580c'}
+                  />
                 </View>
-                <Text style={styles.metricLabel}>Deuda actual</Text>
+                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
+                  Deuda actual
+                </Text>
               </View>
               <AnimatedNumber
                 value={summary.deuda}
@@ -603,7 +638,7 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           ) : null}
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -686,37 +721,38 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   gradientCard: {
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
     elevation: 4,
     position: 'relative',
     overflow: 'hidden',
   },
   watermarkLogo: {
     position: 'absolute',
-    top: -20,
-    right: -20,
+    top: -10,
+    right: -10,
+    opacity: 0.85,
     zIndex: 0,
   },
   netBalanceLabel: {
     fontSize: 14,
     fontWeight: '500',
+    marginBottom: 4,
   },
   netBalanceAmount: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginTop: 4,
   },
   whiteDivider: {
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginVertical: 16,
+    marginVertical: 18,
   },
   dualCurrencyGrid: {
     flexDirection: 'row',
@@ -726,35 +762,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dualLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
+    marginBottom: 2,
   },
   dualAmount: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
-    marginTop: 2,
   },
   dualSubtext: {
-    fontSize: 10,
-    marginTop: 2,
+    fontSize: 11,
+    marginTop: 3,
   },
   metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 20,
+    gap: 12,
+    marginBottom: 24,
   },
   metricCardWrap: {
-    flexBasis: '48%',
+    flexBasis: '47%',
     flexGrow: 1,
   },
   metricCard: {
     backgroundColor: '#0f172a',
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardLight: {
     backgroundColor: '#ffffff',
@@ -763,21 +804,24 @@ const styles = StyleSheet.create({
   metricHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    gap: 10,
+    marginBottom: 12,
   },
   metricIconWrap: {
-    padding: 6,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   metricLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#94a3b8',
     fontWeight: '500',
     flexShrink: 1,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -785,51 +829,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   sectionHeading: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#ffffff',
   },
   transactionsContainer: {
     backgroundColor: '#0f172a',
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#1e293b',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   emptyContainer: {
-    padding: 24,
+    padding: 32,
     alignItems: 'center',
   },
   emptyTitle: {
     color: '#94a3b8',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    marginTop: 8,
+    marginTop: 10,
     textAlign: 'center',
   },
   emptySubtitle: {
     color: '#64748b',
-    fontSize: 12,
+    fontSize: 13,
     textAlign: 'center',
     marginTop: 4,
   },
   txRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
   },
   txIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   txIconRed: {
     backgroundColor: '#450a0a',

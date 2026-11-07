@@ -17,8 +17,9 @@ import { supabase } from '../lib/supabase';
 import { formatMoney } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { AnimatedSelect } from '../components/AnimatedSelect';
-import { FadeIn, AnimatedNumber } from '../components/Animations';
+import { FadeIn, AnimatedNumber, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
 
 interface DeudasScreenProps {
   onOpenMenu: () => void;
@@ -31,6 +32,7 @@ interface Deuda {
   monto_total: number;
   saldo_pendiente: number;
   moneda: 'USD' | 'VES';
+  fecha_limite?: string | null;
 }
 
 interface CuentaOption {
@@ -213,25 +215,8 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>
-            Control de Deudas
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Control de Deudas" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -277,67 +262,123 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
             </Text>
           </View>
         ) : (
-          deudas.map((d, idx) => (
-            <FadeIn key={d.id} delay={idx * 80}>
-              <View style={[styles.debtCard, !isDarkMode && styles.cardLight]}>
-                <View style={styles.debtHeader}>
-                  <View style={[styles.debtIcon, { backgroundColor: '#f9731622' }]}>
-                    <Ionicons name="receipt-outline" size={22} color="#f97316" />
-                  </View>
-                  <View style={styles.debtInfo}>
-                    <Text style={[styles.debtTitle, !isDarkMode && styles.textDark]}>
-                      {d.nombre}
-                    </Text>
-                    <Text style={styles.debtCurrency}>
-                      Total original: {d.moneda === 'USD' ? '$' : 'Bs. '}
-                      {formatMoney(d.monto_total)}
-                    </Text>
-                  </View>
-                  <View style={styles.debtRight}>
-                    <AnimatedNumber
-                      value={Number(d.saldo_pendiente || 0)}
-                      formatter={(v) => `${d.moneda === 'USD' ? '$' : 'Bs. '}${formatMoney(v)}`}
-                      duration={1100}
-                      style={styles.pendingAmount}
-                    />
-                    <Text style={styles.pendingBadge}>
-                      {d.saldo_pendiente === 0 ? 'PAGADA' : 'Pendiente'}
-                    </Text>
-                  </View>
-                </View>
+          deudas.map((d, idx) => {
+            const montoPagado = d.monto_total - d.saldo_pendiente;
+            const progreso = Math.max(0, Math.min((montoPagado / (d.monto_total || 1)) * 100, 100));
+            const completado = d.saldo_pendiente <= 0;
+            const isVencida = d.fecha_limite ? new Date(d.fecha_limite) < new Date() && !completado : false;
 
-                <View
-                  style={[
-                    styles.actionsRow,
-                    !isDarkMode && { borderTopColor: '#e2e8f0' },
-                  ]}
-                >
-                  {d.saldo_pendiente > 0 ? (
-                    <TouchableOpacity
-                      style={[styles.actionBtnOrange, { backgroundColor: `${colors.p500}22` }]}
-                      onPress={() => {
-                        setSelectedDeuda(d);
-                        setMontoAbono('');
-                        setModalAbono(true);
-                      }}
-                    >
-                      <Ionicons name="card-outline" size={16} color={colors.p500} />
-                      <Text style={[styles.actionTextOrange, { color: colors.p500 }]}>
-                        Abonar / Pagar
+            return (
+              <FadeIn key={d.id} delay={idx * 80}>
+                <View style={[styles.debtCard, !isDarkMode && styles.cardLight]}>
+                  {/* Fila superior: Título + Badge + Botón de eliminar */}
+                  <View style={styles.debtHeaderRow}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={[styles.debtTitle, !isDarkMode && styles.textDark]} numberOfLines={1}>
+                        {d.nombre}
                       </Text>
-                    </TouchableOpacity>
-                  ) : null}
+                      {d.fecha_limite ? (
+                        <Text style={[styles.debtDueDate, isVencida && styles.debtDueDateAlert]}>
+                          Límite: {new Date(d.fecha_limite).toLocaleDateString('es-ES')}
+                        </Text>
+                      ) : null}
+                    </View>
 
-                  <TouchableOpacity
-                    style={styles.actionBtnRed}
-                    onPress={() => handleDeleteDeuda(d)}
-                  >
-                    <Ionicons name="trash-outline" size={16} color="#f87171" />
-                  </TouchableOpacity>
+                    {/* Badge de porcentaje */}
+                    <View
+                      style={[
+                        styles.debtPctBadge,
+                        {
+                          backgroundColor: completado
+                            ? (isDarkMode ? `${colors.p500}22` : colors.p100)
+                            : (isDarkMode ? '#ea580c22' : '#ffedd5'),
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.debtPctText,
+                          {
+                            color: completado
+                              ? (isDarkMode ? colors.p400 : colors.p600)
+                              : (isDarkMode ? '#fb923c' : '#c2410c'),
+                          },
+                        ]}
+                      >
+                        {Math.round(progreso)}% Pagado
+                      </Text>
+                    </View>
+
+                    {/* Botón eliminar */}
+                    <TouchableOpacity
+                      style={styles.deleteIconBtn}
+                      onPress={() => handleDeleteDeuda(d)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons name="trash-outline" size={17} color="#94a3b8" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Fila de montos: Pendiente vs Total */}
+                  <View style={styles.debtAmountsRow}>
+                    <Text style={[styles.debtPendingLabel, !isDarkMode && { color: '#475569' }]}>
+                      Pendiente:{' '}
+                      <Text style={[styles.debtPendingBold, !isDarkMode && styles.textDark]}>
+                        {d.moneda === 'USD' ? '$' : 'Bs. '}{formatMoney(d.saldo_pendiente)}
+                      </Text>
+                    </Text>
+                    <Text style={styles.debtTotalLabel}>
+                      Total: {d.moneda === 'USD' ? '$' : 'Bs. '}{formatMoney(d.monto_total)}
+                    </Text>
+                  </View>
+
+                  {/* Barra de progreso */}
+                  <AnimatedProgressBar
+                    progress={progreso}
+                    color={completado ? colors.p500 : '#f97316'}
+                    bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
+                    height={10}
+                    delay={idx * 80}
+                  />
+
+                  {/* Botón de acción ancho completo */}
+                  <View style={styles.debtFooterAction}>
+                    {completado ? (
+                      <View
+                        style={[
+                          styles.completedBanner,
+                          {
+                            borderColor: `${colors.p500}40`,
+                            backgroundColor: isDarkMode ? `${colors.p500}18` : colors.p50,
+                          },
+                        ]}
+                      >
+                        <Ionicons name="checkmark-circle" size={18} color={colors.p500} />
+                        <Text style={[styles.completedBannerText, { color: colors.p500 }]}>
+                          ¡Deuda Saldada!
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.payActionButton, !isDarkMode && styles.payActionLight]}
+                        onPress={() => {
+                          setSelectedDeuda(d);
+                          setMontoAbono('');
+                          setModalAbono(true);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="arrow-down-circle-outline" size={18} color="#f97316" />
+                        <Text style={[styles.payActionText, !isDarkMode && styles.textDark]}>
+                          Registrar Pago
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-              </View>
-            </FadeIn>
-          ))
+              </FadeIn>
+            );
+          })
         )}
       </ScrollView>
 
@@ -491,7 +532,7 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -580,54 +621,111 @@ const styles = StyleSheet.create({
   },
   debtCard: {
     backgroundColor: '#0f172a',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardLight: {
     backgroundColor: '#ffffff',
     borderColor: '#e2e8f0',
   },
-  debtHeader: {
+  debtHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  debtIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  debtInfo: {
-    flex: 1,
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 12,
   },
   debtTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
   },
-  debtCurrency: {
+  debtDueDate: {
     fontSize: 11,
-    color: '#64748b',
+    color: '#94a3b8',
     marginTop: 2,
+    fontWeight: '500',
   },
-  debtRight: {
-    alignItems: 'flex-end',
+  debtDueDateAlert: {
+    color: '#f87171',
+    fontWeight: '700',
   },
-  pendingAmount: {
-    fontSize: 16,
+  debtPctBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  debtPctText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  deleteIconBtn: {
+    padding: 4,
+    marginLeft: 4,
+  },
+  debtAmountsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  debtPendingLabel: {
+    fontSize: 13,
+    color: '#cbd5e1',
+  },
+  debtPendingBold: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#f97316',
+    color: '#ffffff',
   },
-  pendingBadge: {
-    fontSize: 10,
-    color: '#fdba74',
-    marginTop: 2,
+  debtTotalLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  debtFooterAction: {
+    marginTop: 14,
+  },
+  completedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  completedBannerText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  payActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  payActionLight: {
+    backgroundColor: '#ffffff',
+    borderColor: '#cbd5e1',
+  },
+  payActionText: {
+    fontSize: 14,
     fontWeight: '600',
+    color: '#ffffff',
   },
   actionsRow: {
     flexDirection: 'row',

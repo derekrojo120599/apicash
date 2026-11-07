@@ -11,6 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface GuiaScreenProps {
   onOpenMenu: () => void;
@@ -162,23 +164,8 @@ export function GuiaScreen({ onOpenMenu, onNavigateTab }: GuiaScreenProps) {
   const { colors, isDarkMode } = useAppTheme();
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>Guía de Uso</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Guía de Uso" onOpenMenu={onOpenMenu} />
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
@@ -189,6 +176,44 @@ export function GuiaScreen({ onOpenMenu, onNavigateTab }: GuiaScreenProps) {
             Domina cada herramienta para mantener tus finanzas personales bajo control en USD y VES.
           </Text>
         </View>
+
+        {/* Banner de Inicio Rápido con Gradiente idéntico a la Web */}
+        <FadeIn delay={50}>
+          <LinearGradient
+            colors={[colors.p600, colors.p700, '#0f766e']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.quickStartCard}
+          >
+            <View style={styles.quickStartHeader}>
+              <View style={styles.quickStartIconWrap}>
+                <Ionicons name="flash-outline" size={20} color="#ffffff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.quickStartTitle}>¿Cómo comenzar en 3 pasos?</Text>
+                <Text style={styles.quickStartSub}>Configuración inicial en menos de 2 minutos.</Text>
+              </View>
+            </View>
+
+            <View style={styles.quickStepsRow}>
+              <View style={styles.quickStepItem}>
+                <Text style={styles.quickStepNum}>1.</Text>
+                <Text style={styles.quickStepTitle}>Crea tus cuentas</Text>
+                <Text style={styles.quickStepDesc}>Bancos, efectivo o billeteras en USD y VES.</Text>
+              </View>
+              <View style={styles.quickStepItem}>
+                <Text style={styles.quickStepNum}>2.</Text>
+                <Text style={styles.quickStepTitle}>Registra movimientos</Text>
+                <Text style={styles.quickStepDesc}>Ingresos, gastos o transferencias entre cuentas.</Text>
+              </View>
+              <View style={styles.quickStepItem}>
+                <Text style={styles.quickStepNum}>3.</Text>
+                <Text style={styles.quickStepTitle}>Monitorea y ahorra</Text>
+                <Text style={styles.quickStepDesc}>Presupuestos por categoría y metas de ahorro.</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </FadeIn>
 
         {guideSections.map((sec, idx) => (
           <FadeIn key={sec.id} delay={idx * 70}>
@@ -240,7 +265,7 @@ export function GuiaScreen({ onOpenMenu, onNavigateTab }: GuiaScreenProps) {
           </FadeIn>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -281,7 +306,66 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
+    marginBottom: 16,
+  },
+  quickStartCard: {
+    borderRadius: 22,
+    padding: 20,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  quickStartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  quickStartIconWrap: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 10,
+    borderRadius: 12,
+  },
+  quickStartTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  quickStartSub: {
+    fontSize: 12,
+    color: '#e2e8f0',
+    marginTop: 2,
+  },
+  quickStepsRow: {
+    gap: 10,
+  },
+  quickStepItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  quickStepNum: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#ffffff',
+    opacity: 0.9,
+  },
+  quickStepTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginTop: 2,
+  },
+  quickStepDesc: {
+    fontSize: 12,
+    color: '#e2e8f0',
+    marginTop: 2,
+    lineHeight: 16,
   },
   heading: {
     fontSize: 22,

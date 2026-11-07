@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
 
 interface CategoriasScreenProps {
   onOpenMenu: () => void;
@@ -165,23 +166,8 @@ export function CategoriasScreen({ onOpenMenu }: CategoriasScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>Categorías</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Categorías" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -267,23 +253,42 @@ export function CategoriasScreen({ onOpenMenu }: CategoriasScreenProps) {
               <View style={[styles.catCard, !isDarkMode && styles.cardLight]}>
                 <View
                   style={[
-                    styles.catIcon,
-                    cat.tipo === 'ingreso'
-                      ? { backgroundColor: `${colors.p500}22` }
-                      : styles.bgRed,
+                    styles.verticalPill,
+                    {
+                      backgroundColor:
+                        cat.tipo === 'ingreso' ? colors.p500 : '#ef4444',
+                    },
                   ]}
-                >
-                  <Ionicons
-                    name={cat.tipo === 'ingreso' ? 'arrow-down' : 'arrow-up'}
-                    size={18}
-                    color={cat.tipo === 'ingreso' ? colors.p500 : '#ef4444'}
-                  />
-                </View>
+                />
                 <View style={styles.catInfo}>
                   <Text style={[styles.catName, !isDarkMode && styles.textDark]}>
                     {cat.nombre}
                   </Text>
-                  <Text style={styles.catType}>{cat.tipo.toUpperCase()}</Text>
+                  <View
+                    style={[
+                      styles.typeBadge,
+                      {
+                        backgroundColor:
+                          cat.tipo === 'ingreso'
+                            ? isDarkMode ? `${colors.p500}22` : colors.p100
+                            : isDarkMode ? '#ef444422' : '#fee2e2',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.typeBadgeText,
+                        {
+                          color:
+                            cat.tipo === 'ingreso'
+                              ? isDarkMode ? colors.p400 : colors.p600
+                              : isDarkMode ? '#f87171' : '#dc2626',
+                        },
+                      ]}
+                    >
+                      {cat.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                    </Text>
+                  </View>
                 </View>
                 <TouchableOpacity onPress={() => openEdit(cat)} style={styles.actionIconBtn}>
                   <Ionicons name="pencil-outline" size={18} color="#94a3b8" />
@@ -385,7 +390,7 @@ export function CategoriasScreen({ onOpenMenu }: CategoriasScreenProps) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -511,13 +516,35 @@ const styles = StyleSheet.create({
   },
   catCard: {
     backgroundColor: '#0f172a',
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  verticalPill: {
+    width: 5,
+    height: 34,
+    borderRadius: 3,
+    marginRight: 12,
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginTop: 3,
+  },
+  typeBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   cardLight: {
     backgroundColor: '#ffffff',

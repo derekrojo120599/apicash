@@ -18,6 +18,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedNumber, AnimatedScalePressable } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
 import { useMobileRealtime } from '../context/RealtimeContext';
 
 interface CuentasScreenProps {
@@ -38,6 +39,7 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
   const { syncTick } = useMobileRealtime();
 
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [tasaActual, setTasaActual] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -54,14 +56,25 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from('cuentas')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const [cuentasRes, tasaRes] = await Promise.all([
+        supabase
+          .from('cuentas')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('tasas_cambio')
+          .select('tasa')
+          .order('fecha', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
-      if (!error && data) {
-        setCuentas(data);
+      if (cuentasRes.data) {
+        setCuentas(cuentasRes.data);
+      }
+      if (tasaRes.data?.tasa) {
+        setTasaActual(Number(tasaRes.data.tasa));
       }
     } catch (e) {
       console.error(e);
@@ -152,23 +165,8 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>Mis Cuentas</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Mis Cuentas" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -272,11 +270,18 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
                 />
 
                 <View style={styles.cardFooter}>
-                  <Text style={styles.balanceLabel}>Saldo disponible</Text>
-                  <Text style={[styles.balanceVal, !isDarkMode && styles.textDark]}>
-                    {c.moneda === 'USD' ? '$ ' : 'Bs. '}
-                    {formatMoney(c.saldo_cache)}
-                  </Text>
+                  <Text style={styles.balanceLabel}>Saldo Disponible</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
+                    <Text style={[styles.balanceVal, !isDarkMode && styles.textDark]}>
+                      {c.moneda === 'USD' ? '$' : 'Bs. '}
+                      {formatMoney(c.saldo_cache)}
+                    </Text>
+                    {c.moneda === 'VES' && tasaActual && tasaActual > 0 ? (
+                      <Text style={styles.usdEquivalent}>
+                        ≈ ${formatMoney(c.saldo_cache / tasaActual)}
+                      </Text>
+                    ) : null}
+                  </View>
                 </View>
               </View>
             </FadeIn>
@@ -368,7 +373,7 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -457,11 +462,16 @@ const styles = StyleSheet.create({
   },
   accountCard: {
     backgroundColor: '#0f172a',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardLight: {
     backgroundColor: '#ffffff',
@@ -527,6 +537,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#ffffff',
+  },
+  usdEquivalent: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '500',
   },
   modalOverlay: {
     flex: 1,

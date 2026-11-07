@@ -5,10 +5,10 @@ import {
   View,
   Modal,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../context/ThemeContext';
 import { ApicashLogo } from './ApicashLogo';
 
@@ -53,13 +53,24 @@ export function SidebarDrawer({
   onLogout,
 }: SidebarDrawerProps) {
   const { colors, isDarkMode, toggleDarkMode } = useAppTheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <Modal visible={visible} animationType="fade" transparent>
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent
+      statusBarTranslucent
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
-        <SafeAreaView
+        <View
           style={[
             styles.drawerContainer,
+            {
+              paddingTop: insets.top,
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
             !isDarkMode && { backgroundColor: '#ffffff', borderRightColor: '#e2e8f0' },
           ]}
         >
@@ -142,7 +153,14 @@ export function SidebarDrawer({
               <Text style={styles.logoutText}>Cerrar sesión</Text>
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </View>
+
+        {/* Tapping outside the drawer closes it */}
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
       </View>
     </Modal>
   );
@@ -154,6 +172,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     flexDirection: 'row',
   },
+  backdrop: {
+    flex: 1,
+  },
   drawerContainer: {
     width: '80%',
     maxWidth: 320,
@@ -161,6 +182,8 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRightWidth: 1,
     borderRightColor: '#1e293b',
+    display: 'flex',
+    flexDirection: 'column',
   },
   header: {
     flexDirection: 'row',

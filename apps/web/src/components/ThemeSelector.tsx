@@ -10,6 +10,7 @@ const temas = [
   { id: 'violet', nombre: 'Lavanda', color: 'bg-violet-500' },
   { id: 'orange', nombre: 'Coral', color: 'bg-orange-500' },
   { id: 'blue', nombre: 'Azul Océano', color: 'bg-blue-500' },
+  { id: 'amber', nombre: 'Dorado Ámbar', color: 'bg-amber-500' },
 ]
 
 export function ThemeSelector({ value, onChange, disabled }: ThemeSelectorProps) {

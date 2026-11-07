@@ -19,6 +19,8 @@ import { useAppTheme } from '../context/ThemeContext';
 import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedProgressBar, AnimatedNumber } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface PresupuestoScreenProps {
   onOpenMenu: () => void;
@@ -168,23 +170,8 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
   const totalGastado = progreso.reduce((acc, curr) => acc + curr.monto_gastado, 0);
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>Presupuesto</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Presupuesto" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -215,12 +202,17 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
           </TouchableOpacity>
         </View>
 
-        {/* Resumen Card Global */}
+        {/* Resumen Card Global con Gradiente */}
         <FadeIn delay={50}>
-          <View style={[styles.summaryCard, { backgroundColor: colors.p700 }]}>
-            <View>
+          <LinearGradient
+            colors={[colors.p600, colors.p800]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.summaryCard}
+          >
+            <View style={{ flex: 1 }}>
               <Text style={[styles.summaryLabel, { color: colors.p100 }]}>
-                Presupuesto Total Planeado
+                Presupuesto Planeado
               </Text>
               <AnimatedNumber
                 value={totalPlaneado}
@@ -230,7 +222,7 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
               />
             </View>
             <View style={styles.dividerVertical} />
-            <View>
+            <View style={{ flex: 1, paddingLeft: 16 }}>
               <Text style={[styles.summaryLabel, { color: colors.p100 }]}>Total Gastado</Text>
               <AnimatedNumber
                 value={totalGastado}
@@ -240,7 +232,7 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
                 style={styles.summaryAmount}
               />
             </View>
-          </View>
+          </LinearGradient>
         </FadeIn>
 
         <View style={styles.headerRow}>
@@ -284,52 +276,68 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
           </View>
         ) : (
           progreso.map((p, idx) => {
-            const isOver = p.monto_gastado > p.monto_planeado;
+            const isOver = p.porcentaje_usado >= 100;
+            const isWarning = p.porcentaje_usado >= 90;
             const progress = Math.min(100, Math.round(p.porcentaje_usado));
+            const barColor = isOver ? '#ef4444' : isWarning ? '#f97316' : colors.p500;
 
             return (
               <FadeIn key={p.categoria_id} delay={idx * 70}>
-                <TouchableOpacity
-                  style={[styles.progCard, !isDarkMode && styles.cardLight]}
-                  onPress={() => {
-                    setSelectedCatId(p.categoria_id);
-                    setMontoPlaneado(p.monto_planeado.toString());
-                    setModalOpen(true);
-                  }}
-                  activeOpacity={0.8}
-                >
+                <View style={[styles.progCard, !isDarkMode && styles.cardLight]}>
+                  {/* Fila superior: Categoría + Alerta + Montos */}
                   <View style={styles.progHeader}>
-                    <Text style={[styles.progName, !isDarkMode && styles.textDark]}>
-                      {p.categoria_nombre}
-                    </Text>
+                    <View style={styles.progTitleGroup}>
+                      <Text style={[styles.progName, !isDarkMode && styles.textDark]}>
+                        {p.categoria_nombre}
+                      </Text>
+                      {isWarning ? (
+                        <Ionicons
+                          name="alert-circle"
+                          size={16}
+                          color={isOver ? '#ef4444' : '#f97316'}
+                        />
+                      ) : null}
+                    </View>
                     <Text style={[styles.progAmount, !isDarkMode && styles.textDark]}>
-                      ${formatMoney(p.monto_gastado)} / ${formatMoney(p.monto_planeado)}
+                      ${formatMoney(p.monto_gastado)}{' '}
+                      <Text style={styles.progAmountSub}>
+                        / ${formatMoney(p.monto_planeado)}
+                      </Text>
                     </Text>
                   </View>
 
+                  {/* Barra de progreso */}
                   <AnimatedProgressBar
                     progress={progress}
-                    color={isOver ? '#ef4444' : colors.p500}
+                    color={barColor}
                     bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
-                    height={8}
+                    height={10}
                   />
 
+                  {/* Fila inferior: % Usado + Restante + Botón Editar */}
                   <View style={styles.progFooter}>
-                    <Text
-                      style={[
-                        styles.percentText,
-                        { color: isOver ? '#ef4444' : colors.p500 },
-                      ]}
-                    >
-                      {p.porcentaje_usado}% usado
+                    <Text style={[styles.percentText, { color: barColor }]}>
+                      {p.porcentaje_usado}% utilizado
                     </Text>
-                    <Text style={styles.restanteText}>
-                      {isOver
-                        ? `Excedido por $${formatMoney(Math.abs(p.restante))}`
-                        : `Restan $${formatMoney(p.restante)}`}
-                    </Text>
+                    <View style={styles.progFooterRight}>
+                      <Text style={[styles.restanteText, p.restante < 0 && styles.restanteAlert]}>
+                        {p.restante < 0
+                          ? `Excedido por $${formatMoney(Math.abs(p.restante))}`
+                          : `Restante: $${formatMoney(p.restante)}`}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedCatId(p.categoria_id);
+                          setMontoPlaneado(p.monto_planeado.toString());
+                          setModalOpen(true);
+                        }}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text style={[styles.editLinkText, { color: colors.p500 }]}>Editar</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </TouchableOpacity>
+                </View>
               </FadeIn>
             );
           })
@@ -394,7 +402,7 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -455,11 +463,16 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   summaryCard: {
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 20,
+    padding: 20,
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   summaryLabel: {
     fontSize: 12,
@@ -539,11 +552,16 @@ const styles = StyleSheet.create({
   },
   progCard: {
     backgroundColor: '#0f172a',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 10,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardLight: {
     backgroundColor: '#ffffff',
@@ -552,8 +570,15 @@ const styles = StyleSheet.create({
   progHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'baseline',
+    alignItems: 'center',
     marginBottom: 10,
+  },
+  progTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+    marginRight: 8,
   },
   progName: {
     fontSize: 15,
@@ -561,9 +586,14 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   progAmount: {
-    fontSize: 13,
-    color: '#cbd5e1',
-    fontWeight: '500',
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  progAmountSub: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: 'normal',
   },
   progressBarBg: {
     height: 8,
@@ -578,7 +608,21 @@ const styles = StyleSheet.create({
   progFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 8,
+  },
+  progFooterRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  restanteAlert: {
+    color: '#ef4444',
+    fontWeight: '600',
+  },
+  editLinkText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   percentText: {
     fontSize: 12,

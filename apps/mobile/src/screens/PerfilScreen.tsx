@@ -21,6 +21,7 @@ import { useAppTheme, THEME_LIST, ThemeId } from '../context/ThemeContext';
 import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
 import { triggerSuccessNotification } from '../lib/notifications';
 
 interface PerfilScreenProps {
@@ -88,6 +89,15 @@ const ESTILOS_AVATAR = [
   { value: 'micah', label: 'Minimalista' },
 ];
 
+const MESES_ABR = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+function getMesNombre(mesStr: string) {
+  const num = parseInt(mesStr, 10);
+  if (!isNaN(num) && num >= 1 && num <= 12) {
+    return MESES_ABR[num - 1];
+  }
+  return mesStr;
+}
+
 export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
   const { colors, themeId, setThemeId, isDarkMode } = useAppTheme();
 
@@ -119,6 +129,7 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
   const [modalEliminarCuenta, setModalEliminarCuenta] = useState(false);
   const [confirmacionEliminar, setConfirmacionEliminar] = useState('');
   const [modalLegal, setModalLegal] = useState<'privacidad' | 'terminos' | null>(null);
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState<number | null>(null);
 
   async function fetchPerfilCompleto() {
     try {
@@ -443,26 +454,19 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
   };
 
   const maxGasto = Math.max(...stats.gastosPorCategoria.map((g) => g.monto), 1);
+  const totalGastoMes = stats.gastosPorCategoria.reduce((acc, c) => acc + c.monto, 0);
+  const maxIngresoGasto = Math.max(
+    ...stats.ingresosGastosMensual.map((m) => Math.max(m.ingresos, m.gastos)),
+    50
+  );
+  const selectedMonthData =
+    selectedMonthIndex !== null && stats.ingresosGastosMensual[selectedMonthIndex]
+      ? stats.ingresosGastosMensual[selectedMonthIndex]
+      : null;
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      {/* Top Bar */}
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && { color: '#0f172a' }]}>Perfil</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Perfil" onOpenMenu={onOpenMenu} />
 
       <ScrollView contentContainerStyle={styles.container}>
         {msgSuccess ? (
@@ -675,81 +679,213 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
                 </View>
               </View>
 
-              {/* Gastos por categoría */}
+              {/* Gastos por categoría (mes actual) */}
               {stats.gastosPorCategoria.length > 0 ? (
                 <View style={styles.chartBlock}>
-                  <Text style={[styles.chartTitle, !isDarkMode && styles.textDark]}>
-                    Gastos por categoría (mes actual)
-                  </Text>
-                  {stats.gastosPorCategoria.map((cat, idx) => {
-                    const widthPct = Math.min(100, Math.round((cat.monto / maxGasto) * 100));
-                    const col = COLORS[idx % COLORS.length];
-                    return (
-                      <View key={cat.nombre} style={styles.barItem}>
-                        <View style={styles.barHeader}>
-                          <Text style={[styles.barLabel, !isDarkMode && styles.textDark]}>
-                            {cat.nombre}
-                          </Text>
-                          <Text style={[styles.barVal, !isDarkMode && styles.textDark]}>
-                            ${formatMoney(cat.monto)}
-                          </Text>
+                  <View style={styles.chartHeaderRow}>
+                    <View style={styles.chartHeaderTitleGroup}>
+                      <Ionicons name="pie-chart-outline" size={17} color={colors.p500} />
+                      <Text style={[styles.chartTitle, !isDarkMode && styles.textDark]}>
+                        Gastos por categoría
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.totalPill,
+                        { backgroundColor: isDarkMode ? `${colors.p500}22` : colors.p100 },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.totalPillText,
+                          { color: isDarkMode ? colors.p400 : colors.p600 },
+                        ]}
+                      >
+                        ${formatMoney(totalGastoMes)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.categoriesListWrap}>
+                    {stats.gastosPorCategoria.map((cat, idx) => {
+                      const widthPct = Math.min(
+                        100,
+                        Math.round((cat.monto / (totalGastoMes || 1)) * 100)
+                      );
+                      const col = COLORS[idx % COLORS.length];
+                      return (
+                        <View key={cat.nombre} style={styles.categoryBarCard}>
+                          <View style={styles.categoryTopLine}>
+                            <View style={styles.categoryLeftGroup}>
+                              <View style={[styles.colorDot, { backgroundColor: col }]} />
+                              <Text
+                                style={[styles.categoryNameText, !isDarkMode && styles.textDark]}
+                                numberOfLines={1}
+                              >
+                                {cat.nombre}
+                              </Text>
+                            </View>
+                            <View style={styles.categoryRightGroup}>
+                              <View style={[styles.pctBadge, { backgroundColor: `${col}18` }]}>
+                                <Text style={[styles.pctBadgeText, { color: col }]}>{widthPct}%</Text>
+                              </View>
+                              <Text
+                                style={[styles.categoryAmountText, !isDarkMode && styles.textDark]}
+                              >
+                                ${formatMoney(cat.monto)}
+                              </Text>
+                            </View>
+                          </View>
+                          <AnimatedProgressBar
+                            progress={widthPct}
+                            color={col}
+                            bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
+                            height={7}
+                            delay={idx * 80}
+                          />
                         </View>
-                        <AnimatedProgressBar
-                          progress={widthPct}
-                          color={col}
-                          bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
-                          height={6}
-                          delay={idx * 100}
-                        />
-                      </View>
-                    );
-                  })}
+                      );
+                    })}
+                  </View>
                 </View>
               ) : null}
 
-              {/* Ingresos vs Gastos */}
+              {/* Ingresos vs Gastos (últimos 6 meses) */}
               {stats.ingresosGastosMensual.length > 0 ? (
                 <View style={styles.chartBlock}>
-                  <Text style={[styles.chartTitle, !isDarkMode && styles.textDark]}>
-                    Ingresos vs Gastos (últimos 6 meses)
-                  </Text>
-                  <View style={[styles.historyRow, !isDarkMode && styles.inputLight]}>
-                    {stats.ingresosGastosMensual.map((m) => (
-                      <View key={m.mes} style={styles.monthColumn}>
-                        <View style={styles.barCompareWrap}>
-                          <View
-                            style={[
-                              styles.miniBarGreen,
-                              { height: Math.min(60, Math.max(4, (m.ingresos / 500) * 60)) },
-                            ]}
-                          />
-                          <View
-                            style={[
-                              styles.miniBarRed,
-                              { height: Math.min(60, Math.max(4, (m.gastos / 500) * 60)) },
-                            ]}
-                          />
-                        </View>
-                        <Text style={styles.monthText}>Mes {m.mes}</Text>
+                  <View style={styles.chartHeaderRow}>
+                    <View style={styles.chartHeaderTitleGroup}>
+                      <Ionicons name="bar-chart-outline" size={17} color={colors.p500} />
+                      <Text style={[styles.chartTitle, !isDarkMode && styles.textDark]}>
+                        Ingresos vs Gastos
+                      </Text>
+                    </View>
+
+                    {/* Leyenda */}
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: '#10b981' }]} />
+                        <Text style={styles.legendText}>Ingresos</Text>
                       </View>
-                    ))}
+                      <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: '#ef4444' }]} />
+                        <Text style={styles.legendText}>Gastos</Text>
+                      </View>
+                    </View>
                   </View>
+
+                  {/* Gráfico de barras interactivo */}
+                  <View style={[styles.barChartContainer, !isDarkMode && styles.inputLight]}>
+                    <View style={styles.barsFlexRow}>
+                      {stats.ingresosGastosMensual.map((m, idx) => {
+                        const hIng = Math.max(6, Math.min(100, (m.ingresos / maxIngresoGasto) * 92));
+                        const hGas = Math.max(6, Math.min(100, (m.gastos / maxIngresoGasto) * 92));
+                        const isSelected = selectedMonthIndex === idx;
+
+                        return (
+                          <TouchableOpacity
+                            key={m.mes}
+                            activeOpacity={0.7}
+                            onPress={() => setSelectedMonthIndex(isSelected ? null : idx)}
+                            style={[
+                              styles.monthBarCol,
+                              isSelected && styles.monthBarColActive,
+                            ]}
+                          >
+                            <View style={styles.barsDuoWrap}>
+                              <View
+                                style={[
+                                  styles.barPillar,
+                                  styles.barGreen,
+                                  { height: hIng },
+                                ]}
+                              />
+                              <View
+                                style={[
+                                  styles.barPillar,
+                                  styles.barRed,
+                                  { height: hGas },
+                                ]}
+                              />
+                            </View>
+                            <Text
+                              style={[
+                                styles.monthLabelText,
+                                isSelected && { color: colors.p500, fontWeight: '700' },
+                              ]}
+                            >
+                              {getMesNombre(m.mes)}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  {/* Detalle del mes seleccionado al pulsar */}
+                  {selectedMonthData ? (
+                    <View
+                      style={[
+                        styles.monthSelectedBanner,
+                        { borderColor: `${colors.p500}50`, backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc' },
+                      ]}
+                    >
+                      <Text style={[styles.monthBannerHeader, !isDarkMode && styles.textDark]}>
+                        Mes: {getMesNombre(selectedMonthData.mes)}
+                      </Text>
+                      <View style={styles.monthBannerRow}>
+                        <View style={styles.monthBannerItem}>
+                          <Text style={styles.monthBannerSub}>Ingresos</Text>
+                          <Text style={styles.monthBannerIng}>
+                            +${formatMoney(selectedMonthData.ingresos)}
+                          </Text>
+                        </View>
+                        <View style={styles.monthBannerItem}>
+                          <Text style={styles.monthBannerSub}>Gastos</Text>
+                          <Text style={styles.monthBannerGas}>
+                            -${formatMoney(selectedMonthData.gastos)}
+                          </Text>
+                        </View>
+                        <View style={styles.monthBannerItem}>
+                          <Text style={styles.monthBannerSub}>Balance Neto</Text>
+                          <Text
+                            style={[
+                              styles.monthBannerNet,
+                              selectedMonthData.ingresos >= selectedMonthData.gastos
+                                ? styles.monthBannerIng
+                                : styles.monthBannerGas,
+                            ]}
+                          >
+                            {selectedMonthData.ingresos >= selectedMonthData.gastos ? '+' : '-'}
+                            ${formatMoney(
+                              Math.abs(selectedMonthData.ingresos - selectedMonthData.gastos)
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  ) : null}
                 </View>
               ) : null}
 
               {/* Progreso de metas */}
               {stats.progresoMetas.length > 0 ? (
                 <View style={styles.chartBlock}>
-                  <Text style={[styles.chartTitle, !isDarkMode && styles.textDark]}>
-                    Progreso de metas de ahorro
-                  </Text>
+                  <View style={styles.chartHeaderRow}>
+                    <View style={styles.chartHeaderTitleGroup}>
+                      <Ionicons name="flag-outline" size={17} color={colors.p500} />
+                      <Text style={[styles.chartTitle, !isDarkMode && styles.textDark]}>
+                        Progreso de metas de ahorro
+                      </Text>
+                    </View>
+                  </View>
                   {stats.progresoMetas.map((pm, idx) => (
                     <View key={idx} style={styles.barItem}>
                       <View style={styles.barHeader}>
                         <Text style={[styles.barLabel, !isDarkMode && styles.textDark]}>
                           {pm.nombre}
                         </Text>
-                        <Text style={styles.barVal}>
+                        <Text style={[styles.barVal, { color: colors.p500 }]}>
                           ${formatMoney(pm.actual)} / ${formatMoney(pm.objetivo)} ({pm.porcentaje}%)
                         </Text>
                       </View>
@@ -757,7 +893,7 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
                         progress={pm.porcentaje}
                         color={colors.p500}
                         bgColor={isDarkMode ? '#1e293b' : '#e2e8f0'}
-                        height={6}
+                        height={7}
                         delay={idx * 100}
                       />
                     </View>
@@ -1008,7 +1144,7 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -1290,19 +1426,199 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   chartBlock: {
-    marginTop: 18,
-    paddingTop: 14,
+    marginTop: 20,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#1e293b',
   },
+  chartHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  chartHeaderTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   chartTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginBottom: 10,
+  },
+  totalPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  totalPillText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  categoriesListWrap: {
+    gap: 12,
+  },
+  categoryBarCard: {
+    gap: 6,
+  },
+  categoryTopLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  categoryLeftGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    marginRight: 8,
+  },
+  colorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  categoryNameText: {
+    fontSize: 13,
+    color: '#e2e8f0',
+    fontWeight: '500',
+    flexShrink: 1,
+  },
+  categoryRightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pctBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  pctBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  categoryAmountText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  legendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  barChartContainer: {
+    backgroundColor: '#020617',
+    borderRadius: 14,
+    padding: 12,
+    paddingTop: 16,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    position: 'relative',
+  },
+  barsFlexRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    height: 120,
+    paddingHorizontal: 4,
+  },
+  monthBarCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  monthBarColActive: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  barsDuoWrap: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 3,
+    height: 96,
+  },
+  barPillar: {
+    width: 9,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  barGreen: {
+    backgroundColor: '#10b981',
+  },
+  barRed: {
+    backgroundColor: '#ef4444',
+  },
+  monthLabelText: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '500',
+    marginTop: 6,
+  },
+  monthSelectedBanner: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  monthBannerHeader: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  monthBannerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  monthBannerItem: {
+    alignItems: 'center',
+  },
+  monthBannerSub: {
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  monthBannerIng: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#10b981',
+    marginTop: 2,
+  },
+  monthBannerGas: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#ef4444',
+    marginTop: 2,
+  },
+  monthBannerNet: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
+  goalCardItem: {
+    marginBottom: 12,
   },
   barItem: {
-    marginBottom: 10,
+    marginBottom: 12,
   },
   barHeader: {
     flexDirection: 'row',
@@ -1310,58 +1626,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   barLabel: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '500',
     color: '#cbd5e1',
   },
   barVal: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#94a3b8',
-  },
-  barTrack: {
-    height: 6,
-    backgroundColor: '#1e293b',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  barThumb: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  historyRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    height: 75,
-    paddingVertical: 8,
-    backgroundColor: '#1e293b',
-    borderRadius: 10,
-  },
-  monthColumn: {
-    alignItems: 'center',
-  },
-  barCompareWrap: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 3,
-    height: 50,
-  },
-  miniBarGreen: {
-    width: 7,
-    backgroundColor: '#10b981',
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
-  },
-  miniBarRed: {
-    width: 7,
-    backgroundColor: '#ef4444',
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
-  },
-  monthText: {
-    fontSize: 9,
-    color: '#94a3b8',
-    marginTop: 4,
   },
   manageBtn: {
     flexDirection: 'row',

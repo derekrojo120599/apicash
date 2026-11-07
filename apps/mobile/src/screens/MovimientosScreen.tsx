@@ -19,6 +19,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { TopBar } from '../components/TopBar';
 import { useMobileRealtime } from '../context/RealtimeContext';
 
 interface MovimientosScreenProps {
@@ -173,23 +174,8 @@ export function MovimientosScreen({ onOpenMenu }: MovimientosScreenProps) {
   });
 
   return (
-    <SafeAreaView style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <View
-        style={[
-          styles.topBar,
-          !isDarkMode && { backgroundColor: '#ffffff', borderBottomColor: '#e2e8f0' },
-        ]}
-      >
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, { backgroundColor: `${colors.p500}25` }]}>
-            <ApicashLogo size={20} color={colors.p500} />
-          </View>
-          <Text style={[styles.brandTitle, !isDarkMode && styles.textDark]}>Transacciones</Text>
-        </View>
-        <TouchableOpacity style={styles.menuButton} onPress={onOpenMenu}>
-          <Ionicons name="menu" size={26} color="#94a3b8" />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
+      <TopBar title="Transacciones" onOpenMenu={onOpenMenu} />
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -550,7 +536,7 @@ export function MovimientosScreen({ onOpenMenu }: MovimientosScreenProps) {
           ) : null}
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

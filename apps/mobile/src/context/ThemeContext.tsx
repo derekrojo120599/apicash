@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 
-export type ThemeId = 'emerald' | 'rose' | 'violet' | 'orange' | 'blue';
+export type ThemeId = 'emerald' | 'rose' | 'violet' | 'orange' | 'blue' | 'amber';
 
 export interface ThemePalette {
   id: ThemeId;
@@ -90,6 +90,20 @@ export const THEMES: Record<ThemeId, ThemePalette> = {
     p800: '#1e40af',
     p900: '#1e3a8a',
   },
+  amber: {
+    id: 'amber',
+    nombre: 'Dorado Ámbar',
+    p50: '#fffbeb',
+    p100: '#fef3c7',
+    p200: '#fde68a',
+    p300: '#fcd34d',
+    p400: '#fbbf24',
+    p500: '#f59e0b',
+    p600: '#d97706',
+    p700: '#b45309',
+    p800: '#92400e',
+    p900: '#78350f',
+  },
 };
 
 export const THEME_LIST: ThemePalette[] = [
@@ -98,6 +112,7 @@ export const THEME_LIST: ThemePalette[] = [
   THEMES.violet,
   THEMES.orange,
   THEMES.blue,
+  THEMES.amber,
 ];
 
 interface ThemeContextValue {
