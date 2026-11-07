@@ -144,17 +144,20 @@ export function InstallPrompt() {
 
           {platform === 'android' && (
             <div className="flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
-              <div className="flex items-center gap-3">
+              <a
+                href="https://github.com/derekrojo120599/apicash/releases/latest/download/apicash.apk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 text-xs shadow-md shadow-emerald-950/20 transition-all"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar APK Nativa (.apk)</span>
+              </a>
+              <div className="flex items-center gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
                 <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
                   <MoreVertical className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 </div>
-                <span>1. Pulse el botón de <strong>Menú (⋮)</strong> en el navegador.</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
-                  <Download className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                </div>
-                <span>2. Seleccione <strong>Instalar aplicación</strong>.</span>
+                <span className="text-xs">O instala como PWA: Menú (⋮) &gt; <strong>Instalar aplicación</strong></span>
               </div>
             </div>
           )}

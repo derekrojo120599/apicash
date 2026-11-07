@@ -264,46 +264,58 @@ export default function GuidePage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Tarjeta Android */}
-          <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          {/* Tarjeta Android con descarga de APK y PWA */}
+          <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
+              <div className="p-2.5 bg-emerald-500/15 text-emerald-400 rounded-xl border border-emerald-500/30">
                 <Download className="w-5 h-5" aria-hidden="true" />
               </div>
-              <h3 className="text-base font-bold text-white">En Android (Google Chrome o Brave)</h3>
+              <div>
+                <h3 className="text-base font-bold text-white">Android: APK Nativa (Recomendado)</h3>
+                <p className="text-xs text-slate-400">Instalación directa sin depender de la tienda</p>
+              </div>
             </div>
-            <ol className="space-y-3 text-sm text-slate-300">
-              <li className="flex items-start gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">1</span>
-                <span>Abra <strong>El Sencillo</strong> en el navegador <strong>Google Chrome</strong> o <strong>Brave</strong>.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">2</span>
-                <span>Pulse el botón de opciones <strong>(⋮)</strong> en la esquina superior derecha del navegador.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">3</span>
-                <span>Seleccione <strong>«Instalar aplicación»</strong> o <strong>«Agregar a la pantalla principal»</strong>.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">4</span>
-                <span>Abra la aplicación desde el <strong>icono de El Sencillo</strong> en su pantalla de inicio.</span>
-              </li>
-            </ol>
+
+            <a
+              href="https://github.com/derekrojo120599/apicash/releases/latest/download/apicash.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/50 transition-all text-sm cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Descargar APK para Android</span>
+              <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-white/20 ml-1">v1.0.0</span>
+            </a>
+
+            <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
+              <p className="font-semibold text-slate-300">🔄 Actualizaciones automáticas:</p>
+              <p>La app cuenta con actualización remota continua. No tendrás que volver a descargar el APK para recibir mejoras ni cambios de tasas.</p>
+            </div>
+
+            <div className="pt-2 border-t border-slate-800/80">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Alternativa PWA (Desde el Navegador):</p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                También puede abrir esta web en <strong>Chrome</strong> o <strong>Brave</strong>, tocar el menú de opciones <strong>(⋮)</strong> y seleccionar <strong>«Instalar aplicación»</strong>.
+              </p>
+            </div>
           </div>
 
           {/* Tarjeta iOS */}
-          <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-6 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-teal-500/10 text-teal-400 rounded-xl">
+              <div className="p-2.5 bg-teal-500/15 text-teal-400 rounded-xl border border-teal-500/30">
                 <Share2 className="w-5 h-5" aria-hidden="true" />
               </div>
-              <h3 className="text-base font-bold text-white">En iPhone y iPad (Safari)</h3>
+              <div>
+                <h3 className="text-base font-bold text-white">iPhone y iPad (iOS)</h3>
+                <p className="text-xs text-slate-400">Acceso instantáneo a pantalla completa en Safari</p>
+              </div>
             </div>
+
             <ol className="space-y-3 text-sm text-slate-300">
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">1</span>
-                <span>Abra el enlace de <strong>El Sencillo</strong> en el navegador <strong>Safari</strong>.</span>
+                <span>Abra el enlace de <strong>El Sencillo</strong> en <strong>Safari</strong>.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 text-xs font-bold shrink-0 mt-0.5" aria-hidden="true">2</span>
@@ -318,6 +330,10 @@ export default function GuidePage() {
                 <span>Confirme pulsando <strong>«Agregar»</strong> en la esquina superior derecha.</span>
               </li>
             </ol>
+
+            <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-400">
+              <span>Apple no permite descargas directas fuera de la tienda oficial, pero al agregarla al inicio se ejecuta a pantalla completa con rendimiento nativo.</span>
+            </div>
           </div>
         </div>
 
