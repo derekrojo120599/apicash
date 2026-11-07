@@ -22,7 +22,7 @@ import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
-import { triggerSuccessNotification } from '../lib/notifications';
+import { triggerSuccessNotification, scheduleDailyReminders } from '../lib/notifications';
 
 interface PerfilScreenProps {
   onOpenMenu: () => void;
@@ -910,6 +910,28 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
                   Gestión de la cuenta
                 </Text>
               </View>
+
+              <TouchableOpacity
+                style={styles.manageBtn}
+                onPress={async () => {
+                  const ok = await scheduleDailyReminders();
+                  if (ok) {
+                    showToast('3 alertas diarias programadas (Mañana, Tarde, Noche)');
+                  } else {
+                    showToast('No se pudieron programar los recordatorios');
+                  }
+                }}
+              >
+                <View>
+                  <Text style={[styles.manageTitle, !isDarkMode && styles.textDark]}>
+                    Alertas diarias de gastos (3 al día)
+                  </Text>
+                  <Text style={styles.manageDesc}>
+                    Recordatorios aleatorios a las 10:30, 15:30 y 21:30
+                  </Text>
+                </View>
+                <Ionicons name="time-outline" size={20} color={colors.p500} />
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.manageBtn}
