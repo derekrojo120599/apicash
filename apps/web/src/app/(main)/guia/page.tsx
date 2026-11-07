@@ -277,7 +277,7 @@ export default function GuidePage() {
             </div>
 
             <a
-              href="https://jkoxmyefjmokdycjlfqb.supabase.co/storage/v1/object/public/downloads/apicash.apk"
+              href="https://github.com/derekrojo120599/apicash/releases/latest/download/apicash.apk"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/50 transition-all text-sm cursor-pointer"

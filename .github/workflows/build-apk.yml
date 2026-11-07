@@ -105,12 +105,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 13. Subir APK a Supabase Storage (URL Permanente)
-        run: |
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imprb3hteWVmam1va2R5Y2psZnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1NDc4MjcsImV4cCI6MjEwNDEyMzgyN30.bHXjMvEIOylLCX1WiPf1zg5Z7WX1NLESN1UgZhbwz90' }}" \
-            -H "Content-Type: application/vnd.android.package-archive" \
-            -H "x-upsert: true" \
-            --data-binary @apicash.apk \
-            "https://jkoxmyefjmokdycjlfqb.supabase.co/storage/v1/object/downloads/apicash.apk" || true

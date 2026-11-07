@@ -16,7 +16,6 @@ import appConfig from '../../app.json';
 const CURRENT_VERSION = appConfig.expo.version || '1.0.0';
 const GITHUB_REPO = 'derekrojo120599/apicash';
 const RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
-const PERMANENT_APK_URL = 'https://jkoxmyefjmokdycjlfqb.supabase.co/storage/v1/object/public/downloads/apicash.apk';
 
 export interface UpdateInfo {
   version: string;
@@ -73,7 +72,9 @@ export function AppUpdateModal() {
         const apkAsset = (data.assets || []).find((a: any) =>
           a.name?.endsWith('.apk')
         );
-        const downloadUrl = PERMANENT_APK_URL;
+        const downloadUrl =
+          apkAsset?.browser_download_url ||
+          `https://github.com/${GITHUB_REPO}/releases/latest/download/apicash.apk`;
 
         if (!alreadyDismissed) {
           setUpdateInfo({
@@ -172,7 +173,9 @@ export async function manualCheckUpdate(): Promise<{ hasUpdate: boolean; version
       const apkAsset = (data.assets || []).find((a: any) =>
         a.name?.endsWith('.apk')
       );
-      const downloadUrl = PERMANENT_APK_URL;
+      const downloadUrl =
+        apkAsset?.browser_download_url ||
+        `https://github.com/${GITHUB_REPO}/releases/latest/download/apicash.apk`;
       return { hasUpdate: true, version: remoteTag, downloadUrl };
     }
     return { hasUpdate: false };
