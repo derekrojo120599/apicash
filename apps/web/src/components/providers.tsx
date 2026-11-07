@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ThemeProvider } from 'next-themes'
 import { ThemeColorProvider } from './ThemeColorProvider'
+import { RealtimeSyncProvider } from './RealtimeSyncProvider'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -12,7 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 60 * 1000, // 1 minute
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true, // Auto refetch al volver a la pestaña
           },
         },
       })
@@ -22,7 +23,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <ThemeColorProvider>
-          {children}
+          <RealtimeSyncProvider>
+            {children}
+          </RealtimeSyncProvider>
         </ThemeColorProvider>
       </ThemeProvider>
     </QueryClientProvider>
