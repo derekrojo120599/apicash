@@ -28,15 +28,15 @@ INSERT INTO backups.function_definitions_backup_20261107 (function_name, definit
 VALUES 
     (
         'registrar_operacion_con_comision',
-        pg_get_functiondef('registrar_operacion_con_comision(UUID, UUID, tipo_transaccion_enum, NUMERIC, moneda_enum, TEXT, NUMERIC, TIMESTAMPTZ, TEXT, NUMERIC, BOOLEAN)'::regprocedure)
+        COALESCE((SELECT pg_get_functiondef(p.oid) FROM pg_proc p WHERE p.proname = 'registrar_operacion_con_comision' LIMIT 1), '')
     ),
     (
         'marcar_operacion_como_fallida',
-        pg_get_functiondef('marcar_operacion_como_fallida(UUID)'::regprocedure)
+        COALESCE((SELECT pg_get_functiondef(p.oid) FROM pg_proc p WHERE p.proname = 'marcar_operacion_como_fallida' LIMIT 1), '')
     ),
     (
         'seed_comisiones_config_default',
-        pg_get_functiondef('seed_comisiones_config_default(UUID)'::regprocedure)
+        COALESCE((SELECT pg_get_functiondef(p.oid) FROM pg_proc p WHERE p.proname = 'seed_comisiones_config_default' LIMIT 1), '')
     )
 ON CONFLICT (function_name) DO UPDATE 
 SET definition = EXCLUDED.definition, backed_up_at = now();
