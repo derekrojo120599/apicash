@@ -145,7 +145,7 @@ export function InstallPrompt() {
           {platform === 'android' && (
             <div className="flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
               <a
-                href="https://github.com/derekrojo120599/apicash/releases/latest/download/apicash.apk"
+                href="https://jkoxmyefjmokdycjlfqb.supabase.co/storage/v1/object/public/downloads/apicash.apk"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 text-xs shadow-md shadow-emerald-950/20 transition-all"
