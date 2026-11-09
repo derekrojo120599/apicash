@@ -35,7 +35,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const isAuthRoute = pathname.startsWith('/auth') || pathname === '/login' || pathname === '/register'
+  const isAuthRoute =
+    pathname.startsWith('/auth') ||
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname.startsWith('/recuperar')
   const isPwaOrPublicAsset =
     pathname === '/sw.js' ||
     pathname.startsWith('/workbox-') ||
