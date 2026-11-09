@@ -37,6 +37,12 @@
           "defaultChannel": "default"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a2295799-ba72-4ee1-bda1-9951c73e5266"
+      }
+    },
+    "owner": "derekrojo12"
   }
 }

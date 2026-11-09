@@ -24,12 +24,41 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
   const { colors, isDarkMode } = useAppTheme();
 
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+
+  async function handleResetPassword() {
+    if (!email.trim()) {
+      setErrorMessage('Por favor ingrese su correo electrónico');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setErrorMessage('');
+      setInfoMessage('');
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      setInfoMessage(
+        'Hemos enviado un enlace a su correo para restablecer su contraseña. Revise su bandeja o spam.'
+      );
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Ocurrió un error al enviar el correo');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit() {
     if (!email || !password) {
@@ -117,17 +146,23 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
               <ApicashLogo size={32} color={colors.p500} />
             </View>
             <Text style={[styles.title, !isDarkMode && styles.textDark]}>
-              {isRegisterMode ? 'Crear cuenta' : 'Bienvenido de nuevo'}
+              {isResetMode
+                ? 'Recuperar contraseña'
+                : isRegisterMode
+                ? 'Crear cuenta'
+                : 'Bienvenido de nuevo'}
             </Text>
             <Text style={styles.subtitle}>
-              {isRegisterMode
+              {isResetMode
+                ? 'Le enviaremos las instrucciones a su correo'
+                : isRegisterMode
                 ? 'Comience a tomar el control total de sus finanzas'
                 : 'Ingrese a su cuenta para gestionar sus finanzas'}
             </Text>
           </View>
 
           <View style={styles.form}>
-            {isRegisterMode ? (
+            {!isResetMode && isRegisterMode ? (
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, !isDarkMode && styles.textDark]}>
                   Nombre completo
@@ -158,18 +193,35 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
               />
             </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, !isDarkMode && styles.textDark]}>Contraseña</Text>
-              <TextInput
-                style={[styles.input, !isDarkMode && styles.inputLight]}
-                placeholder="••••••••"
-                placeholderTextColor="#64748b"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
-            </View>
+            {!isResetMode ? (
+              <View style={styles.inputGroup}>
+                <View style={styles.passwordLabelRow}>
+                  <Text style={[styles.label, !isDarkMode && styles.textDark]}>Contraseña</Text>
+                  {!isRegisterMode ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsResetMode(true);
+                        setErrorMessage('');
+                        setInfoMessage('');
+                      }}
+                    >
+                      <Text style={[styles.forgotPasswordText, { color: colors.p400 }]}>
+                        ¿Olvidaste tu contraseña?
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+                <TextInput
+                  style={[styles.input, !isDarkMode && styles.inputLight]}
+                  placeholder="••••••••"
+                  placeholderTextColor="#64748b"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+            ) : null}
 
             {errorMessage ? (
               <View style={styles.errorBox}>
@@ -189,7 +241,7 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
                 { backgroundColor: colors.p600 },
                 loading && styles.buttonDisabled,
               ]}
-              onPress={handleSubmit}
+              onPress={isResetMode ? handleResetPassword : handleSubmit}
               disabled={loading}
               activeOpacity={0.8}
             >
@@ -197,26 +249,45 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
                 <ActivityIndicator color="#ffffff" />
               ) : (
                 <Text style={styles.buttonText}>
-                  {isRegisterMode ? 'Registrarse' : 'Iniciar sesión'}
+                  {isResetMode
+                    ? 'Enviar enlace de recuperación'
+                    : isRegisterMode
+                    ? 'Registrarse'
+                    : 'Iniciar sesión'}
                 </Text>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
-                setIsRegisterMode(!isRegisterMode);
-                setErrorMessage('');
-                setInfoMessage('');
-              }}
-              style={styles.switchAuthRow}
-            >
-              <Text style={styles.switchAuthText}>
-                {isRegisterMode ? '¿Ya tiene una cuenta? ' : '¿No tiene una cuenta? '}
-                <Text style={{ color: colors.p500, fontWeight: '700' }}>
-                  {isRegisterMode ? 'Inicie sesión aquí' : 'Regístrese aquí'}
+            {isResetMode ? (
+              <TouchableOpacity
+                onPress={() => {
+                  setIsResetMode(false);
+                  setErrorMessage('');
+                  setInfoMessage('');
+                }}
+                style={styles.switchAuthRow}
+              >
+                <Text style={[styles.switchAuthText, { color: colors.p500, fontWeight: '600' }]}>
+                  Volver al inicio de sesión
                 </Text>
-              </Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  setIsRegisterMode(!isRegisterMode);
+                  setErrorMessage('');
+                  setInfoMessage('');
+                }}
+                style={styles.switchAuthRow}
+              >
+                <Text style={styles.switchAuthText}>
+                  {isRegisterMode ? '¿Ya tiene una cuenta? ' : '¿No tiene una cuenta? '}
+                  <Text style={{ color: colors.p500, fontWeight: '700' }}>
+                    {isRegisterMode ? 'Inicie sesión aquí' : 'Regístrese aquí'}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -294,6 +365,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
     borderColor: '#cbd5e1',
     color: '#0f172a',
+  },
+  passwordLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  forgotPasswordText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   errorBox: {
     backgroundColor: '#450a0a',
