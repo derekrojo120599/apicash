@@ -34,6 +34,8 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const isDemo = request.cookies.get('apicash_demo_mode')?.value === 'true'
+
   const pathname = request.nextUrl.pathname
   const isAuthRoute =
     pathname.startsWith('/auth') ||
@@ -49,6 +51,16 @@ export async function middleware(request: NextRequest) {
     pathname === '/sitemap.xml'
 
   if (isPwaOrPublicAsset) {
+    return supabaseResponse
+  }
+
+  // Si está en modo demo activo, permitir acceso a rutas autenticadas y redirigir si intenta ir a login/register
+  if (isDemo) {
+    if (isAuthRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
     return supabaseResponse
   }
 

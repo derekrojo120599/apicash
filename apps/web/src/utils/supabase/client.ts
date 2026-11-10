@@ -1,8 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createBrowserClient } from '@supabase/ssr'
+import { isDemoModeActive } from '@/lib/demoData'
+import { createDemoClient } from '@/lib/demoClient'
 
 let client: ReturnType<typeof createBrowserClient> | null = null
 
 export function createClient() {
+  if (typeof window !== 'undefined' && isDemoModeActive()) {
+    return createDemoClient() as any
+  }
+
   if (client) return client
 
   client = createBrowserClient(

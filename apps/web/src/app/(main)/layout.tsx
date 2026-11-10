@@ -10,6 +10,10 @@ import { AnimatedNavLink, StaggerContainer, AnimatedButton } from '@/components/
 
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { WhatsNewModal } from '@/components/ui/WhatsNewModal'
+import { DemoBanner } from '@/components/DemoBanner'
+import { isDemoModeActive, deactivateDemoMode } from '@/lib/demoData'
+import { useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -27,11 +31,24 @@ const navItems = [
 ]
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
   const pathname = usePathname()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   const handleCloseMobileSidebar = () => {
     setMobileSidebarOpen(false)
+  }
+
+  const handleLogout = () => {
+    if (isDemoModeActive()) {
+      deactivateDemoMode()
+      queryClient.clear()
+      router.push('/login')
+      router.refresh()
+      return
+    }
+    logout()
   }
 
   return (
@@ -83,7 +100,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
           <AnimatedButton
             variant="ghost"
-            onClick={() => logout()}
+            onClick={handleLogout}
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start text-sm md:text-base"
           >
             <LogOut className="w-5 h-5 text-slate-400" />
@@ -93,7 +110,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </aside>
 
       {/* Main Content area */}
-      <main className="flex-1 overflow-y-auto dark:bg-slate-950 transition-colors">
+      <main className="flex-1 overflow-y-auto dark:bg-slate-950 transition-colors flex flex-col">
+        <DemoBanner />
         {/* Mobile Header (Only visible on small screens) */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 transition-colors pt-[max(0.75rem,env(safe-area-inset-top))]">
           <div className="flex items-center gap-2">
@@ -180,7 +198,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             variant="ghost"
             onClick={() => {
               handleCloseMobileSidebar()
-              logout()
+              handleLogout()
             }}
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-400 justify-start text-sm"
           >
