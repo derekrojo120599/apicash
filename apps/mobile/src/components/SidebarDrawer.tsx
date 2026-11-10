@@ -18,6 +18,10 @@ export type ScreenTab =
   | 'movimientos'
   | 'credito'
   | 'compartidas'
+  | 'prestamos'
+  | 'escanear'
+  | 'asistente'
+  | 'monitor-tasas'
   | 'calculadora'
   | 'presupuesto'
   | 'categorias'
@@ -36,14 +40,18 @@ interface SidebarDrawerProps {
 
 const navItems: { id: ScreenTab; name: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'dashboard', name: 'Dashboard', icon: 'grid-outline' },
-  { id: 'cuentas', name: 'Cuentas', icon: 'wallet-outline' },
+  { id: 'cuentas', name: 'Mis Cuentas', icon: 'wallet-outline' },
   { id: 'movimientos', name: 'Movimientos', icon: 'swap-horizontal-outline' },
   { id: 'credito', name: 'Crédito y Cuotas', icon: 'card-outline' },
   { id: 'compartidas', name: 'Compartidas', icon: 'people-outline' },
+  { id: 'prestamos', name: 'Préstamos', icon: 'cash-outline' },
+  { id: 'escanear', name: 'Escanear Factura', icon: 'camera-outline' },
+  { id: 'asistente', name: 'Asistente Cashy', icon: 'chatbubbles-outline' },
+  { id: 'monitor-tasas', name: 'Monitor de Tasas', icon: 'trending-up-outline' },
   { id: 'calculadora', name: 'Calculadora', icon: 'calculator-outline' },
   { id: 'presupuesto', name: 'Presupuesto', icon: 'flag-outline' },
   { id: 'categorias', name: 'Categorías', icon: 'folder-open-outline' },
-  { id: 'ahorros', name: 'Ahorros', icon: 'cube-outline' },
+  { id: 'ahorros', name: 'Ahorros y Metas', icon: 'cube-outline' },
   { id: 'deudas', name: 'Deudas', icon: 'receipt-outline' },
   { id: 'guia', name: 'Guía', icon: 'book-outline' },
   { id: 'perfil', name: 'Perfil', icon: 'person-outline' },

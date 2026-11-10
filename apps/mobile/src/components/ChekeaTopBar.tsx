@@ -56,10 +56,10 @@ export function ChekeaTopBar({
       <View style={styles.rightActions}>
         <TouchableOpacity
           style={styles.actionIcon}
-          onPress={onOpenSupport || onOpenMenu}
+          onPress={onOpenSupport}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="help-circle-outline" size={22} color={isDarkMode ? '#94a3b8' : '#64748b'} />
+          <Ionicons name="chatbubbles-outline" size={22} color={colors.p500} />
         </TouchableOpacity>
 
         <TouchableOpacity

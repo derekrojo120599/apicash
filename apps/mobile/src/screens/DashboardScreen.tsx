@@ -75,7 +75,52 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
   async function fetchData() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        // Modo demo / offline: proveer datos locales de muestra
+        setBalanceNeto({
+          usd_fijo: 1500.0,
+          ves_total: 1050000.0,
+          ves_en_usd: 1167.61,
+          balance_neto: 2667.61,
+          tasa_usada: 899.27,
+          tasa_fecha: new Date().toISOString()
+        });
+        setSummary({
+          ingresos: 2500.0,
+          gastos: 832.39,
+          ahorros: 500.0,
+          deuda: 150.0
+        });
+        setTransactions([
+          {
+            id: 'demo-1',
+            descripcion: 'Automercados Plaza - Compra semanal',
+            tipo: 'gasto',
+            monto_original: 45.5,
+            moneda_original: 'USD',
+            monto_usd_calculado: 45.5,
+            fecha: new Date().toISOString(),
+            anulada: false,
+            cuentas: { nombre: 'Banesco USD' },
+            categorias: { nombre: 'Alimentación', icono: 'restaurant' }
+          },
+          {
+            id: 'demo-2',
+            descripcion: 'Pago Freelance UI/UX',
+            tipo: 'ingreso',
+            monto_original: 800.0,
+            moneda_original: 'USD',
+            monto_usd_calculado: 800.0,
+            fecha: new Date().toISOString(),
+            anulada: false,
+            cuentas: { nombre: 'Zinli' },
+            categorias: { nombre: 'Salario', icono: 'cash' }
+          }
+        ]);
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
 
       const inicioMes = new Date();
       inicioMes.setDate(1);
@@ -201,7 +246,7 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
       <ChekeaTopBar
         onOpenMenu={onOpenMenu}
         onOpenProfile={() => onNavigateTab && onNavigateTab('perfil')}
-        onOpenSupport={() => onNavigateTab && onNavigateTab('guia')}
+        onOpenSupport={() => onNavigateTab && onNavigateTab('asistente')}
         onOpenNotifications={() => onNavigateTab && onNavigateTab('movimientos')}
       />
 

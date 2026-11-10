@@ -17,6 +17,10 @@ import { PresupuestoScreen } from './src/screens/PresupuestoScreen';
 import { CalculadoraScreen } from './src/screens/CalculadoraScreen';
 import { CreditoScreen } from './src/screens/CreditoScreen';
 import { CompartidasScreen } from './src/screens/CompartidasScreen';
+import { PrestamosScreen } from './src/screens/PrestamosScreen';
+import { EscanearFacturaScreen } from './src/screens/EscanearFacturaScreen';
+import { AsistenteScreen } from './src/screens/AsistenteScreen';
+import { MonitorTasasScreen } from './src/screens/MonitorTasasScreen';
 import { GuiaScreen } from './src/screens/GuiaScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
 import { SidebarDrawer, ScreenTab } from './src/components/SidebarDrawer';
@@ -105,6 +109,14 @@ function MainApp() {
         return <CreditoScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'compartidas':
         return <CompartidasScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'prestamos':
+        return <PrestamosScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'escanear':
+        return <EscanearFacturaScreen onBack={() => setCurrentTab('dashboard')} />;
+      case 'asistente':
+        return <AsistenteScreen onBack={() => setCurrentTab('dashboard')} />;
+      case 'monitor-tasas':
+        return <MonitorTasasScreen onBack={() => setCurrentTab('dashboard')} />;
       case 'guia':
         return (
           <GuiaScreen
