@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { ApicashLogo } from '@/components/ApicashLogo'
-import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X, BookOpen, Calculator, CreditCard, Users } from 'lucide-react'
+import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X, BookOpen, Calculator, Clock, Users } from 'lucide-react'
 import { logout } from '../(auth)/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AnimatedNavLink, StaggerContainer, AnimatedButton } from '@/components/animations'
@@ -15,7 +15,7 @@ const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Cuentas', href: '/cuentas', icon: WalletCards },
   { name: 'Movimientos', href: '/transacciones', icon: ArrowRightLeft },
-  { name: 'Crédito', href: '/credito', icon: CreditCard },
+  { name: 'Compras a Cuotas', href: '/credito', icon: Clock },
   { name: 'Compartidas', href: '/compartidas', icon: Users },
   { name: 'Calculadora', href: '/calculadora', icon: Calculator },
   { name: 'Presupuesto', href: '/presupuesto', icon: Target },

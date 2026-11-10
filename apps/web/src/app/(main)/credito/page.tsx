@@ -2,23 +2,15 @@
 
 import { useState, useSyncExternalStore } from 'react'
 import { useComprasCredito, useCrearCompraCredito, type CompraCredito } from '@/hooks/useComprasCredito'
-import { useTarjetasCredito, useCrearTarjetaCredito, type TarjetaCredito } from '@/hooks/useTarjetasCredito'
 import { useCuentas } from '@/hooks/useCuentas'
 import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
 import {
-  CreditCard,
+  Clock,
   Plus,
   Calendar,
-  Clock,
   ShoppingBag,
-  TrendingUp,
   X,
-  CheckCircle2,
-  AlertCircle,
-  Building2,
-  DollarSign,
-  ChevronRight,
   ArrowRight
 } from 'lucide-react'
 import {
@@ -32,29 +24,11 @@ import {
 } from '@/components/animations'
 import {
   generarCronogramaCuotas,
-  calcularPagoMinimoTarjeta,
-  calcularDisponibleTarjeta,
   type Moneda
 } from '@apicash/shared'
+import { ArdillaMascot } from '@/components/ArdillaMascot'
 
 export const dynamic = 'force-dynamic'
-
-const BANCOS_VENEZUELA = [
-  'Banesco',
-  'Banco de Venezuela (BDV)',
-  'Mercantil',
-  'BBVA Provincial',
-  'Bancamiga',
-  'Banco Nacional de Crédito (BNC)',
-  'Bancaribe',
-  'Banco Exterior',
-  'Banco del Tesoro',
-  'Banco Plaza',
-  'Banplus',
-  'BFC Banco Fondo Común',
-  'Otro banco nacional',
-  'Banco Internacional / Extranjero'
-]
 
 export default function CreditoPage() {
   const mounted = useSyncExternalStore(
@@ -63,20 +37,16 @@ export default function CreditoPage() {
     () => false
   )
 
-  const [activeTab, setActiveTab] = useState<'cuotas' | 'tarjetas'>('cuotas')
   const [isCompraModalOpen, setIsCompraModalOpen] = useState(false)
-  const [isTarjetaModalOpen, setIsTarjetaModalOpen] = useState(false)
 
   // Data
   const { data: compras, isLoading: loadingCompras } = useComprasCredito()
-  const { data: tarjetas, isLoading: loadingTarjetas } = useTarjetasCredito()
   const { data: cuentas } = useCuentas()
   const { data: categorias } = useCategorias()
   const { data: tasaActual } = useTasaActual()
 
   // Mutations
   const { mutateAsync: crearCompra, isPending: creatingCompra } = useCrearCompraCredito()
-  const { mutateAsync: crearTarjeta, isPending: creatingTarjeta } = useCrearTarjetaCredito()
   const { success: toastSuccess, error: toastError } = useToast()
 
   // Compra Wizard State (Paso 1 y Paso 2)
@@ -91,18 +61,6 @@ export default function CreditoPage() {
     numero_cuotas: 3,
     intervalo_dias: 14,
     cuenta_inicial_id: ''
-  })
-
-  // Tarjeta Form State
-  const [tarjetaForm, setTarjetaForm] = useState({
-    nombre: '',
-    banco: 'Banesco',
-    moneda: 'USD' as Moneda,
-    limite_credito: '',
-    dia_corte: 15,
-    dia_pago: 30,
-    pago_minimo_pct: 5.0,
-    interes_mensual_pct: 0.0
   })
 
   const formatMoney = (amount: number, currency: string) => {
@@ -121,11 +79,6 @@ export default function CreditoPage() {
     .flatMap(compra => (compra.cuotas_compra || []).map(cuota => ({ ...cuota, compra })))
     .filter(c => c.estado === 'pendiente')
     .sort((a, b) => new Date(a.fecha_vencimiento).getTime() - new Date(b.fecha_vencimiento).getTime())
-
-  // Cálculos resumen tarjetas
-  const totalDeudaTarjetas = tarjetas?.reduce((acc, t) => acc + (t.saldo_deuda || 0), 0) || 0
-  const totalLimiteTarjetas = tarjetas?.reduce((acc, t) => acc + (t.limite_credito || 0), 0) || 0
-  const totalDisponibleTarjetas = Math.max(0, totalLimiteTarjetas - totalDeudaTarjetas)
 
   // Handlers para Compra Wizard
   const handlePaso1Siguiente = (e: React.FormEvent) => {
@@ -175,45 +128,6 @@ export default function CreditoPage() {
     }
   }
 
-  // Handlers para Tarjeta
-  const handleCrearTarjetaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!tarjetaForm.nombre || !tarjetaForm.limite_credito || Number(tarjetaForm.limite_credito) <= 0) {
-      toastError({ title: 'Datos inválidos', message: 'Indica el nombre de la tarjeta y su límite de crédito.' })
-      return
-    }
-    try {
-      await crearTarjeta({
-        nombre: tarjetaForm.nombre,
-        banco: tarjetaForm.banco || null,
-        moneda: tarjetaForm.moneda,
-        limite_credito: Number(tarjetaForm.limite_credito),
-        dia_corte: Number(tarjetaForm.dia_corte),
-        dia_pago: Number(tarjetaForm.dia_pago),
-        pago_minimo_pct: Number(tarjetaForm.pago_minimo_pct),
-        interes_mensual_pct: Number(tarjetaForm.interes_mensual_pct)
-      })
-      toastSuccess({
-        title: 'Tarjeta de crédito agregada',
-        message: 'Tu línea de crédito ya está disponible para compras y pagos.'
-      })
-      setIsTarjetaModalOpen(false)
-      setTarjetaForm({
-        nombre: '',
-        banco: 'Banesco',
-        moneda: 'USD',
-        limite_credito: '',
-        dia_corte: 15,
-        dia_pago: 30,
-        pago_minimo_pct: 5.0,
-        interes_mensual_pct: 0.0
-      })
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al registrar tarjeta'
-      toastError({ title: 'Error', message: msg })
-    }
-  }
-
   // Previsualización de cuotas en Paso 2
   let planPrevisualizado = null
   if (compraForm.monto_total && Number(compraForm.monto_total) > 0) {
@@ -239,387 +153,201 @@ export default function CreditoPage() {
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <CreditCard className="w-7 h-7 text-primary-600 dark:text-primary-400" />
-            Compras a Crédito y Tarjetas
+            <Clock className="w-7 h-7 text-primary-600 dark:text-primary-400" />
+            Compras a Cuotas (Cashea / Krece)
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            Financiamiento en cuotas (Cashea/Krece) y control de líneas de crédito
+            Seguimiento de compras financiadas, cronograma de amortización y pagos quincenales
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {activeTab === 'cuotas' ? (
-            <AnimatedButton onClick={() => { setCompraPaso(1); setIsCompraModalOpen(true); }}>
-              <Plus className="w-5 h-5" />
-              Nueva compra a crédito
-            </AnimatedButton>
-          ) : (
-            <AnimatedButton onClick={() => setIsTarjetaModalOpen(true)}>
-              <Plus className="w-5 h-5" />
-              Nueva tarjeta
-            </AnimatedButton>
-          )}
-        </div>
+        <AnimatedButton onClick={() => { setCompraPaso(1); setIsCompraModalOpen(true); }}>
+          <Plus className="w-5 h-5" />
+          Nueva compra a cuotas
+        </AnimatedButton>
       </FadeIn>
 
-      {/* Tabs Selector (Estilo Chekea Pestaña 1 de 2) */}
-      <FadeIn delay={100}>
-        <div className="bg-slate-200/60 dark:bg-slate-800/60 p-1.5 rounded-2xl flex max-w-md gap-1.5 border border-slate-200/50 dark:border-slate-800">
-          <button
-            onClick={() => setActiveTab('cuotas')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'cuotas'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Clock className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-            Cuotas ({comprasActivasCount})
-          </button>
-          <button
-            onClick={() => setActiveTab('tarjetas')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
-              activeTab === 'tarjetas'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <CreditCard className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-            Tarjetas ({tarjetas?.length || 0})
-          </button>
-        </div>
-      </FadeIn>
-
-      {/* ========================================================================= */}
-      {/* VISTA 1: CUOTAS (COMPRAS FINANCIADAS TIPO CASHEA)                          */}
-      {/* ========================================================================= */}
-      {activeTab === 'cuotas' && (
-        <div className="space-y-6">
-          {/* Métricas Superiores */}
-          <FadeIn delay={150}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Saldo pendiente total
-                </span>
-                <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  <AnimatedNumber value={totalPendienteCuotas} formatter={(v) => formatMoney(v, 'USD')} />
-                </p>
-                {tasaActual && tasaActual > 0 && (
-                  <p className="text-xs text-slate-400 mt-1">
-                    ≈ {formatMoney(totalPendienteCuotas * tasaActual, 'VES')}
-                  </p>
-                )}
-              </AnimatedCard>
-
-              <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Cuotas por vencer
-                </span>
-                <p className="text-3xl font-extrabold text-primary-600 dark:text-primary-400 mt-1">
-                  {todasLasCuotas.length}
-                </p>
+      <div className="space-y-6">
+        {/* Métricas Superiores */}
+        <FadeIn delay={150}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                Saldo pendiente total
+              </span>
+              <p className="text-3xl font-extrabold text-primary-600 dark:text-primary-400 mt-1">
+                <AnimatedNumber value={totalPendienteCuotas} formatter={(v) => formatMoney(v, 'USD')} />
+              </p>
+              {tasaActual && tasaActual > 0 && (
                 <p className="text-xs text-slate-400 mt-1">
-                  En compras financiadas activas
+                  ≈ {formatMoney(totalPendienteCuotas * tasaActual, 'VES')}
                 </p>
-              </AnimatedCard>
+              )}
+            </AnimatedCard>
 
-              <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Compras activas
-                </span>
-                <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  {comprasActivasCount}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Con inicial y cronogramas quincenales
-                </p>
-              </AnimatedCard>
-            </div>
-          </FadeIn>
+            <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                Cuotas por vencer
+              </span>
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                {todasLasCuotas.length}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                En compras financiadas activas
+              </p>
+            </AnimatedCard>
 
-          {/* Listado de Compras Activas */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-              Compras a crédito activas
-            </h2>
-
-            {loadingCompras ? (
-              <div className="p-8 text-center text-slate-400">Cargando compras a crédito...</div>
-            ) : !compras || compras.length === 0 ? (
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                <p className="text-slate-500 dark:text-slate-400">No tienes compras a crédito registradas.</p>
-                <button
-                  onClick={() => { setCompraPaso(1); setIsCompraModalOpen(true); }}
-                  className="mt-3 text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400"
-                >
-                  + Agregar tu primera compra financiada
-                </button>
-              </div>
-            ) : (
-              <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {compras.map((compra: CompraCredito) => {
-                  const pagadas = (compra.cuotas_compra || []).filter(c => c.estado === 'pagada').length
-                  const totalCuotas = compra.numero_cuotas || 3
-                  const montoPagado = compra.monto_total - compra.saldo_pendiente
-                  const porcentajePagado = compra.monto_total > 0 ? (montoPagado / compra.monto_total) * 100 : 0
-                  const proximaCuota = (compra.cuotas_compra || []).find(c => c.estado === 'pendiente')
-
-                  return (
-                    <AnimatedCard
-                      key={compra.id}
-                      className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300">
-                            {compra.comercio}
-                          </span>
-                          <h3 className="font-bold text-slate-900 dark:text-white text-base mt-1">
-                            {compra.descripcion}
-                          </h3>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-extrabold text-slate-900 dark:text-white">
-                            {formatMoney(compra.monto_total, compra.moneda)}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            Inicial: {formatMoney(compra.monto_inicial, compra.moneda)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Progreso */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-                          <span>{pagadas} de {totalCuotas} cuotas pagadas</span>
-                          <span className="font-semibold">{Math.round(porcentajePagado)}%</span>
-                        </div>
-                        <AnimatedProgressBar progress={porcentajePagado} />
-                      </div>
-
-                      {/* Próximo vencimiento */}
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <span>Pendiente: <strong className="text-slate-800 dark:text-slate-200">{formatMoney(compra.saldo_pendiente, compra.moneda)}</strong></span>
-                        {proximaCuota ? (
-                          <span className="text-primary-600 dark:text-primary-400 font-medium">
-                            Próx. vencimiento: {new Date(proximaCuota.fecha_vencimiento).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                          </span>
-                        ) : (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">¡Completada!</span>
-                        )}
-                      </div>
-                    </AnimatedCard>
-                  )
-                })}
-              </StaggerContainer>
-            )}
+            <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                Compras activas
+              </span>
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                {comprasActivasCount}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Con inicial y cronogramas quincenales
+              </p>
+            </AnimatedCard>
           </div>
+        </FadeIn>
 
-          {/* Próximos Pagos (Cronograma) */}
-          {todasLasCuotas.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                Próximos pagos quincenales / mensuales
-              </h2>
+        {/* Listado de Compras Activas */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            Compras a cuotas activas
+          </h2>
 
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm overflow-hidden">
-                {todasLasCuotas.slice(0, 8).map((c, i) => {
-                  const fecha = new Date(c.fecha_vencimiento)
-                  const hoy = new Date()
-                  const diffTime = fecha.getTime() - hoy.getTime()
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          {loadingCompras ? (
+            <div className="p-8 text-center text-slate-400">Cargando compras a cuotas...</div>
+          ) : !compras || compras.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
+              <ArdillaMascot mood="saving" size={80} className="mb-3" />
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base">Sin compras a cuotas</h3>
+              <p className="text-slate-400 text-sm mt-1 max-w-sm">
+                Registra tus compras financiadas para proyectar el cronograma y no retrasarte en las cuotas.
+              </p>
+              <button
+                onClick={() => { setCompraPaso(1); setIsCompraModalOpen(true); }}
+                className="mt-4 px-4 py-2 bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 rounded-xl text-sm font-semibold hover:bg-primary-100 transition-colors"
+              >
+                + Agregar tu primera compra
+              </button>
+            </div>
+          ) : (
+            <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {compras.map((compra: CompraCredito) => {
+                const pagadas = (compra.cuotas_compra || []).filter(c => c.estado === 'pagada').length
+                const totalCuotas = compra.numero_cuotas || 3
+                const montoPagado = compra.monto_total - compra.saldo_pendiente
+                const porcentajePagado = compra.monto_total > 0 ? (montoPagado / compra.monto_total) * 100 : 0
+                const proximaCuota = (compra.cuotas_compra || []).find(c => c.estado === 'pendiente')
 
-                  return (
-                    <div key={i} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold flex flex-col items-center justify-center shrink-0 text-xs">
-                          <span>{fecha.toLocaleDateString('es-ES', { day: 'numeric' })}</span>
-                          <span className="uppercase text-[9px]">{fecha.toLocaleDateString('es-ES', { month: 'short' })}</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-900 dark:text-white text-sm">
-                            {c.compra.comercio} • {c.compra.descripcion}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            Cuota {c.numero_cuota} de {c.compra.numero_cuotas} • {diffDays > 0 ? `en ${diffDays} días` : 'Vence hoy o vencida'}
-                          </p>
-                        </div>
+                return (
+                  <AnimatedCard
+                    key={compra.id}
+                    className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300">
+                          {compra.comercio}
+                        </span>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-base mt-1">
+                          {compra.descripcion}
+                        </h3>
                       </div>
-
                       <div className="text-right">
-                        <p className="font-bold text-slate-900 dark:text-white text-sm">
-                          {formatMoney(c.monto, c.compra.moneda)}
+                        <p className="text-lg font-extrabold text-slate-900 dark:text-white">
+                          {formatMoney(compra.monto_total, compra.moneda)}
                         </p>
-                        {tasaActual && c.compra.moneda === 'USD' && (
-                          <p className="text-[11px] text-slate-400">
-                            ≈ {formatMoney(c.monto * tasaActual, 'VES')}
-                          </p>
-                        )}
+                        <p className="text-xs text-slate-400">
+                          Inicial: {formatMoney(compra.monto_inicial, compra.moneda)}
+                        </p>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </div>
+
+                    {/* Progreso */}
+                    <div>
+                      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        <span>{pagadas} de {totalCuotas} cuotas pagadas</span>
+                        <span className="font-semibold">{Math.round(porcentajePagado)}%</span>
+                      </div>
+                      <AnimatedProgressBar progress={porcentajePagado} />
+                    </div>
+
+                    {/* Próximo vencimiento */}
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <span>Pendiente: <strong className="text-slate-800 dark:text-slate-200">{formatMoney(compra.saldo_pendiente, compra.moneda)}</strong></span>
+                      {proximaCuota ? (
+                        <span className="text-primary-600 dark:text-primary-400 font-medium">
+                          Próx. vencimiento: {new Date(proximaCuota.fecha_vencimiento).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                        </span>
+                      ) : (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">¡Completada!</span>
+                      )}
+                    </div>
+                  </AnimatedCard>
+                )
+              })}
+            </StaggerContainer>
           )}
         </div>
-      )}
 
-      {/* ========================================================================= */}
-      {/* VISTA 2: TARJETAS DE CRÉDITO (DEUDA REVOLVENTE Y DISPONIBLE)               */}
-      {/* ========================================================================= */}
-      {activeTab === 'tarjetas' && (
-        <div className="space-y-6">
-          {/* Métricas Superiores */}
-          <FadeIn delay={150}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Deuda total en tarjetas
-                </span>
-                <p className="text-3xl font-extrabold text-red-600 dark:text-red-400 mt-1">
-                  <AnimatedNumber value={totalDeudaTarjetas} formatter={(v) => formatMoney(v, 'USD')} />
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Pasivo acumulado por consumos
-                </p>
-              </AnimatedCard>
-
-              <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Crédito disponible total
-                </span>
-                <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-                  <AnimatedNumber value={totalDisponibleTarjetas} formatter={(v) => formatMoney(v, 'USD')} />
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  De {formatMoney(totalLimiteTarjetas, 'USD')} de cupo
-                </p>
-              </AnimatedCard>
-
-              <AnimatedCard className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Tarjetas activas
-                </span>
-                <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  {tarjetas?.length || 0}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Líneas de crédito vinculadas
-                </p>
-              </AnimatedCard>
-            </div>
-          </FadeIn>
-
-          {/* Grid de Tarjetas de Crédito */}
-          <div className="space-y-4">
+        {/* Próximos Pagos (Cronograma) */}
+        {todasLasCuotas.length > 0 && (
+          <div className="space-y-3">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-              Tus tarjetas de crédito
+              <Calendar className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              Próximos pagos quincenales / mensuales
             </h2>
 
-            {loadingTarjetas ? (
-              <div className="p-8 text-center text-slate-400">Cargando tarjetas...</div>
-            ) : !tarjetas || tarjetas.length === 0 ? (
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
-                <p className="text-slate-500 dark:text-slate-400">Aún no tienes tarjetas de crédito vinculadas.</p>
-                <button
-                  onClick={() => setIsTarjetaModalOpen(true)}
-                  className="mt-3 text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400"
-                >
-                  + Agregar tu primera tarjeta
-                </button>
-              </div>
-            ) : (
-              <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tarjetas.map((tarjeta: TarjetaCredito) => {
-                  const disponible = calcularDisponibleTarjeta(tarjeta.limite_credito, tarjeta.saldo_deuda)
-                  const pctUsado = tarjeta.limite_credito > 0 ? (tarjeta.saldo_deuda / tarjeta.limite_credito) * 100 : 0
-                  const pagoMinimo = calcularPagoMinimoTarjeta(tarjeta.saldo_deuda, tarjeta.pago_minimo_pct)
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm overflow-hidden">
+              {todasLasCuotas.slice(0, 8).map((c, i) => {
+                const fecha = new Date(c.fecha_vencimiento)
+                const hoy = new Date()
+                const diffTime = fecha.getTime() - hoy.getTime()
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-                  return (
-                    <AnimatedCard
-                      key={tarjeta.id}
-                      className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-3xl shadow-lg border border-slate-700/60 flex flex-col justify-between min-h-[220px]"
-                    >
+                return (
+                  <div key={i} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 font-bold flex flex-col items-center justify-center shrink-0 text-xs">
+                        <span>{fecha.toLocaleDateString('es-ES', { day: 'numeric' })}</span>
+                        <span className="uppercase text-[9px]">{fecha.toLocaleDateString('es-ES', { month: 'short' })}</span>
+                      </div>
                       <div>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="text-xs uppercase font-medium text-slate-400">
-                              {tarjeta.banco || 'Tarjeta de crédito'}
-                            </span>
-                            <h3 className="text-lg font-bold text-white tracking-wide mt-0.5">
-                              {tarjeta.nombre}
-                            </h3>
-                          </div>
-                          <span className="text-xs px-2.5 py-1 rounded-full bg-slate-700/80 text-slate-200 font-semibold border border-slate-600">
-                            {tarjeta.moneda}
-                          </span>
-                        </div>
-
-                        {/* Deuda y Disponible */}
-                        <div className="mt-5 grid grid-cols-2 gap-4">
-                          <div>
-                            <span className="text-[11px] uppercase tracking-wider text-slate-400">Deuda actual</span>
-                            <p className="text-xl font-extrabold text-red-400 mt-0.5">
-                              {formatMoney(tarjeta.saldo_deuda, tarjeta.moneda)}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] uppercase tracking-wider text-slate-400">Disponible</span>
-                            <p className="text-xl font-extrabold text-emerald-400 mt-0.5">
-                              {formatMoney(disponible, tarjeta.moneda)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Barra de progreso de uso de cupo */}
-                        <div className="mt-4">
-                          <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                            <span>{Math.round(pctUsado)}% de cupo usado</span>
-                            <span>Límite: {formatMoney(tarjeta.limite_credito, tarjeta.moneda)}</span>
-                          </div>
-                          <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-500 ${
-                                pctUsado > 80 ? 'bg-red-500' : pctUsado > 50 ? 'bg-amber-400' : 'bg-primary-500'
-                              }`}
-                              style={{ width: `${Math.min(100, pctUsado)}%` }}
-                            />
-                          </div>
-                        </div>
+                        <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                          {c.compra.comercio} • {c.compra.descripcion}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Cuota {c.numero_cuota} de {c.compra.numero_cuotas} • {diffDays > 0 ? `en ${diffDays} días` : 'Vence hoy o vencida'}
+                        </p>
                       </div>
+                    </div>
 
-                      {/* Footer con fecha de corte y pago mínimo */}
-                      <div className="mt-5 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-300">
-                        <div>
-                          <span>Corte: día {tarjeta.dia_corte} • Pago: día {tarjeta.dia_pago}</span>
-                          {pagoMinimo > 0 && (
-                            <p className="text-[11px] text-amber-300 font-medium mt-0.5">
-                              Mínimo: {formatMoney(pagoMinimo, tarjeta.moneda)} ({tarjeta.pago_minimo_pct}%)
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </AnimatedCard>
-                  )
-                })}
-              </StaggerContainer>
-            )}
+                    <div className="text-right">
+                      <p className="font-bold text-slate-900 dark:text-white text-sm">
+                        {formatMoney(c.monto, c.compra.moneda)}
+                      </p>
+                      {tasaActual && c.compra.moneda === 'USD' && (
+                        <p className="text-[11px] text-slate-400">
+                          ≈ {formatMoney(c.monto * tasaActual, 'VES')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* ========================================================================= */}
-      {/* MODAL 1: NUEVA COMPRA A CRÉDITO (WIZARD DE 2 PASOS TIPO CHEKEA/CASHEA)    */}
-      {/* ========================================================================= */}
+      {/* MODAL: NUEVA COMPRA A CUOTAS (WIZARD 2 PASOS) */}
       {isCompraModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            {/* Header Wizard */}
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40">
               <div>
                 <span className="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
@@ -640,7 +368,6 @@ export default function CreditoPage() {
             {/* PASO 1 */}
             {compraPaso === 1 && (
               <form onSubmit={handlePaso1Siguiente} className="p-6 space-y-5">
-                {/* Monto Grande Central con Switch Moneda */}
                 <div className="text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="inline-flex p-1 bg-slate-200 dark:bg-slate-700 rounded-xl mb-3">
                     <button
@@ -679,7 +406,6 @@ export default function CreditoPage() {
                   </div>
                 </div>
 
-                {/* Campos Comercio y Descripción */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
@@ -737,7 +463,6 @@ export default function CreditoPage() {
             {/* PASO 2 */}
             {compraPaso === 2 && (
               <form onSubmit={handleCrearCompraSubmit} className="p-6 space-y-5">
-                {/* Resumen Precio y Saldo a Financiar */}
                 <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Precio total de compra:</span>
@@ -756,7 +481,6 @@ export default function CreditoPage() {
                   </div>
                 </div>
 
-                {/* Inicial */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
@@ -793,7 +517,6 @@ export default function CreditoPage() {
                   )}
                 </div>
 
-                {/* Configuración de Cuotas */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
@@ -827,7 +550,6 @@ export default function CreditoPage() {
                   </div>
                 </div>
 
-                {/* Previsualización del Plan */}
                 {planPrevisualizado && (
                   <div className="bg-primary-50 dark:bg-primary-950/30 border border-primary-200 dark:border-primary-900/40 p-4 rounded-2xl text-center space-y-1">
                     <span className="text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
@@ -856,160 +578,6 @@ export default function CreditoPage() {
                 </div>
               </form>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL 2: NUEVA TARJETA DE CRÉDITO                                          */}
-      {/* ========================================================================= */}
-      {isTarjetaModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                Agregar tarjeta de crédito
-              </h3>
-              <button
-                onClick={() => setIsTarjetaModalOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCrearTarjetaSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                  Nombre de la tarjeta
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: Banesco Master, Mercantil Visa..."
-                  value={tarjetaForm.nombre}
-                  onChange={(e) => setTarjetaForm({ ...tarjetaForm, nombre: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                  Banco emisor
-                </label>
-                <select
-                  value={tarjetaForm.banco}
-                  onChange={(e) => setTarjetaForm({ ...tarjetaForm, banco: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                >
-                  {BANCOS_VENEZUELA.map((banco) => (
-                    <option key={banco} value={banco}>
-                      {banco}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Límite de crédito
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="1"
-                    required
-                    placeholder="500.00"
-                    value={tarjetaForm.limite_credito}
-                    onChange={(e) => setTarjetaForm({ ...tarjetaForm, limite_credito: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Moneda
-                  </label>
-                  <select
-                    value={tarjetaForm.moneda}
-                    onChange={(e) => setTarjetaForm({ ...tarjetaForm, moneda: e.target.value as Moneda })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                  >
-                    <option value="USD">USD ($)</option>
-                    <option value="VES">VES (Bs.)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Día de corte
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="31"
-                    required
-                    value={tarjetaForm.dia_corte}
-                    onChange={(e) => setTarjetaForm({ ...tarjetaForm, dia_corte: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Día de pago
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="31"
-                    required
-                    value={tarjetaForm.dia_pago}
-                    onChange={(e) => setTarjetaForm({ ...tarjetaForm, dia_pago: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Pago mínimo (%)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={tarjetaForm.pago_minimo_pct}
-                    onChange={(e) => setTarjetaForm({ ...tarjetaForm, pago_minimo_pct: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Interés mensual (%)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={tarjetaForm.interes_mensual_pct}
-                    onChange={(e) => setTarjetaForm({ ...tarjetaForm, interes_mensual_pct: Number(e.target.value) })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-3">
-                <AnimatedButton type="submit" disabled={creatingTarjeta} className="w-full justify-center">
-                  {creatingTarjeta ? 'Guardando...' : 'Guardar tarjeta'}
-                </AnimatedButton>
-              </div>
-            </form>
           </div>
         </div>
       )}
