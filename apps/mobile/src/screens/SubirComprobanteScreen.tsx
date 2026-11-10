@@ -8,7 +8,8 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  Image
+  Image,
+  Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -22,6 +23,7 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
   const [procesando, setProcesando] = useState(false);
   const [comprobanteListo, setComprobanteListo] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
   // Datos extraídos del comprobante de pago
   const [comercio, setComercio] = useState('');
@@ -157,14 +159,19 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
           </View>
         ) : (
           <View style={styles.extractedCardWrapper}>
-            {/* Vista previa de la captura real seleccionada */}
+            {/* Vista previa de la captura real seleccionada con soporte de click para ampliar */}
             {imageUri && (
-              <View style={[styles.previewContainer, { borderColor: isDarkMode ? '#334155' : '#e2e8f0' }]}>
+              <TouchableOpacity
+                style={[styles.previewContainer, { borderColor: isDarkMode ? '#334155' : '#e2e8f0' }]}
+                onPress={() => setPreviewModalOpen(true)}
+                activeOpacity={0.85}
+              >
                 <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
                 <View style={styles.previewOverlay}>
-                  <Text style={styles.previewTag}>Captura seleccionada</Text>
+                  <Ionicons name="expand" size={14} color="#ffffff" style={{ marginRight: 4 }} />
+                  <Text style={styles.previewTag}>Toca para ampliar y ver imagen completa</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
 
             <View style={[styles.extractedCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
@@ -235,6 +242,27 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
           </View>
         )}
       </ScrollView>
+
+      {/* Modal Pantalla Completa para ver la Imagen */}
+      <Modal visible={previewModalOpen} transparent animationType="fade">
+        <View style={styles.fullModalOverlay}>
+          <TouchableOpacity
+            style={styles.closeFullModalBtn}
+            onPress={() => setPreviewModalOpen(false)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="close" size={28} color="#ffffff" />
+          </TouchableOpacity>
+
+          {imageUri && (
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -242,6 +270,25 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 40 },
+  fullModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeFullModalBtn: {
+    position: 'absolute',
+    top: 48,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  fullImage: {
+    width: '100%',
+    height: '85%',
+  },
   uploadBox: { padding: 24, borderRadius: 28, borderWidth: 1, alignItems: 'center' },
   iconCircle: { marginVertical: 12 },
   uploadTitle: { fontSize: 18, fontWeight: '800', marginTop: 10 },
@@ -264,10 +311,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 8,
     left: 8,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   previewTag: {
     color: '#ffffff',
