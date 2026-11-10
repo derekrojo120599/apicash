@@ -19,8 +19,7 @@ export type ScreenTab =
   | 'credito'
   | 'compartidas'
   | 'prestamos'
-  | 'escanear'
-  | 'asistente'
+  | 'subir_factura'
   | 'monitor-tasas'
   | 'calculadora'
   | 'presupuesto'
@@ -42,11 +41,10 @@ const navItems: { id: ScreenTab; name: string; icon: keyof typeof Ionicons.glyph
   { id: 'dashboard', name: 'Dashboard', icon: 'grid-outline' },
   { id: 'cuentas', name: 'Mis Cuentas', icon: 'wallet-outline' },
   { id: 'movimientos', name: 'Movimientos', icon: 'swap-horizontal-outline' },
-  { id: 'credito', name: 'Crédito y Cuotas', icon: 'card-outline' },
+  { id: 'credito', name: 'Compras a Cuotas', icon: 'card-outline' },
   { id: 'compartidas', name: 'Compartidas', icon: 'people-outline' },
   { id: 'prestamos', name: 'Préstamos', icon: 'cash-outline' },
-  { id: 'escanear', name: 'Escanear Factura', icon: 'camera-outline' },
-  { id: 'asistente', name: 'Asistente Cashy', icon: 'chatbubbles-outline' },
+  { id: 'subir_factura', name: 'Subir Comprobante', icon: 'cloud-upload-outline' },
   { id: 'monitor-tasas', name: 'Monitor de Tasas', icon: 'trending-up-outline' },
   { id: 'calculadora', name: 'Calculadora', icon: 'calculator-outline' },
   { id: 'presupuesto', name: 'Presupuesto', icon: 'flag-outline' },

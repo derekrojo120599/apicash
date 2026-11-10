@@ -18,8 +18,7 @@ import { CalculadoraScreen } from './src/screens/CalculadoraScreen';
 import { CreditoScreen } from './src/screens/CreditoScreen';
 import { CompartidasScreen } from './src/screens/CompartidasScreen';
 import { PrestamosScreen } from './src/screens/PrestamosScreen';
-import { EscanearFacturaScreen } from './src/screens/EscanearFacturaScreen';
-import { AsistenteScreen } from './src/screens/AsistenteScreen';
+import { SubirComprobanteScreen } from './src/screens/SubirComprobanteScreen';
 import { MonitorTasasScreen } from './src/screens/MonitorTasasScreen';
 import { GuiaScreen } from './src/screens/GuiaScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
@@ -111,10 +110,8 @@ function MainApp() {
         return <CompartidasScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'prestamos':
         return <PrestamosScreen onOpenMenu={() => setSidebarOpen(true)} />;
-      case 'escanear':
-        return <EscanearFacturaScreen onBack={() => setCurrentTab('dashboard')} />;
-      case 'asistente':
-        return <AsistenteScreen onBack={() => setCurrentTab('dashboard')} />;
+      case 'subir_factura':
+        return <SubirComprobanteScreen onBack={() => setCurrentTab('dashboard')} />;
       case 'monitor-tasas':
         return <MonitorTasasScreen onBack={() => setCurrentTab('dashboard')} />;
       case 'guia':
@@ -164,6 +161,8 @@ function MainApp() {
             onSelectAction={(action) => {
               if (action === 'transaccion') {
                 setTransactionModalOpen(true);
+              } else if (action === 'subir_factura') {
+                setCurrentTab('subir_factura');
               } else if (action === 'credito') {
                 setCurrentTab('credito');
               } else if (action === 'compartidas') {

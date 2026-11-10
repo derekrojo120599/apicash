@@ -52,16 +52,8 @@ export function ChekeaTopBar({
         </Text>
       </View>
 
-      {/* 3. Acciones Derecha (Soporte, Notificaciones, Menú lateral) */}
+      {/* 3. Acciones Derecha (Notificaciones, Menú lateral) */}
       <View style={styles.rightActions}>
-        <TouchableOpacity
-          style={styles.actionIcon}
-          onPress={onOpenSupport}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name="chatbubbles-outline" size={22} color={colors.p500} />
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.actionIcon}
           onPress={onOpenNotifications || onOpenMenu}

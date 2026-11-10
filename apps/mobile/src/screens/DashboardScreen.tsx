@@ -246,7 +246,6 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
       <ChekeaTopBar
         onOpenMenu={onOpenMenu}
         onOpenProfile={() => onNavigateTab && onNavigateTab('perfil')}
-        onOpenSupport={() => onNavigateTab && onNavigateTab('asistente')}
         onOpenNotifications={() => onNavigateTab && onNavigateTab('movimientos')}
       />
 

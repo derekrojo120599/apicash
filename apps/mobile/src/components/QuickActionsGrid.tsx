@@ -24,11 +24,11 @@ export function QuickActionsGrid({
       onPress: () => onNavigateTab('cuentas'),
     },
     {
-      id: 'escanear',
-      name: 'Escanear',
-      icon: 'camera-outline' as const,
+      id: 'subir_factura',
+      name: 'Subir pago',
+      icon: 'cloud-upload-outline' as const,
       color: '#8b5cf6',
-      onPress: () => onOpenNewTransaction(),
+      onPress: () => onNavigateTab('subir_factura'),
     },
     {
       id: 'calculadora',

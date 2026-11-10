@@ -15,7 +15,7 @@ import { useAppTheme } from '../context/ThemeContext';
 interface QuickActionsSheetProps {
   visible: boolean;
   onClose: () => void;
-  onSelectAction: (action: 'transaccion' | 'credito' | 'compartidas' | 'cuentas') => void;
+  onSelectAction: (action: 'transaccion' | 'subir_factura' | 'credito' | 'compartidas' | 'cuentas') => void;
 }
 
 export function QuickActionsSheet({
@@ -35,10 +35,17 @@ export function QuickActionsSheet({
       color: colors.p500,
     },
     {
+      id: 'subir_factura' as const,
+      title: 'Subir captura de pago',
+      subtitle: 'Extraer datos de recibo o Pago Móvil',
+      icon: 'cloud-upload-outline' as const,
+      color: '#8b5cf6',
+    },
+    {
       id: 'credito' as const,
-      title: 'Compra a crédito / cuotas',
-      subtitle: 'Financiamiento quincenal o tarjeta',
-      icon: 'card-outline' as const,
+      title: 'Compra a cuotas (Cashea)',
+      subtitle: 'Financiamiento quincenal o mensual',
+      icon: 'time-outline' as const,
       color: '#3b82f6',
     },
     {
@@ -46,12 +53,12 @@ export function QuickActionsSheet({
       title: 'Gasto compartido',
       subtitle: 'Dividir cuenta en un grupo',
       icon: 'people-outline' as const,
-      color: '#8b5cf6',
+      color: '#ec4899',
     },
     {
       id: 'cuentas' as const,
-      title: 'Nueva cuenta o tarjeta',
-      subtitle: 'Banco, efectivo, exchange o crédito',
+      title: 'Nueva cuenta bancaria',
+      subtitle: 'Banco, efectivo o exchange',
       icon: 'wallet-outline' as const,
       color: '#10b981',
     },
