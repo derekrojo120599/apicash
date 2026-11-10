@@ -61,8 +61,44 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
       setImageUri(selectedUri);
       setProcesando(true);
 
+      let textoDetectado = '';
+
+      // 1. Intentar OCR local en el dispositivo con Google MLKit nativo (Offline y sin costo)
       try {
-        // Intentar invocar Edge Function en Supabase si hay base64
+        const MLKit = require('@react-native-ml-kit/text-recognition');
+        const TextRecognition = MLKit?.default || MLKit;
+        if (TextRecognition && typeof TextRecognition.recognize === 'function') {
+          const mlResult = await TextRecognition.recognize(selectedUri);
+          if (mlResult && mlResult.text) {
+            textoDetectado = mlResult.text;
+          }
+        }
+      } catch (mlErr) {
+        // En Expo Go estándar sin build nativo C++, MLKit requiere development build
+        console.log('MLKit local nativo no disponible en Expo Go sin build nativo:', mlErr);
+      }
+
+      // Si MLKit leyó texto directamente en el dispositivo
+      if (textoDetectado) {
+        const parsed = parsearComprobanteTexto(textoDetectado);
+        setComercio(parsed.beneficiario);
+        setReferencia(parsed.referencia);
+        setMonto(parsed.monto > 0 ? String(parsed.monto) : '');
+        setMoneda(parsed.moneda);
+        setFecha(parsed.fecha || new Date().toLocaleDateString('es-ES'));
+        setCategoriaSugerida(parsed.categoriaSugerida);
+        setProcesando(false);
+        setComprobanteListo(true);
+
+        Alert.alert(
+          '¡Comprobante Leído con MLKit (Local)!',
+          `Beneficiario: ${parsed.beneficiario}\nMonto: ${parsed.moneda === 'USD' ? '$' : 'Bs. '}${parsed.monto}\nRef: ${parsed.referencia}`
+        );
+        return;
+      }
+
+      try {
+        // 2. Fallback: Edge Function de Supabase si MLKit nativo no está linkeado en el cliente
         if (base64Data) {
           const { data: edgeData, error: edgeErr } = await supabase.functions.invoke('analizar-comprobante', {
             body: { imageBase64: base64Data }
@@ -80,7 +116,7 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
             setComprobanteListo(true);
 
             Alert.alert(
-              '¡Comprobante Analizado con IA!',
+              '¡Comprobante Analizado!',
               `Destino: ${d.beneficiario}\nMonto: ${d.moneda === 'USD' ? '$' : 'Bs. '}${d.monto}\nRef: ${d.referencia}`
             );
             return;
@@ -90,7 +126,7 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
         console.warn('Edge function no disponible, pasando a fallback:', errEdge);
       }
 
-      // Si no hay respuesta de Edge Function, permitir ingresar los datos verificándolos con la foto
+      // Si no hay respuesta automática, permitir ingresar los datos verificándolos con la foto
       setTimeout(() => {
         setComercio('Comercio o Destinatario');
         setReferencia('');
