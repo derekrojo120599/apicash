@@ -17,7 +17,7 @@ import { ApicashLogo } from '../components/ApicashLogo';
 import { triggerSuccessNotification } from '../lib/notifications';
 
 interface LoginScreenProps {
-  onSuccess: () => void;
+  onSuccess: (fakeSession?: any) => void;
 }
 
 export function LoginScreen({ onSuccess }: LoginScreenProps) {
@@ -31,6 +31,16 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+
+  function handleEntrarModoPrueba() {
+    onSuccess({
+      user: {
+        id: 'test-user-id',
+        email: email.trim() || 'demo@apicash.app',
+        user_metadata: { nombre_completo: nombre.trim() || 'Usuario Demo' }
+      }
+    });
+  }
 
   async function handleResetPassword() {
     if (!email.trim()) {
@@ -258,6 +268,18 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
               )}
             </TouchableOpacity>
 
+            {/* Acceso Rápido Modo Prueba / Demo Offline */}
+            <TouchableOpacity
+              style={[styles.demoButton, { borderColor: isDarkMode ? '#334155' : '#cbd5e1' }]}
+              onPress={handleEntrarModoPrueba}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="flash-outline" size={16} color={colors.p500} />
+              <Text style={[styles.demoButtonText, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
+                Entrar en Modo Prueba (Demo Local)
+              </Text>
+            </TouchableOpacity>
+
             {isResetMode ? (
               <TouchableOpacity
                 onPress={() => {
@@ -410,6 +432,20 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  demoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: 10,
+  },
+  demoButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   switchAuthRow: {
     alignItems: 'center',

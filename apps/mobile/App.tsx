@@ -178,7 +178,11 @@ function MainApp() {
           <AppUpdateModal />
         </>
       ) : (
-        <LoginScreen onSuccess={() => {}} />
+        <LoginScreen onSuccess={(fakeSession) => {
+          if (fakeSession) {
+            setSession(fakeSession);
+          }
+        }} />
       )}
     </View>
   );
