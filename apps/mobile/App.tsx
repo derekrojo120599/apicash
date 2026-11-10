@@ -5,6 +5,7 @@ import { supabase } from './src/lib/supabase';
 import { ThemeProvider, useAppTheme } from './src/context/ThemeContext';
 import { MobileRealtimeProvider } from './src/context/RealtimeContext';
 import { initNotificationsPermission } from './src/lib/notifications';
+import { checkAndApplyOTAUpdates } from './src/lib/otaUpdates';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { DashboardScreen } from './src/screens/DashboardScreen';
@@ -39,6 +40,7 @@ function MainApp() {
 
   useEffect(() => {
     initNotificationsPermission().catch(() => {});
+    checkAndApplyOTAUpdates().catch(() => {});
 
     let mounted = true;
 
