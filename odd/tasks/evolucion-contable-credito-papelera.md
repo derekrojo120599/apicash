@@ -24,6 +24,7 @@ S7: "Cuentas Compartidas y Gastos Grupales (Splitwise bilateral): tablas en Supa
 - [x] T8: Diseñar y escribir migración SQL `20261110010000_grupos_compartidos_bilaterales.sql` en `supabase/migrations/` con RPCs y RLS. (Route: inline)
 - [x] T9: Implementar tipos compartidos y hooks de React Query para Grupos Compartidos (`useGruposCompartidos`, etc.). (Route: inline)
 - [x] T10: Implementar la vista interactiva `/compartidas` con balance de grupo, quién debe a quién, registro de gastos y confirmación bilateral de pagos. (Route: inline)
+- [x] T11: Paridad Mobile: incorporar pantallas `CreditoScreen` y `CompartidasScreen` en React Native (`apps/mobile`) y widget de brecha en calculadora móvil. (Route: inline)
 
 ## Log
 L1: Usuario solicita: "vamos con todo, primero commitea, coloca un titulo facil de recordar y luego si vamos a darle con todo en la implementacion de las nuevas mejoras"
@@ -34,3 +35,4 @@ L5: Hooks creados (useTarjetasCredito, useComprasCredito, usePapeleraTransaccion
 L6: Vista de Papelera /trash creada e integrada en el flujo principal de Transacciones.
 L7: Tests automáticos en Vitest pasando al 100% (39/39) y build de producción de Next.js compilado exitosamente.
 L8: Usuario autoriza continuar con los Puntos 1 y 2: Monitor de Brecha Cambiaria e Inteligencia de Ahorro + Cuentas Compartidas Bilaterales. Specs S6-S7 y Tasks T6-T10 completadas con 44/44 tests pasando y 23 rutas generadas.
+L9: T11 completado: Paridad 100% móvil lograda con CreditoScreen (cuotas Cashea + tarjetas), CompartidasScreen (grupos con código de invitación y pagos bilaterales) y monitor de brecha en CalculadoraScreen. Compilación TypeScript nativa limpia en Expo.

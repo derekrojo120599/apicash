@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
-import { formatMoney } from '@apicash/shared';
+import {
+  formatMoney,
+  calcularBrechaCambiaria,
+  analizarConvenienciaPago
+} from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
@@ -219,6 +223,31 @@ export function CalculadoraScreen({ onOpenMenu }: CalculadoraScreenProps) {
         <Text style={[styles.sectionHeading, !isDarkMode && styles.textDark]}>
           Tasas del Mercado
         </Text>
+
+        {/* Widget de Brecha en Mobile */}
+        {fuentes.length >= 2 && (
+          <View style={[styles.brechaCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
+            <View style={styles.brechaHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="trending-up" size={18} color={colors.p500} />
+                <Text style={[styles.brechaTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>Brecha Cambiaria</Text>
+              </View>
+              {(() => {
+                const bcv = fuentes.find(f => f.fuente.toLowerCase().includes('bcv') || f.fuente.toLowerCase().includes('banco central'))?.tasa || fuentes[0].tasa;
+                const p2p = fuentes.find(f => f.fuente.toLowerCase().includes('p2p') || f.fuente.toLowerCase().includes('paralelo'))?.tasa || fuentes[1].tasa;
+                const b = calcularBrechaCambiaria(bcv, p2p);
+                return (
+                  <View style={styles.brechaBadge}>
+                    <Text style={styles.brechaBadgeText}>+{b.porcentajeBrecha}%</Text>
+                  </View>
+                );
+              })()}
+            </View>
+            <Text style={styles.brechaSub}>
+              Compara tasa oficial vs P2P en tiempo real para optimizar tus pagos.
+            </Text>
+          </View>
+        )}
 
         {fuentes.map((f, idx) => {
           const isSelected = !customMode && fuenteNombre === f.fuente;
@@ -509,6 +538,39 @@ const styles = StyleSheet.create({
   rateSourceVal: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  brechaCard: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  brechaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  brechaTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  brechaBadge: {
+    backgroundColor: '#fef2f2',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+  },
+  brechaBadgeText: {
+    color: '#ef4444',
+    fontWeight: '900',
+    fontSize: 12,
+  },
+  brechaSub: {
+    fontSize: 11,
+    color: '#94a3b8',
   },
   customInput: {
     marginTop: 8,

@@ -16,6 +16,8 @@ export type ScreenTab =
   | 'dashboard'
   | 'cuentas'
   | 'movimientos'
+  | 'credito'
+  | 'compartidas'
   | 'calculadora'
   | 'presupuesto'
   | 'categorias'
@@ -36,6 +38,8 @@ const navItems: { id: ScreenTab; name: string; icon: keyof typeof Ionicons.glyph
   { id: 'dashboard', name: 'Dashboard', icon: 'grid-outline' },
   { id: 'cuentas', name: 'Cuentas', icon: 'wallet-outline' },
   { id: 'movimientos', name: 'Movimientos', icon: 'swap-horizontal-outline' },
+  { id: 'credito', name: 'Crédito y Cuotas', icon: 'card-outline' },
+  { id: 'compartidas', name: 'Compartidas', icon: 'people-outline' },
   { id: 'calculadora', name: 'Calculadora', icon: 'calculator-outline' },
   { id: 'presupuesto', name: 'Presupuesto', icon: 'flag-outline' },
   { id: 'categorias', name: 'Categorías', icon: 'folder-open-outline' },

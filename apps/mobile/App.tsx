@@ -15,6 +15,8 @@ import { DeudasScreen } from './src/screens/DeudasScreen';
 import { CategoriasScreen } from './src/screens/CategoriasScreen';
 import { PresupuestoScreen } from './src/screens/PresupuestoScreen';
 import { CalculadoraScreen } from './src/screens/CalculadoraScreen';
+import { CreditoScreen } from './src/screens/CreditoScreen';
+import { CompartidasScreen } from './src/screens/CompartidasScreen';
 import { GuiaScreen } from './src/screens/GuiaScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
 import { SidebarDrawer, ScreenTab } from './src/components/SidebarDrawer';
@@ -94,6 +96,10 @@ function MainApp() {
         return <PresupuestoScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'calculadora':
         return <CalculadoraScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'credito':
+        return <CreditoScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'compartidas':
+        return <CompartidasScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'guia':
         return (
           <GuiaScreen
