@@ -18,6 +18,9 @@ export interface Transaccion {
   descripcion: string
   fecha: string
   anulada: boolean
+  deleted_at?: string | null
+  tarjeta_credito_id?: string | null
+  compra_credito_id?: string | null
   deuda_id?: string | null
   meta_id?: string | null
   monto_impacto_auxiliar?: number | null
@@ -33,6 +36,8 @@ export interface CreateTransactionParams {
   monto_original: number
   moneda_original: 'USD' | 'VES'
   descripcion: string
+  tarjeta_credito_id?: string | null
+  compra_credito_id?: string | null
   subtipo_operacion?: string | null
   es_fallida?: boolean
   tasa_cambio?: number | null
@@ -68,6 +73,7 @@ export function useTransacciones(month: Date) {
           cuentas!cuenta_id(nombre, moneda),
           categorias(nombre, icono, tipo)
         `)
+        .is('deleted_at', null)
         .gte('fecha', startOfMonth)
         .lte('fecha', endOfMonth)
         .order('fecha', { ascending: false })
@@ -91,6 +97,7 @@ export function useUltimasTransacciones(limit: number = 5) {
           cuentas!cuenta_id(nombre, moneda),
           categorias(nombre, icono, tipo)
         `)
+        .is('deleted_at', null)
         .order('fecha', { ascending: false })
         .limit(limit)
 
@@ -580,6 +587,97 @@ export function useMarcarOperacionFallida() {
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       queryClient.invalidateQueries({ queryKey: ['presupuestos'] })
+    }
+  })
+}
+
+export function usePapeleraTransacciones() {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ['papeleraTransacciones'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transacciones')
+        .select(`
+          *,
+          cuentas!cuenta_id(nombre, moneda),
+          categorias(nombre, icono, tipo)
+        `)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false })
+
+      if (error) throw error
+      return (data ?? []) as unknown as Transaccion[]
+    }
+  })
+}
+
+export function useMoverTransaccionPapelera() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.rpc('soft_delete_transaccion', {
+        p_transaccion_id: id
+      })
+      if (error) throw new Error(error.message)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['papeleraTransacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['tarjetasCredito'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+      queryClient.invalidateQueries({ queryKey: ['presupuestos'] })
+    }
+  })
+}
+
+export function useRestaurarTransaccionPapelera() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.rpc('restaurar_transaccion', {
+        p_transaccion_id: id
+      })
+      if (error) throw new Error(error.message)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['ultimasTransacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['papeleraTransacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['tarjetasCredito'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+      queryClient.invalidateQueries({ queryKey: ['presupuestos'] })
+    }
+  })
+}
+
+export function useEliminarTransaccionDefinitiva() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.rpc('purgar_transaccion_definitiva', {
+        p_transaccion_id: id
+      })
+      if (error) throw new Error(error.message)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['papeleraTransacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
     }
   })
 }

@@ -1,10 +1,17 @@
 'use client'
 
 import { useState, useSyncExternalStore } from 'react'
-import { useTransacciones, useAnularTransaccion, useRestaurarTransaccion, Transaccion } from '@/hooks/useTransacciones'
+import Link from 'next/link'
+import {
+  useTransacciones,
+  useAnularTransaccion,
+  useRestaurarTransaccion,
+  useMoverTransaccionPapelera,
+  Transaccion
+} from '@/hooks/useTransacciones'
 import { useCategorias } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
-import { Plus, X, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw } from 'lucide-react'
+import { Plus, X, ArrowRightLeft, Search, Calendar as CalendarIcon, Ban, RotateCcw, Trash2 } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard, AnimatedButton, AnimatedLoader, AnimatedNumber, AnimatedSelect } from '@/components/animations'
 import { NewTransactionModal } from '@/components/NewTransactionModal'
 
@@ -27,11 +34,26 @@ export default function TransaccionesPage() {
   // Mutations
   const { mutateAsync: voidTransaction } = useAnularTransaccion()
   const { mutateAsync: restoreTransaction } = useRestaurarTransaccion()
+  const { mutateAsync: moverPapelera } = useMoverTransaccionPapelera()
 
   const [typeFilter, setTypeFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
 
-  const { error: toastError } = useToast()
+  const { success: toastSuccess, error: toastError } = useToast()
+
+  const handleMoverPapelera = async (id: string) => {
+    try {
+      await moverPapelera(id)
+      setSelectedTx(null)
+      toastSuccess({
+        title: 'Movida a la papelera',
+        message: 'La transacción se movió a la papelera y el saldo fue restituido.'
+      })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error desconocido'
+      toastError({ title: 'Error al mover a papelera', message: msg })
+    }
+  }
 
   const handleVoidTransaction = async (id: string) => {
     if (confirm('¿Confirma la anulación de esta transacción?')) {
@@ -81,10 +103,19 @@ export default function TransaccionesPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transacciones</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registro y revisión de movimientos del mes</p>
         </div>
-        <AnimatedButton onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="w-5 h-5" />
-          Nueva transacción
-        </AnimatedButton>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/trash"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
+          >
+            <Trash2 className="w-4 h-4 text-red-500" />
+            Papelera
+          </Link>
+          <AnimatedButton onClick={() => setIsCreateModalOpen(true)}>
+            <Plus className="w-5 h-5" />
+            Nueva transacción
+          </AnimatedButton>
+        </div>
       </FadeIn>
 
       {/* Filters */}
@@ -225,13 +256,22 @@ export default function TransaccionesPage() {
                   </div>
 
                   {!tx.anulada && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleVoidTransaction(tx.id); }}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
-                      title="Anular transacción"
-                    >
-                      <Ban className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleVoidTransaction(tx.id); }}
+                        className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:hover:text-amber-400 rounded-lg transition-colors"
+                        title="Anular transacción"
+                      >
+                        <Ban className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMoverPapelera(tx.id); }}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
+                        title="Mover a la papelera"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
                   {tx.anulada && (
                     <div className="flex items-center gap-2">
@@ -242,6 +282,13 @@ export default function TransaccionesPage() {
                         title="Restaurar transacción"
                       >
                         <RotateCcw className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleMoverPapelera(tx.id); }}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 rounded-lg transition-colors"
+                        title="Mover a la papelera"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   )}
@@ -330,7 +377,14 @@ export default function TransaccionesPage() {
               </div>
             </div>
             
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-2xl flex justify-end">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-2xl flex justify-between items-center">
+              <button
+                onClick={() => handleMoverPapelera(selectedTx.id)}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors font-medium"
+              >
+                <Trash2 className="w-4 h-4" />
+                Mover a papelera
+              </button>
               <button
                 onClick={() => setSelectedTx(null)}
                 className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors font-medium"
