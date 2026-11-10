@@ -16,6 +16,7 @@ import {
   Coins
 } from 'lucide-react'
 import { FadeIn, AnimatedCard, AnimatedSelect } from '@/components/animations'
+import { MonitorBrechaWidget } from '@/components/MonitorBrechaWidget'
 
 export default function CalculadoraPage() {
   const { data: fuentes, isLoading: loadingFuentes, refetch: refetchFuentes } = useTasasFuentes()
@@ -383,6 +384,10 @@ export default function CalculadoraPage() {
                 </span>
               </div>
             </div>
+          </FadeIn>
+
+          <FadeIn delay={250}>
+            <MonitorBrechaWidget />
           </FadeIn>
         </div>
       </div>

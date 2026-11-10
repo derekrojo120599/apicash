@@ -74,6 +74,63 @@ export interface CuotaCompraBase {
   created_at?: string;
 }
 
+export interface GrupoCompartidoBase {
+  id: string;
+  user_id_admin: string;
+  nombre: string;
+  descripcion?: string | null;
+  codigo_invitacion: string;
+  moneda: Moneda;
+  color?: string | null;
+  icono?: string | null;
+  created_at?: string;
+}
+
+export interface MiembroGrupoBase {
+  id: string;
+  grupo_id: string;
+  user_id?: string | null;
+  nombre_alias: string;
+  rol: 'admin' | 'miembro';
+  activo: boolean;
+  created_at?: string;
+}
+
+export interface GastoGrupoBase {
+  id: string;
+  grupo_id: string;
+  pagado_por_miembro_id: string;
+  categoria_id?: string | null;
+  monto_total: number;
+  moneda: Moneda;
+  descripcion: string;
+  fecha: string;
+  created_at?: string;
+}
+
+export interface DivisionGastoGrupoBase {
+  id: string;
+  gasto_grupo_id: string;
+  miembro_id: string;
+  monto_debe: number;
+  saldado: boolean;
+  created_at?: string;
+}
+
+export interface PagoGrupoBase {
+  id: string;
+  grupo_id: string;
+  emisor_miembro_id: string;
+  receptor_miembro_id: string;
+  monto: number;
+  moneda: Moneda;
+  estado: 'pendiente_confirmacion' | 'confirmado' | 'rechazado';
+  cuenta_origen_id?: string | null;
+  nota?: string | null;
+  created_at?: string;
+  fecha_confirmacion?: string | null;
+}
+
 export interface CuentaBase {
   id: string;
   user_id: string;

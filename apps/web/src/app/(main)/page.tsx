@@ -15,6 +15,7 @@ import {
   AnimatedLoader,
   AnimatedButton,
 } from '@/components/animations'
+import { MonitorBrechaWidget } from '@/components/MonitorBrechaWidget'
 
 export const dynamic = 'force-dynamic';
 
@@ -178,6 +179,11 @@ export default function DashboardPage() {
           )}
         </AnimatedCard>
       </StaggerContainer>
+
+      {/* Monitor de Brecha Cambiaria e Inteligencia de Compra */}
+      <FadeIn delay={300}>
+        <MonitorBrechaWidget />
+      </FadeIn>
 
       {/* Recent Transactions */}
       <FadeIn delay={400} className="mt-8">
