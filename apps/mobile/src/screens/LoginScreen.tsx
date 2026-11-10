@@ -270,13 +270,19 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
 
             {/* Acceso Rápido Modo Prueba / Demo Offline */}
             <TouchableOpacity
-              style={[styles.demoButton, { borderColor: isDarkMode ? '#334155' : '#cbd5e1' }]}
+              style={[
+                styles.demoButton,
+                {
+                  borderColor: isDarkMode ? '#f59e0b44' : '#f59e0b66',
+                  backgroundColor: isDarkMode ? '#f59e0b11' : '#fef3c7',
+                },
+              ]}
               onPress={handleEntrarModoPrueba}
               activeOpacity={0.7}
             >
-              <Ionicons name="flash-outline" size={16} color={colors.p500} />
-              <Text style={[styles.demoButtonText, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
-                Entrar en Modo Prueba (Demo Local)
+              <Ionicons name="sparkles" size={16} color="#d97706" />
+              <Text style={[styles.demoButtonText, { color: isDarkMode ? '#fde68a' : '#92400e' }]}>
+                Probar versión Demo (Sin cuenta)
               </Text>
             </TouchableOpacity>
 
