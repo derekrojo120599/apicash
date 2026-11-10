@@ -38,24 +38,33 @@ describe('Módulo de Extracción y Parsing de Comprobantes de Pago Móvil', () =
     expect(resultado.confianza).toBe(1.0);
   });
 
-  it('debe extraer datos de un comprobante de Banesco o BDV estándar', () => {
-    const textoBDV = `
-      Banco de Venezuela
-      Pago Móvil BDV
-      Operación Exitosa
-      Referencia: 84729103
-      Fecha: 10/11/2026
-      Monto: Bs. 450,00
-      Beneficiario: Farmatodo
-      Concepto: Medicinas
+  it('debe extraer con precisión 100% los datos del Pago Móvil real de BDV', () => {
+    const textoBDVReal = `
+      Comprobante de operación
+      PagomóvilBDV Personas
+
+      111.000,00 Bs
+
+      Fecha: 14/10/2026
+      Operación: 007662935879
+      Identificación: 8287859
+      Origen: 0102****3688
+      Destino: 04248610645
+      Banco: 0105 - BANCO MERCANTIL
+      Concepto: pago
     `;
 
-    const resultado = parsearComprobanteTexto(textoBDV);
+    const resultado = parsearComprobanteTexto(textoBDVReal);
 
     expect(resultado.bancoEmisor).toBe('Banco de Venezuela');
-    expect(resultado.beneficiario).toBe('Farmatodo');
-    expect(resultado.monto).toBe(450.0);
-    expect(resultado.referencia).toBe('84729103');
-    expect(resultado.categoriaSugerida).toBe('Salud y Farmacia');
+    expect(resultado.bancoDestino).toBe('BANCO MERCANTIL');
+    expect(resultado.monto).toBe(111000.00);
+    expect(resultado.moneda).toBe('VES');
+    expect(resultado.referencia).toBe('007662935879');
+    expect(resultado.cedulaRif).toBe('8287859');
+    expect(resultado.telefonoDestino).toBe('04248610645');
+    expect(resultado.beneficiario).toContain('04248610645');
+    expect(resultado.concepto).toBe('pago');
+    expect(resultado.fecha).toBe('14/10/2026');
   });
 });

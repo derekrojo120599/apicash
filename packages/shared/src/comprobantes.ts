@@ -76,12 +76,16 @@ export function parsearComprobanteTexto(textoOCR: string): ComprobanteExtraido {
   }
 
   // 2. Extraer Monto
-  // Ejemplo: "Monto: Bs. 5.385,24" o "Monto: 5,385.24" o "Bs. 5385,24"
-  const regexMonto = /(?:Monto|Importe|Total)[\s:]*(?:Bs\.?|VES|\$)?\s*([0-9\.\,]+)/i;
-  const matchMonto = textoCompleto.match(regexMonto);
+  // Ejemplo 1: "Monto: Bs. 5.385,24"
+  // Ejemplo 2: "111.000,00 Bs"
+  let matchMonto = textoCompleto.match(/(?:Monto|Importe|Total)[\s:]*(?:Bs\.?|VES|\$)?\s*([0-9\.\,]+)/i);
+  if (!matchMonto) {
+    // Buscar monto aislado seguido de Bs o precedido por Bs (ej: 111.000,00 Bs)
+    matchMonto = textoCompleto.match(/([0-9]{1,3}(?:\.[0-9]{3})*,[0-9]{2})\s*(?:Bs\.?|VES)/i);
+  }
+
   if (matchMonto && matchMonto[1]) {
     let rawMonto = matchMonto[1].trim();
-    // Normalizar formato 5.385,24 -> 5385.24
     if (rawMonto.includes('.') && rawMonto.includes(',')) {
       rawMonto = rawMonto.replace(/\./g, '').replace(',', '.');
     } else if (rawMonto.includes(',')) {
@@ -100,9 +104,9 @@ export function parsearComprobanteTexto(textoOCR: string): ComprobanteExtraido {
     moneda = 'USD';
   }
 
-  // 3. Extraer Referencia
-  // Ejemplo: "Referencia: 2029225683" o "Ref: 0098421"
-  const regexRef = /(?:Referencia|Nro\.?\s*Referencia|Ref\.?|Secuencia)[\s:]*([0-9]{4,16})/i;
+  // 3. Extraer Referencia u Operación
+  // Ejemplo: "Referencia: 2029225683" o "Operación: 007662935879"
+  const regexRef = /(?:Referencia|Operaci[oó]n|Nro\.?\s*Referencia|Ref\.?|Secuencia)[\s:]*([0-9]{4,16})/i;
   const matchRef = textoCompleto.match(regexRef);
   if (matchRef && matchRef[1]) {
     referencia = matchRef[1].trim();
@@ -132,25 +136,32 @@ export function parsearComprobanteTexto(textoOCR: string): ComprobanteExtraido {
   }
 
   // 6. Extraer Cédula o RIF
-  // Ejemplo: "Identificación del beneficiario: V-30600818" o "C.I./RIF: V30600818"
-  const regexId = /(?:Identificaci[oó]n|C\.?I\.?|RIF|C[eé]dula)[\s\w:]*([VvEeJjGgP][-.\s]?[0-9]{6,10})/i;
+  // Ejemplo: "Identificación del beneficiario: V-30600818" o "Identificación: 8287859"
+  const regexId = /(?:Identificaci[oó]n(?: del beneficiario)?|C\.?I\.?|RIF|C[eé]dula)[\s:]*([VvEeJjGgP]?[-.\s]?[0-9]{6,10})/i;
   const matchId = textoCompleto.match(regexId);
   if (matchId && matchId[1]) {
     cedulaRif = matchId[1].replace(/\s+/g, '').toUpperCase();
   }
 
   // 7. Extraer Banco Destino
-  const regexBancoDest = /(?:Banco del beneficiario|Banco receptor|Banco destino)[\s:]+([A-Za-z\s]{4,35})/i;
+  // Ejemplo: "Banco del beneficiario: BANCO DE VENEZUELA" o "Banco: 0105 - BANCO MERCANTIL"
+  const regexBancoDest = /(?:Banco(?: del beneficiario| receptor| destino)?|Destino)[\s:]+(?:[0-9]{4}\s*-\s*)?([A-Za-z\s]{4,35})/i;
   const matchBancoDest = textoCompleto.match(regexBancoDest);
   if (matchBancoDest && matchBancoDest[1]) {
     bancoDestino = matchBancoDest[1].split('\n')[0].trim();
   }
 
   // 8. Extraer Teléfono
+  // Ejemplo: "Celular de destino: 04221007580" o "Destino: 04248610645"
   const regexTel = /(?:Celular de destino|Tel[eé]fono destino|Destino)[\s:]*([0-9]{10,12})/i;
   const matchTel = textoCompleto.match(regexTel);
   if (matchTel && matchTel[1]) {
     telefonoDestino = matchTel[1].trim();
+  }
+
+  // Si beneficiario quedó vacío pero tenemos teléfono y banco, armar alias descriptivo
+  if (!beneficiario && telefonoDestino) {
+    beneficiario = `Pago Móvil ${telefonoDestino}${bancoDestino ? ` (${bancoDestino})` : ''}`;
   }
 
   // 9. Extraer Fecha
