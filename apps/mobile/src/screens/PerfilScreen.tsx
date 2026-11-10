@@ -967,8 +967,8 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
                 style={styles.manageBtn}
                 onPress={async () => {
                   await triggerSuccessNotification(
-                    '🔔 Prueba de Notificación',
-                    'Las notificaciones nativas de El Sencillo están activas y funcionando correctamente.'
+                    '⚡ ¡Vergación primo!',
+                    'Mire toche, la notificación nativa y la actualización OTA están funcionando al pelo.'
                   );
                 }}
               >

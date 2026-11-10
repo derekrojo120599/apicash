@@ -22,55 +22,55 @@ export interface ReminderMessage {
 export const REMINDER_MESSAGES: ReminderMessage[] = [
   // Mañana (10:30 AM)
   {
-    title: '☕ ¿Un café o una compra rápida?',
-    body: 'Anotalo ahora en 10 segundos antes de que se te pase por alto.',
+    title: '☕ ¿Un cafecito, toche?',
+    body: 'Anotá ese gasto ligerito antes de que se le olvide.',
     moment: 'manana',
   },
   {
-    title: '🍔 ¿Qué tal el almuerzo de hoy?',
-    body: 'No dejes que los gastos del mediodía se te escapen del radar. Registralo en El Sencillo.',
+    title: '🥐 ¡Epa, primo!',
+    body: '¿Te clavaste un pastelito? Anotá cuánto te costó ese coroto.',
     moment: 'manana',
   },
   {
-    title: '📊 ¿Hiciste algún Pago Móvil hoy?',
-    body: 'Anotalo antes de que te olvides del monto o la tasa del momento.',
+    title: '📱 ¿Tiraste un Pago Móvil?',
+    body: 'Métale mano al saldo antes de que se le descuadre.',
     moment: 'manana',
   },
   // Tarde (3:30 PM)
   {
-    title: '⏱️ 30 segundos te ahorran horas a fin de mes',
-    body: 'Mantené tu saldo al día: registrá los movimientos de la tarde.',
+    title: '🥟 ¡Vergación, qué molleja!',
+    body: '¿Gastando sin anotar? Registrá la merienda o quedás pelando.',
     moment: 'tarde',
   },
   {
-    title: '⚖️ Que no te cuadre "a ojo"',
-    body: 'Anotá tus pagos en VES y USD para ver tu balance neto real en tiempo real.',
+    title: '⚖️ Mire mijo, no ande a ojo',
+    body: 'Cuadre los cobres y los verdes pa\' que no pase penas.',
     moment: 'tarde',
   },
   {
-    title: '🎯 Cuidá tu presupuesto',
-    body: '¿Tuviste algún gasto imprevisto hoy? Anotalo y mirá cuánto te queda disponible.',
+    title: '💸 ¡Qué molleja de gasto!',
+    body: 'Anotalo de una vez pa\' que no chillés a fin de mes.',
     moment: 'tarde',
   },
   {
-    title: '💡 El secreto del ahorro es la constancia',
-    body: 'No es ganar más, es saber con precisión a dónde se va cada bolívar y cada dólar.',
+    title: '🧊 No sea flojo, toche',
+    body: '30 segundos anotando y no pasa trabajo después.',
     moment: 'tarde',
   },
   // Noche (9:30 PM)
   {
-    title: '🌙 Cierre de caja personal',
-    body: 'Un minuto antes de acostarte para registrar tus gastos y dormir con las cuentas claras.',
+    title: '🌙 ¿Se va a acostar así, toche?',
+    body: 'Revise la cuenta pa\' que duerma con la paz del Señor.',
     moment: 'noche',
   },
   {
-    title: '🧾 ¿Día movido? Que tus cuentas no se desordenen',
-    body: 'Revisá tus consumos de hoy y dejá tu saldo impecable para mañana.',
+    title: '🧮 ¡A cerrá caja, mijo!',
+    body: 'Anotá lo último del día o amanecés limpio mañana.',
     moment: 'noche',
   },
   {
-    title: '🚀 Tu bolsillo te lo va a agradecer',
-    body: 'Registrá el último movimiento del día y no dejes cabos sueltos en tu balance.',
+    title: '🪙 ¿A dónde se fueron los reales?',
+    body: 'Anotá y dejá todo cuadradito antes de jatear.',
     moment: 'noche',
   },
 ];
@@ -212,8 +212,8 @@ export async function schedulePaydayReminders(): Promise<boolean> {
     // 2. Alerta de Quincena (Día 15 a las 11:00 AM)
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '💰 ¡Llegó la quincena! ¿Cobraste hoy?',
-        body: 'Registrá tus ingresos de sueldo o pagos del 15 para mantener tu saldo y metas al día.',
+        title: '💰 ¡Cayó la quincena, vergación!',
+        body: 'Métale mano y anote los reales pa\' que no se le esfumen como agua.',
         sound: true,
         priority: Notifications.AndroidNotificationPriority.HIGH,
         data: { type: 'payday_reminder', moment: 'quincena' },
@@ -230,8 +230,8 @@ export async function schedulePaydayReminders(): Promise<boolean> {
     // 3. Alerta de Fin de Mes (Día 30 a las 11:00 AM)
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '💵 ¡Cierre de mes: Día de cobro!',
-        body: 'Registrá tus ingresos, bonos o cobros de fin de mes para arrancar el próximo ciclo con las cuentas claras.',
+        title: '💵 ¡Cobró a fin de mes, mijo!',
+        body: 'Anotá el sueldo y los bonos, toche, pa\' que empiece el mes con los cobres claritos.',
         sound: true,
         priority: Notifications.AndroidNotificationPriority.HIGH,
         data: { type: 'payday_reminder', moment: 'fin_de_mes' },
