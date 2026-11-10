@@ -22,55 +22,55 @@ export interface ReminderMessage {
 export const REMINDER_MESSAGES: ReminderMessage[] = [
   // Mañana (10:30 AM)
   {
-    title: '☕ ¿Un cafecito, toche?',
-    body: 'Anotá ese gasto ligerito antes de que se le olvide.',
+    title: '☕ ¿Cafecito, toche?',
+    body: 'Anotá el gasto ligerito.',
     moment: 'manana',
   },
   {
     title: '🥐 ¡Epa, primo!',
-    body: '¿Te clavaste un pastelito? Anotá cuánto te costó ese coroto.',
+    body: 'Anotá ese pastelito.',
     moment: 'manana',
   },
   {
-    title: '📱 ¿Tiraste un Pago Móvil?',
-    body: 'Métale mano al saldo antes de que se le descuadre.',
+    title: '📱 ¿Pago Móvil listo?',
+    body: 'Regístralo ya pal saldo.',
     moment: 'manana',
   },
   // Tarde (3:30 PM)
   {
-    title: '🥟 ¡Vergación, qué molleja!',
-    body: '¿Gastando sin anotar? Registrá la merienda o quedás pelando.',
+    title: '🥟 ¡Vergación!',
+    body: 'Anotá o quedás pelando.',
     moment: 'tarde',
   },
   {
-    title: '⚖️ Mire mijo, no ande a ojo',
-    body: 'Cuadre los cobres y los verdes pa\' que no pase penas.',
+    title: '⚖️ Cuadre los cobres',
+    body: 'No ande a ojo, toche.',
     moment: 'tarde',
   },
   {
-    title: '💸 ¡Qué molleja de gasto!',
-    body: 'Anotalo de una vez pa\' que no chillés a fin de mes.',
+    title: '💸 ¡Molleja e\' gasto!',
+    body: 'Regístralo de una vez.',
     moment: 'tarde',
   },
   {
-    title: '🧊 No sea flojo, toche',
-    body: '30 segundos anotando y no pasa trabajo después.',
+    title: '🧊 Póngale ganas',
+    body: '30 seg y queda al día.',
     moment: 'tarde',
   },
   // Noche (9:30 PM)
   {
-    title: '🌙 ¿Se va a acostar así, toche?',
-    body: 'Revise la cuenta pa\' que duerma con la paz del Señor.',
+    title: '🌙 ¿A dormir, toche?',
+    body: 'Cierre caja y descanse en paz.',
     moment: 'noche',
   },
   {
-    title: '🧮 ¡A cerrá caja, mijo!',
-    body: 'Anotá lo último del día o amanecés limpio mañana.',
+    title: '🧮 ¡A cerrá caja!',
+    body: 'Anotá o amanecés limpio.',
     moment: 'noche',
   },
   {
-    title: '🪙 ¿A dónde se fueron los reales?',
-    body: 'Anotá y dejá todo cuadradito antes de jatear.',
+    title: '🪙 ¿Y los reales?',
+    body: 'Cuadre todo antes de jatear.',
     moment: 'noche',
   },
 ];
@@ -212,8 +212,8 @@ export async function schedulePaydayReminders(): Promise<boolean> {
     // 2. Alerta de Quincena (Día 15 a las 11:00 AM)
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '💰 ¡Cayó la quincena, vergación!',
-        body: 'Métale mano y anote los reales pa\' que no se le esfumen como agua.',
+        title: '💰 ¡Cayó la quincena!',
+        body: 'Anotá los reales de una.',
         sound: true,
         priority: Notifications.AndroidNotificationPriority.HIGH,
         data: { type: 'payday_reminder', moment: 'quincena' },
@@ -230,8 +230,8 @@ export async function schedulePaydayReminders(): Promise<boolean> {
     // 3. Alerta de Fin de Mes (Día 30 a las 11:00 AM)
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: '💵 ¡Cobró a fin de mes, mijo!',
-        body: 'Anotá el sueldo y los bonos, toche, pa\' que empiece el mes con los cobres claritos.',
+        title: '💵 ¡Cobró fin de mes!',
+        body: 'Anotá el sueldo y los bonos, toche.',
         sound: true,
         priority: Notifications.AndroidNotificationPriority.HIGH,
         data: { type: 'payday_reminder', moment: 'fin_de_mes' },

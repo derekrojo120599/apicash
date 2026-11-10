@@ -967,8 +967,8 @@ export function PerfilScreen({ onOpenMenu, onLogout }: PerfilScreenProps) {
                 style={styles.manageBtn}
                 onPress={async () => {
                   await triggerSuccessNotification(
-                    '⚡ ¡Vergación primo!',
-                    'Mire toche, la notificación nativa y la actualización OTA están funcionando al pelo.'
+                    '⚡ ¡Vergación, primo!',
+                    'Mire toche, la app está al pelo.'
                   );
                 }}
               >
