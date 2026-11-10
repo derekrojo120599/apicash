@@ -44,48 +44,41 @@ adb devices -l
 
 ---
 
-## 3. Próximos Pasos a Ejecutar (Hoja de Ruta Dinámica)
+## 3. Hoja de Ruta Dinámica y Resultados Ejecutados
 
-Cuando se reanude la auditoría, continuar con los siguientes bloques de prueba en orden:
-
-### Paso A: Prueba de Eliminación, Consistencia y Papelera (`/trash`)
+### Paso A: Prueba de Eliminación, Consistencia y Papelera (`/trash`) — [COMPLETADO ✅]
 * **Objetivo:** Comprobar si al borrar una transacción la app recalcula reactivamente el presupuesto y si existe papelera con soft-delete de 30 días.
-* **Acción:**
-  * En Inicio, la fila del gasto de Bs. 200,00 está en `bounds: [51, 1631][1029, 1831]` (centro: `[540, 1731]`).
-  * Tocar `[540, 1731]` para abrir `/transaction-detail`.
-  * Presionar el botón de eliminar transacción (icono de papelera).
-  * Verificar si regresa a `/home` con balance en `Bs. 1.200,00` y si en `/budget` el badge vuelve automáticamente de `EXCEDIDO` a `EN PLAN` (Bs. 300 de 450).
-  * Inspeccionar si en Configuración o Menú aparece la sección de elementos eliminados para restaurar (`/trash`).
+* **Resultado observado:**
+  * Al eliminar el gasto de Bs. 200,00, emergió un SnackBar `"Transacción movida a la papelera."` con botón `"Deshacer"`.
+  * El balance de la cuenta subió reactivamente en tiempo real de `Bs. 1.000,00` a `Bs. 1.200,00`.
+  * En `/budget` el badge cambió inmediatamente de `EXCEDIDO` a **`EN PLAN`** (Gastado Bs. 300,00 de Bs. 450,00 · Quedan Bs. 150,00).
+  * La pantalla `/trash` (Papelera) se encuentra en **Mis Movimientos** (botón superior derecho). Muestra la transacción con acciones individuales de `"Restaurar"` y `"Eliminar definitivamente"`.
 
-### Paso B: Prueba de Cuentas Compartidas (Grupos tipo Splitwise)
-* **Objetivo:** Validar la máquina de estados de confirmación bilateral de pagos descubierta en el código.
-* **Acción:**
-  * Ir a pestaña 5 (Cuentas compartidas: `[920, 2193]`).
-  * Crear un grupo de prueba (ej: *"Apartamento Test"*).
-  * Agregar un participante ficticio (por nombre sin cuenta Chekea).
-  * Cargar un gasto de $30 dividido 50/50.
-  * Simular el registro de un abono/pago de $15 y capturar la pantalla para comprobar el estado `"Pago enviado / Por confirmar"`.
+### Paso B: Prueba de Cuentas Compartidas (Grupos tipo Splitwise) — [COMPLETADO ✅]
+* **Objetivo:** Validar la máquina de estados y reglas de miembros.
+* **Resultado observado:**
+  * Se creó exitosamente el grupo `"Apartamento Test"`. Cada grupo genera un código de invitación único (ej: `APARTAME-AUMMWU`).
+  * **Regla de negocio descubierta:** Chekea NO admite participantes ficticios o "dummies". Solo permite buscar por username/correo a usuarios registrados en Chekea o compartir el enlace de invitación.
+  * Al intentar registrar un gasto con 1 solo miembro, la app bloquea con validación: `"Necesitas al menos 2 miembros para cargar un gasto."`
 
-### Paso C: Prueba de Compras a Crédito y Cuotas (Financiamiento tipo Cashea)
+### Paso C: Prueba de Compras a Crédito y Cuotas (Financiamiento tipo Cashea) — [COMPLETADO ✅]
 * **Objetivo:** Verificar la generación del cronograma de cuotas y el impacto de la inicial.
-* **Acción:**
-  * En Inicio -> Accesos Rápidos -> Tocar `Crédito` (`[924, 1186]`).
-  * Tocar *"Agregar compra"*.
-  * Cargar un monto total (ej: $100), inicial hoy de $40 (pagada desde la cuenta Banesco creada) y 3 cuotas quincenales de $20.
-  * Verificar si la inicial descuenta el saldo de Banesco y si las cuotas quedan programadas en el calendario de vencimientos con sus fechas.
+* **Resultado observado:**
+  * Se registró compra en USD de `$100,00` (Zapatos en Tienda Test) con inicial de `$40,00` y 3 cuotas quincenales (cada 14 días).
+  * **Regla de cobro de inicial:** Al colocar inicial > 0, exige `"Pagar desde"`. Se seleccionó `Banesco Prueba bi (VES)`. La app aplicó conversión inmediata a tasa BCV (899,27 VES/$), debitando `Bs. 35.970,82` de la cuenta y permitiendo saldo negativo (`Bs. -34.770,82`).
+  * Generó automáticamente el cronograma de amortización con 3 cuotas exactas de `$20,00` para las fechas: 23 nov (en 14 días), 07 dic (en 28 días) y 21 dic (en 42 días).
 
-### Paso D: Prueba de Tarjetas de Crédito
+### Paso D: Prueba de Tarjetas de Crédito — [COMPLETADO ✅]
 * **Objetivo:** Evaluar el flujo de deuda vs saldo.
-* **Acción:**
-  * En `/credit-purchases` -> pestaña `Tarjetas`.
-  * Agregar una tarjeta de crédito ficticia (Banesco / Mercantil, límite $500, corte día 15, pago día 30).
-  * Registrar un gasto pagado con tarjeta y comprobar que el balance general no baja, sino que sube la deuda de la tarjeta.
+* **Resultado observado:**
+  * Se creó la tarjeta de crédito `"Banesco Master"` con límite de `$500,00`, corte día 15 y pago día 30, pago mínimo 3% e interés mensual 3%.
+  * Se registró un gasto de `Bs. 150,00` pagado con dicha tarjeta.
+  * **Regla contable confirmada:** El balance general de cuentas no bajó (se mantuvo en `Bs. -34.770,82`). La deuda de la tarjeta subió a `Bs. 150,00` ($0,17), el disponible bajó a `Bs. 350,00` (30% usado) y se proyectó automáticamente `"Tu próximo pago"` para el 30 nov con un pago mínimo calculado de `Bs. 7,50` (5%).
 
 ### Paso E: Limpieza Final de Datos de Prueba (Opcional)
 * **Objetivo:** Dejar la cuenta de Derek limpia si el usuario lo desea.
 * **Acción:**
-  * Eliminar la cuenta `Banesco Prueba bi` desde `/accounts/detail`.
-  * Confirmar que al borrar la cuenta los movimientos asociados se limpien o queden archivados.
+  * Eliminar la cuenta `Banesco Prueba bi` desde `/accounts/detail`, el grupo `"Apartamento Test"`, la compra a crédito y la tarjeta `"Banesco Master"`.
 
 ---
 

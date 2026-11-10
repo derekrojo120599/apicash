@@ -236,4 +236,64 @@ Para llevar todas estas capacidades a **Apicash**, preservando el backend en Sup
 
 ---
 
+## 6. Hallazgos y Reglas de Negocio Validadas Dinámicamente (ADB en Vivo)
+
+A través de pruebas dinámicas sobre la build en producción (`com.chekea.chekea_mobile` v1.6.1 en Redmi Note 8 Pro), se corroboraron empíricamente las siguientes reglas de negocio:
+
+1. **Eliminación y Papelera (`/trash`):**
+   * Al borrar un movimiento, Chekea dispara un SnackBar con opción de reversa inmediata (`Deshacer`).
+   * Reactividad inmediata: el saldo de la cuenta se restituye al instante y el presupuesto se recalcula en tiempo real (p. ej. pasó de `EXCEDIDO` a `EN PLAN`).
+   * La papelera `/trash` está situada en la esquina superior de `Mis Movimientos` y ofrece opciones explícitas por ítem de `Restaurar` o `Eliminar definitivamente`.
+
+2. **Cuentas Compartidas:**
+   * Cada grupo genera un código de invitación unívoco (p. ej. `APARTAME-AUMMWU`).
+   * No permite participantes ficticios; los integrantes deben tener cuenta registrada en Chekea o ingresar mediante token.
+   * Restricción estricta de carga: bloquea el registro de gastos con 1 solo miembro bajo el toast `"Necesitas al menos 2 miembros para cargar un gasto"`.
+
+3. **Compras Financiadas a Crédito (tipo Cashea):**
+   * Soporta modalidad de inicial + cuotas periódicas (quincenales de 14 días o mensuales).
+   * Al pagar una inicial en divisa ($40) usando una cuenta en moneda local (VES), aplica la conversión al vuelo usando la tasa oficial del día y debita el monto total equivalente (`Bs. 35.970,82`), admitiendo saldo negativo por sobregiro.
+   * Genera la proyección automática de vencimientos en la sección de `Próximos Pagos` respetando los intervalos de 14 días.
+
+4. **Tarjetas de Crédito y Separación de Deuda:**
+   * Las tarjetas son entidades financieras independientes: un gasto asignado a una tarjeta de crédito **no altera el balance líquido general de cuentas**.
+   * Disminuye el crédito disponible de la tarjeta e incrementa la `Deuda Total`.
+   * Proyecta automáticamente `Tu próximo pago` acorde al día de pago configurado, calculando el `Pago mínimo` de forma reactiva.
+
+---
+
+## 7. Desglose Forense del Binario (Reverse Engineering a Nivel de Byte)
+
+Al extraer y desensamblar `libapp.so` (14.4 MB) y los assets del bundle (`base.apk` + `split_config.arm64_v8a.apk`), se descubrieron componentes de infraestructura y telemetría críticos que no estaban expuestos a nivel de interfaz de usuario:
+
+### 7.1 Backend Serverless de Precios P2P en Vivo
+* **Cloud Function descubierta:**  
+  `https://southamerica-east1-cheqea-app.cloudfunctions.net/binanceMarket`
+* **Payload en tiempo real (Auditado vía curl):**
+  * `prices`: Cotizaciones spot en tiempo real para `BTCUSDT`, `ETHUSDT`, `BNBUSDT`, `XRPUSDT`, `SOLUSDT`.
+  * `p2p`: Spread bid/ask real de Binance P2P para `USDT/VES`, `BTC/VES`, `ETH/VES` (ej. USDT Buy: `1056.65` / Sell: `1054.00`).
+  * `p2pMethods`: Diccionario maestro de pasarelas de pago admitidas para P2P por moneda (`VES` con 21 bancos/métodos nacionales como Pago Móvil, Banesco, BDV, Mercantil, Bancamiga; `USD` con 130 métodos como Zelle, Zinli, Wally, Banesco Panamá, Facebank; `EUR` y `COP`).
+  * **Implicación para Apicash:** Apicash puede implementar un scraper/mirror similar en una Edge Function de Supabase para obtener automáticamente el spread real y los métodos de pago P2P sin depender de APIs de terceros de pago.
+
+### 7.2 Rutas Ocultas de Desarrollo (`/dev/*`)
+El router de GoRouter en Flutter tiene compiladas rutas internas de testing e inyección de fallas que confirman las capacidades bajo el capó:
+* `/dev/fault-injector`: Inyector de fallas para simular caída de red, pérdida de Firebase Data Connect y timeouts de Cloud Functions.
+* `/dev/rates-inspector`: Inspección de micro-variaciones de spread cambiario en tiempo real.
+* `/dev/price-index`: Simulador de canasta básica de alimentos y tasa de inflación mensual.
+* `/dev/chekscore`: Simulador de escenarios y fases (`ChekscoreMockScenario`, `ChekscoreMockPhase`).
+* `/dev/haptics-lab`: Calibrador de vibración táctil para el teclado financiero.
+* `/dev/components-preview` y `/dev/empty-states`: Catálogo de estados vacíos y diseño atómico.
+
+### 7.3 Arquitectura de Home Widget (Android Glance & iOS WidgetKit)
+* Se detectaron los adaptadores nativos `home_widget` y `RateWidgetProvider` / `glance`.
+* Chekea mantiene un canal de comunicación nativo (`saveWidgetData` / `updateWidget`) que sincroniza en segundo plano el valor del dólar BCV, el USDT P2P y la brecha cambiaria para mostrar el widget en la pantalla de inicio del dispositivo sin necesidad de abrir la aplicación.
+
+### 7.4 Changelog Histórico y Decisiones de Arquitectura Internas
+A partir de `docs/notas-de-version.md` extraído de los assets compilados, se descubrieron los puntos de dolor y lecciones aprendidas de Chekea:
+* **Problema de Parseo de Montos (v1.4.2):** Al inicio tenían bugs donde 300 se guardaba como 30.000 o 1.500 como 1,5 debido a inconsistencias de separadores de miles/decimales (`.` vs `,`). Se solucionó unificando el control de monto y moneda en un único componente atómico.
+* **Separación de Deuda vs Liquidez (v1.2.3 y v1.4.1):** Tuvieron que corregir que las compras con tarjeta debitaban cuentas de banco erróneamente; migraron al modelo estricto donde una tarjeta de crédito **solo incrementa deuda** y solo las cuentas de banco poseen liquidez.
+* **Anti-Duplicidad de Importaciones Bancarias (v1.4.1):** En archivos CSV/TSV agregaron un hash por movimiento (fecha + monto + descripción) para evitar duplicar transacciones si una importación se interrumpe a la mitad.
+
+---
+
 *Fin del documento de auditoría técnica.*
