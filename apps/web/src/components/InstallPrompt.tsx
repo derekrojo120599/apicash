@@ -2,7 +2,7 @@
 
 import { SVGProps, useEffect, useState } from 'react'
 import { FadeIn, AnimatedButton } from '@/components/animations'
-import { X, MoreVertical } from 'lucide-react'
+import { X, MoreVertical, Smartphone, Sparkles } from 'lucide-react'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -67,12 +67,12 @@ export function InstallPrompt() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone
     if (isStandalone) return
 
-    // 3. Check if user already dismissed the prompt
-    const dismissed = localStorage.getItem('apicash-install-prompt')
+    // 3. Check if user already dismissed the prompt in this session or previously
+    const dismissed = localStorage.getItem('apicash-install-prompt-v2')
     if (dismissed) return
 
-    // Wait a brief moment before showing to not be too aggressive
-    const timer = setTimeout(() => setShow(true), 2000)
+    // Show after 1.5 seconds on initial entrance
+    const timer = setTimeout(() => setShow(true), 1500)
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
       clearTimeout(timer)
@@ -80,7 +80,7 @@ export function InstallPrompt() {
   }, [])
 
   const handleDismiss = () => {
-    localStorage.setItem('apicash-install-prompt', 'true')
+    localStorage.setItem('apicash-install-prompt-v2', 'true')
     setShow(false)
   }
 
@@ -98,100 +98,84 @@ export function InstallPrompt() {
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 dark:bg-slate-950/60 p-4 sm:p-6 backdrop-blur-sm transition-all">
-      <FadeIn className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 sm:p-6 backdrop-blur-md transition-all">
+      <FadeIn className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
         
-        {/* Decorative background circle */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary-500/10 dark:bg-primary-500/5 rounded-full blur-2xl" />
+        {/* Glow decorativo */}
+        <div className="absolute -top-16 -right-16 w-40 h-40 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex items-start justify-between mb-2 relative">
-          <div className="bg-primary-100 dark:bg-primary-900/30 p-2.5 rounded-xl mb-4 text-primary-600 dark:text-primary-400 inline-block">
-            <Download className="w-6 h-6" />
+        <div className="flex items-start justify-between mb-4 relative">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-100 dark:bg-emerald-950/50 p-3 rounded-2xl text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-200/50 dark:border-emerald-800/50">
+              <Smartphone className="w-7 h-7" />
+            </div>
+            <div>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 mb-1">
+                <Sparkles className="w-3 h-3" /> App Nativa Disponible
+              </span>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
+                ¡Lleva El Sencillo en tu móvil!
+              </h2>
+            </div>
           </div>
           <button 
             onClick={handleDismiss} 
-            className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 relative">
-          Instalar El Sencillo
-        </h2>
         
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 relative">
-          Para una experiencia inmersiva y rápida, instale la aplicación en su dispositivo. Ocupa un espacio mínimo.
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-5 relative leading-relaxed">
+          Disfruta de sincronización en tiempo real, notificaciones instantáneas y acceso offline instalando la aplicación nativa en tu dispositivo.
         </p>
 
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-6 border border-slate-100 dark:border-slate-800">
+        {/* Sección de descarga / instalación directa */}
+        <div className="space-y-3 mb-6 relative">
+          <a
+            href="https://github.com/derekrojo120599/apicash/releases/latest/download/apicash.apk"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleDismiss}
+            className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2.5 text-sm shadow-lg shadow-emerald-950/20 active:scale-[0.98] transition-all"
+          >
+            <Download className="w-5 h-5" />
+            <span>Descargar APK Nativa (Android)</span>
+          </a>
+
           {platform === 'ios' && (
-            <div className="flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
-              <div className="flex items-center gap-3">
-                <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
-                  <Share className="w-4 h-4 text-blue-500" />
-                </div>
-                <span>1. Pulse el botón <strong>Compartir</strong> en la barra inferior.</span>
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 space-y-2">
+              <p className="font-semibold text-slate-800 dark:text-slate-200">En iPhone / iPad:</p>
+              <div className="flex items-center gap-2.5">
+                <Share className="w-4 h-4 text-blue-500 shrink-0" />
+                <span>1. Toca <strong>Compartir</strong> en Safari</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
-                  <PlusSquare className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                </div>
-                <span>2. Seleccione <strong>Añadir a pantalla de inicio</strong>.</span>
+              <div className="flex items-center gap-2.5">
+                <PlusSquare className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>2. Elige <strong>Añadir a pantalla de inicio</strong></span>
               </div>
             </div>
           )}
 
-          {platform === 'android' && (
-            <div className="flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
-              <a
-                href="https://github.com/derekrojo120599/apicash/releases/latest/download/apicash.apk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 text-xs shadow-md shadow-emerald-950/20 transition-all"
-              >
-                <Download className="w-4 h-4" />
-                <span>Descargar APK Nativa (.apk)</span>
-              </a>
-              <div className="flex items-center gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
-                <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
-                  <MoreVertical className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                </div>
-                <span className="text-xs">O instala como PWA: Menú (⋮) &gt; <strong>Instalar aplicación</strong></span>
-              </div>
-            </div>
-          )}
-
-          {platform === 'desktop' && (
-            <div className="flex flex-col gap-3 text-sm text-slate-700 dark:text-slate-300">
-              <div className="flex items-center gap-3">
-                <div className="bg-white dark:bg-slate-700 p-1.5 rounded-lg shadow-sm">
-                  <MonitorDown className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                </div>
-                <span>Haga clic en el <strong>icono de instalar</strong> en la barra de direcciones.</span>
-              </div>
-            </div>
+          {deferredPrompt && (
+            <button
+              onClick={handleInstallClick}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium text-xs flex items-center justify-center gap-2 transition-colors"
+            >
+              <MonitorDown className="w-4 h-4" />
+              <span>O instalar versión Web Ligera (PWA)</span>
+            </button>
           )}
         </div>
 
-        <div className="flex gap-3 relative">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60 relative">
           <button 
             onClick={handleDismiss}
-            className="flex-1 py-2.5 px-4 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="py-2 px-4 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            Más tarde
+            Continuar en la Web
           </button>
-          
-          {/* Render direct install button if native prompt is supported */}
-          {deferredPrompt ? (
-            <AnimatedButton onClick={handleInstallClick} className="flex-1">
-              Instalar ahora
-            </AnimatedButton>
-          ) : (
-            <AnimatedButton onClick={handleDismiss} className="flex-1">
-              Entendido
-            </AnimatedButton>
-          )}
         </div>
       </FadeIn>
     </div>
