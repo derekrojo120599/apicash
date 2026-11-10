@@ -73,13 +73,13 @@ export function useTransacciones(month: Date) {
           cuentas!cuenta_id(nombre, moneda),
           categorias(nombre, icono, tipo)
         `)
-        .is('deleted_at', null)
         .gte('fecha', startOfMonth)
         .lte('fecha', endOfMonth)
         .order('fecha', { ascending: false })
       
       if (error) throw error
-      return (data ?? []) as unknown as Transaccion[]
+      // Filter out deleted_at in memory if present in schema, without breaking if column is not yet migrated
+      return ((data ?? []) as unknown as Transaccion[]).filter(tx => !tx.deleted_at)
     }
   })
 }
@@ -97,12 +97,11 @@ export function useUltimasTransacciones(limit: number = 5) {
           cuentas!cuenta_id(nombre, moneda),
           categorias(nombre, icono, tipo)
         `)
-        .is('deleted_at', null)
         .order('fecha', { ascending: false })
         .limit(limit)
 
       if (error) throw error
-      return (data ?? []) as unknown as Transaccion[]
+      return ((data ?? []) as unknown as Transaccion[]).filter(tx => !tx.deleted_at)
     }
   })
 }
