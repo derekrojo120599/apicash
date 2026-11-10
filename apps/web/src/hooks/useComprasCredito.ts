@@ -41,7 +41,10 @@ export function useComprasCredito() {
         `)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        if (error.code === '42P01') return [] // Relation does not exist yet
+        throw error
+      }
       return (data ?? []) as CompraCredito[]
     }
   })
