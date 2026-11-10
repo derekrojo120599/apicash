@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
 import { ArdillaMascot } from '../components/ArdillaMascot';
 import { formatMoney, parsearComprobanteTexto } from '@apicash/shared';
@@ -48,6 +49,7 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
         mediaTypes: ['images'],
         allowsEditing: true,
         quality: 0.8,
+        base64: true,
       });
 
       if (result.canceled || !result.assets || result.assets.length === 0) {
@@ -55,43 +57,55 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
       }
 
       const selectedUri = result.assets[0].uri;
+      const base64Data = result.assets[0].base64;
       setImageUri(selectedUri);
       setProcesando(true);
 
-      // Análisis y extracción estructurada con el parser inteligente
+      try {
+        // Intentar invocar Edge Function en Supabase si hay base64
+        if (base64Data) {
+          const { data: edgeData, error: edgeErr } = await supabase.functions.invoke('analizar-comprobante', {
+            body: { imageBase64: base64Data }
+          });
+
+          if (!edgeErr && edgeData?.data && Number(edgeData.data.monto) > 0) {
+            const d = edgeData.data;
+            setComercio(d.beneficiario || 'Comercio / Destinatario');
+            setReferencia(d.referencia || 'S/REF');
+            setMonto(String(d.monto));
+            setMoneda(d.moneda || 'VES');
+            setFecha(d.fecha || new Date().toLocaleDateString('es-ES'));
+            setCategoriaSugerida(d.categoria || 'Gastos Generales');
+            setProcesando(false);
+            setComprobanteListo(true);
+
+            Alert.alert(
+              '¡Comprobante Analizado con IA!',
+              `Destino: ${d.beneficiario}\nMonto: ${d.moneda === 'USD' ? '$' : 'Bs. '}${d.monto}\nRef: ${d.referencia}`
+            );
+            return;
+          }
+        }
+      } catch (errEdge) {
+        console.warn('Edge function no disponible, pasando a fallback:', errEdge);
+      }
+
+      // Si no hay respuesta de Edge Function, permitir ingresar los datos verificándolos con la foto
       setTimeout(() => {
-        // Texto exacto reconocido del comprobante real subido por el usuario
-        const textoDetectado = `
-          Comprobante de operación
-          PagomóvilBDV Personas
-
-          1.792,24 Bs
-
-          Fecha: 06/11/2026
-          Operación: 007929493178
-          Identificación: 07053153
-          Origen: 0102****3688
-          Destino: 04264767490
-          Banco: 0102 - BANCO DE VENEZUELA
-          Concepto: pagp
-        `;
-
-        const parsed = parsearComprobanteTexto(textoDetectado);
-
-        setComercio(`Pago Móvil BDV (${parsed.bancoDestino || 'Banco de Venezuela'})`);
-        setReferencia(parsed.referencia);
-        setMonto(parsed.monto.toString());
-        setMoneda(parsed.moneda);
-        setFecha(parsed.fecha || '06/11/2026');
-        setCategoriaSugerida(parsed.categoriaSugerida);
+        setComercio('Comercio o Destinatario');
+        setReferencia('');
+        setMonto('');
+        setMoneda('VES');
+        setFecha(new Date().toLocaleDateString('es-ES'));
+        setCategoriaSugerida('Gastos Generales');
         setProcesando(false);
         setComprobanteListo(true);
 
         Alert.alert(
-          '¡Comprobante Analizado!',
-          `Banco Origen: Banco de Venezuela\nBanco Destino: 0102 - BANCO DE VENEZUELA\nMonto: Bs. ${parsed.monto}\nRef: ${parsed.referencia}`
+          'Captura Cargada',
+          'Toca la imagen arriba para ver tu comprobante en grande y verificar o ajustar el monto y referencia.'
         );
-      }, 700);
+      }, 600);
     } catch (err: any) {
       setProcesando(false);
       Alert.alert('Error', err.message || 'No se pudo abrir la galería de fotos.');
