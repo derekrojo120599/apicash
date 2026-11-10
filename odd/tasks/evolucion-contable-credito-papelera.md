@@ -25,6 +25,7 @@ S7: "Cuentas Compartidas y Gastos Grupales (Splitwise bilateral): tablas en Supa
 - [x] T9: Implementar tipos compartidos y hooks de React Query para Grupos Compartidos (`useGruposCompartidos`, etc.). (Route: inline)
 - [x] T10: Implementar la vista interactiva `/compartidas` con balance de grupo, quién debe a quién, registro de gastos y confirmación bilateral de pagos. (Route: inline)
 - [x] T11: Paridad Mobile: incorporar pantallas `CreditoScreen` y `CompartidasScreen` en React Native (`apps/mobile`) y widget de brecha en calculadora móvil. (Route: inline)
+- [x] T12: Paridad UI/UX Nativa Mobile: Píldora flotante inferior (`BottomFloatingBar`), BottomSheet de acciones rápidas (`QuickActionsSheet`) y teclado financiero táctil embebido (`FinancialKeypad`). (Route: inline)
 
 ## Log
 L1: Usuario solicita: "vamos con todo, primero commitea, coloca un titulo facil de recordar y luego si vamos a darle con todo en la implementacion de las nuevas mejoras"
@@ -36,3 +37,4 @@ L6: Vista de Papelera /trash creada e integrada en el flujo principal de Transac
 L7: Tests automáticos en Vitest pasando al 100% (39/39) y build de producción de Next.js compilado exitosamente.
 L8: Usuario autoriza continuar con los Puntos 1 y 2: Monitor de Brecha Cambiaria e Inteligencia de Ahorro + Cuentas Compartidas Bilaterales. Specs S6-S7 y Tasks T6-T10 completadas con 44/44 tests pasando y 23 rutas generadas.
 L9: T11 completado: Paridad 100% móvil lograda con CreditoScreen (cuotas Cashea + tarjetas), CompartidasScreen (grupos con código de invitación y pagos bilaterales) y monitor de brecha en CalculadoraScreen. Compilación TypeScript nativa limpia en Expo.
+L10: T12 completado: Replicada la experiencia táctil idéntica de Chekea en React Native con la píldora flotante inferior (5 botones con botón circular elevado +), BottomSheet interactivo "¿Qué quieres agregar?" y teclado financiero embebido con respuesta háptica.

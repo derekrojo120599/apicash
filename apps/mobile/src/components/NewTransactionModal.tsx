@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 import { formatMoney, previewComision, ComisionConfig } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { AnimatedSelect } from './AnimatedSelect';
+import { FinancialKeypad } from './FinancialKeypad';
 import { triggerSuccessNotification } from '../lib/notifications';
 import { ApicashLogo } from './ApicashLogo';
 
@@ -60,6 +61,7 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
   const [tasaActual, setTasaActual] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showKeypad, setShowKeypad] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -508,10 +510,18 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
               </>
             ) : null}
 
-            {/* Monto */}
-            <Text style={[styles.label, !isDarkMode && styles.textDark]}>
-              Monto ({selectedCuenta?.moneda || 'USD'})
-            </Text>
+            {/* Monto con Toggle de Teclado Financiero estilo Chekea */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={[styles.label, !isDarkMode && styles.textDark]}>
+                Monto ({selectedCuenta?.moneda || 'USD'})
+              </Text>
+              <TouchableOpacity onPress={() => setShowKeypad(prev => !prev)}>
+                <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                  {showKeypad ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={[styles.inputWrap, !isDarkMode && styles.inputLight]}>
               <Text style={styles.currencyPrefix}>
                 {selectedCuenta?.moneda === 'USD' ? '$' : 'Bs.'}
@@ -521,10 +531,22 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
                 placeholder="0.00"
                 placeholderTextColor="#64748b"
                 keyboardType="decimal-pad"
+                showSoftInputOnFocus={!showKeypad}
                 value={monto}
                 onChangeText={setMonto}
               />
             </View>
+
+            {showKeypad && (
+              <View style={{ marginVertical: 8 }}>
+                <FinancialKeypad
+                  value={monto}
+                  onChangeValue={setMonto}
+                  onConfirm={() => setShowKeypad(false)}
+                  confirmLabel="LISTO"
+                />
+              </View>
+            )}
 
             {/* Descripción */}
             <Text style={[styles.label, !isDarkMode && styles.textDark]}>Descripción</Text>

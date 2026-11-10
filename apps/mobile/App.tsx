@@ -20,6 +20,9 @@ import { CompartidasScreen } from './src/screens/CompartidasScreen';
 import { GuiaScreen } from './src/screens/GuiaScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
 import { SidebarDrawer, ScreenTab } from './src/components/SidebarDrawer';
+import { BottomFloatingBar } from './src/components/BottomFloatingBar';
+import { QuickActionsSheet } from './src/components/QuickActionsSheet';
+import { NewTransactionModal } from './src/components/NewTransactionModal';
 import { AppUpdateModal } from './src/components/AppUpdateModal';
 
 function MainApp() {
@@ -28,6 +31,8 @@ function MainApp() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState<ScreenTab>('dashboard');
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
 
   useEffect(() => {
     initNotificationsPermission().catch(() => {});
@@ -132,6 +137,36 @@ function MainApp() {
       {session ? (
         <>
           {renderScreen()}
+
+          {/* Píldora Flotante Inferior estilo Chekea */}
+          <BottomFloatingBar
+            currentTab={currentTab}
+            onSelectTab={setCurrentTab}
+            onOpenQuickActions={() => setQuickActionsOpen(true)}
+          />
+
+          {/* Bottom Sheet de Acciones Rápidas (+) */}
+          <QuickActionsSheet
+            visible={quickActionsOpen}
+            onClose={() => setQuickActionsOpen(false)}
+            onSelectAction={(action) => {
+              if (action === 'transaccion') {
+                setTransactionModalOpen(true);
+              } else if (action === 'credito') {
+                setCurrentTab('credito');
+              } else if (action === 'compartidas') {
+                setCurrentTab('compartidas');
+              } else if (action === 'cuentas') {
+                setCurrentTab('cuentas');
+              }
+            }}
+          />
+
+          <NewTransactionModal
+            visible={transactionModalOpen}
+            onClose={() => setTransactionModalOpen(false)}
+            onSuccess={() => setTransactionModalOpen(false)}
+          />
 
           <SidebarDrawer
             visible={sidebarOpen}
