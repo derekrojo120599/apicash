@@ -19,6 +19,8 @@ import { FadeIn, AnimatedNumber, AnimatedScalePressable } from '../components/An
 import { useMobileRealtime } from '../context/RealtimeContext';
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
+import { ChekeaTopBar } from '../components/ChekeaTopBar';
+import { QuickActionsGrid } from '../components/QuickActionsGrid';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface DashboardScreenProps {
@@ -195,7 +197,12 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
 
   return (
     <View style={[styles.safeArea, !isDarkMode && { backgroundColor: '#f8fafc' }]}>
-      <TopBar title="El Sencillo" onOpenMenu={onOpenMenu} />
+      <ChekeaTopBar
+        onOpenMenu={onOpenMenu}
+        onOpenProfile={() => onNavigateTab && onNavigateTab('perfil')}
+        onOpenSupport={() => onNavigateTab && onNavigateTab('guia')}
+        onOpenNotifications={() => onNavigateTab && onNavigateTab('movimientos')}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -210,194 +217,57 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           />
         }
       >
-        {/* Header Resumen + Botón Nuevo Movimiento (Igual a la Web con FadeIn) */}
-        <FadeIn delay={0}>
-          <View style={styles.headerTitleRow}>
-            <View>
-              <Text style={[styles.pageTitle, !isDarkMode && { color: '#0f172a' }]}>
-                Resumen Financiero
+        {/* Tarjeta de Balance Total estilo Chekea */}
+        <FadeIn delay={50}>
+          <View style={[styles.chekeaCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
+            <View style={styles.chekeaCardTop}>
+              <Text style={styles.chekeaCardSub}>Balance Total</Text>
+              <Text style={[styles.chekeaCardCurrencies]}>
+                {balanceNeto?.tasa_usada ? `Bs. ${formatMoney(balanceNeto.tasa_usada)} / $` : 'USD / VES'}
               </Text>
-              <Text style={styles.pageSubtitle}>Control de finanzas en USD y VES</Text>
             </View>
-            <AnimatedScalePressable
-              style={[styles.newMoveBtn, { backgroundColor: colors.p600 }]}
-              onPress={() => setModalOpen(true)}
-            >
-              <Ionicons name="add" size={18} color="#ffffff" />
-              <Text style={styles.newMoveBtnText}>Nuevo movimiento</Text>
-            </AnimatedScalePressable>
-          </View>
-        </FadeIn>
 
-        {/* Tarjeta de Balance Neto con AnimatedNumber y FadeIn igual a la Web */}
-        <FadeIn delay={100}>
-          <LinearGradient
-            colors={[colors.p600, colors.p800]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientCard}
-          >
-            <View style={styles.watermarkLogo}>
-              <ApicashLogo size={140} color="rgba(255, 255, 255, 0.12)" />
-            </View>
-            <Text style={[styles.netBalanceLabel, { color: colors.p100 }]}>Balance Neto (USD)</Text>
             <AnimatedNumber
               value={balanceNeto?.balance_neto ?? 0}
               formatter={(v) => `$${formatMoney(v)}`}
-              duration={1500}
-              style={styles.netBalanceAmount}
+              duration={1200}
+              style={[styles.chekeaMainBalance, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}
             />
 
-            <View style={styles.whiteDivider} />
-
-            <View style={styles.dualCurrencyGrid}>
-              <View style={styles.dualCol}>
-                <Text style={[styles.dualLabel, { color: colors.p200 }]}>Total USD Fijo</Text>
-                <AnimatedNumber
-                  value={balanceNeto?.usd_fijo ?? 0}
-                  formatter={(v) => `$${formatMoney(v)}`}
-                  duration={1200}
-                  delay={200}
-                  style={styles.dualAmount}
-                />
-              </View>
-              <View style={styles.dualCol}>
-                <Text style={[styles.dualLabel, { color: colors.p200 }]}>Total VES</Text>
-                <AnimatedNumber
-                  value={balanceNeto?.ves_total ?? 0}
-                  formatter={(v) => `Bs. ${formatMoney(v)}`}
-                  duration={1200}
-                  delay={300}
-                  style={styles.dualAmount}
-                />
-                {balanceNeto?.tasa_usada ? (
-                  <Text style={[styles.dualSubtext, { color: colors.p100 }]}>
-                    ≈ ${formatMoney(balanceNeto.ves_en_usd)} a tasa {formatMoney(balanceNeto.tasa_usada)}
-                  </Text>
-                ) : null}
-              </View>
-            </View>
-          </LinearGradient>
+            {balanceNeto?.ves_total ? (
+              <Text style={styles.chekeaSecondaryBalance}>
+                ≈ Bs. {formatMoney(balanceNeto.ves_total)}
+              </Text>
+            ) : null}
+          </View>
         </FadeIn>
 
-        {/* Grid 2x2 de métricas mensuales con Stagger FadeIn y AnimatedNumber */}
-        <View style={styles.metricsGrid}>
-          {/* Ingresos */}
-          <FadeIn delay={150} style={styles.metricCardWrap}>
-            <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
-              <View style={styles.metricHeader}>
-                <View
-                  style={[
-                    styles.metricIconWrap,
-                    { backgroundColor: isDarkMode ? `${colors.p500}25` : colors.p100 },
-                  ]}
-                >
-                  <Ionicons
-                    name="trending-up"
-                    size={18}
-                    color={isDarkMode ? colors.p400 : colors.p600}
-                  />
-                </View>
-                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
-                  Ingresos del mes
-                </Text>
-              </View>
-              <AnimatedNumber
-                value={summary.ingresos}
-                formatter={(v) => `$${formatMoney(v)}`}
-                duration={1200}
-                style={[styles.metricValue, !isDarkMode && { color: '#0f172a' }]}
-              />
+        {/* Bloque Ingresos y Gastos estilo Chekea (Dos cajas paralelas) */}
+        <FadeIn delay={100}>
+          <View style={styles.ingresosGastosRow}>
+            <View style={[styles.ingresoBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
+              <Text style={styles.ingresoLabel}>Ingresos</Text>
+              <Text style={[styles.ingresoValue, { color: '#10b981' }]}>
+                +${formatMoney(summary.ingresos)}
+              </Text>
             </View>
-          </FadeIn>
 
-          {/* Gastos */}
-          <FadeIn delay={220} style={styles.metricCardWrap}>
-            <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
-              <View style={styles.metricHeader}>
-                <View
-                  style={[
-                    styles.metricIconWrap,
-                    { backgroundColor: isDarkMode ? '#ef444425' : '#fee2e2' },
-                  ]}
-                >
-                  <Ionicons
-                    name="trending-down"
-                    size={18}
-                    color={isDarkMode ? '#f87171' : '#dc2626'}
-                  />
-                </View>
-                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
-                  Gastos del mes
-                </Text>
-              </View>
-              <AnimatedNumber
-                value={summary.gastos}
-                formatter={(v) => `$${formatMoney(v)}`}
-                duration={1200}
-                style={[styles.metricValue, !isDarkMode && { color: '#0f172a' }]}
-              />
+            <View style={[styles.gastoBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
+              <Text style={styles.gastoLabel}>Gastos</Text>
+              <Text style={[styles.gastoValue, { color: '#ef4444' }]}>
+                -${formatMoney(summary.gastos)}
+              </Text>
             </View>
-          </FadeIn>
+          </View>
+        </FadeIn>
 
-          {/* Ahorros */}
-          <FadeIn delay={290} style={styles.metricCardWrap}>
-            <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
-              <View style={styles.metricHeader}>
-                <View
-                  style={[
-                    styles.metricIconWrap,
-                    { backgroundColor: isDarkMode ? '#3b82f625' : '#dbeafe' },
-                  ]}
-                >
-                  <Ionicons
-                    name="wallet-outline"
-                    size={18}
-                    color={isDarkMode ? '#60a5fa' : '#2563eb'}
-                  />
-                </View>
-                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
-                  Ahorros
-                </Text>
-              </View>
-              <AnimatedNumber
-                value={summary.ahorros}
-                formatter={(v) => `$${formatMoney(v)}`}
-                duration={1200}
-                style={[styles.metricValue, !isDarkMode && { color: '#0f172a' }]}
-              />
-            </View>
-          </FadeIn>
-
-          {/* Deuda */}
-          <FadeIn delay={360} style={styles.metricCardWrap}>
-            <View style={[styles.metricCard, !isDarkMode && styles.cardLight]}>
-              <View style={styles.metricHeader}>
-                <View
-                  style={[
-                    styles.metricIconWrap,
-                    { backgroundColor: isDarkMode ? '#f9731625' : '#ffedd5' },
-                  ]}
-                >
-                  <Ionicons
-                    name="receipt-outline"
-                    size={18}
-                    color={isDarkMode ? '#fb923c' : '#ea580c'}
-                  />
-                </View>
-                <Text style={[styles.metricLabel, !isDarkMode && { color: '#64748b' }]}>
-                  Deuda actual
-                </Text>
-              </View>
-              <AnimatedNumber
-                value={summary.deuda}
-                formatter={(v) => `$${formatMoney(v)}`}
-                duration={1200}
-                style={[styles.metricValue, !isDarkMode && { color: '#0f172a' }]}
-              />
-            </View>
-          </FadeIn>
-        </View>
+        {/* Grid de 8 Accesos Rápidos estilo Chekea (Editar, Escanear, Calculadora, Crédito, Préstamos, Categorías, Mover, Recurrentes) */}
+        <FadeIn delay={150}>
+          <QuickActionsGrid
+            onNavigateTab={(tab) => onNavigateTab && onNavigateTab(tab)}
+            onOpenNewTransaction={() => setModalOpen(true)}
+          />
+        </FadeIn>
 
         {/* Transacciones Recientes */}
         <View style={styles.sectionHeader}>
@@ -687,7 +557,77 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 100,
+  },
+  chekeaCard: {
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  chekeaCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  chekeaCardSub: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  chekeaCardCurrencies: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  chekeaMainBalance: {
+    fontSize: 34,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  chekeaSecondaryBalance: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  ingresosGastosRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  ingresoBox: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  ingresoLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  ingresoValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  gastoBox: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  gastoLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '700',
+  },
+  gastoValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    marginTop: 4,
   },
   headerTitleRow: {
     flexDirection: 'row',
