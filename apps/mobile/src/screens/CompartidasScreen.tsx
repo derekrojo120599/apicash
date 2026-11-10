@@ -17,6 +17,7 @@ import { formatMoney, type Moneda } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
+import { ArdillaMascot } from '../components/ArdillaMascot';
 
 export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
@@ -178,7 +179,7 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
             <ActivityIndicator size="small" color={colors.p500} style={{ marginVertical: 20 }} />
           ) : grupos.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
-              <Ionicons name="people-outline" size={36} color="#94a3b8" />
+              <ArdillaMascot mood="searching" size={68} />
               <Text style={styles.emptyTitle}>Sin grupos todavía</Text>
               <Text style={styles.emptyText}>
                 Crea un grupo para dividir gastos o únete a uno mediante su código de invitación.

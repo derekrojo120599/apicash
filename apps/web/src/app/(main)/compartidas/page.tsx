@@ -34,6 +34,7 @@ import {
   AnimatedButton,
   AnimatedNumber
 } from '@/components/animations'
+import { ArdillaMascot } from '@/components/ArdillaMascot'
 
 export const dynamic = 'force-dynamic'
 
@@ -367,8 +368,8 @@ export default function CompartidasPage() {
         {loadingGrupos ? (
           <div className="p-8 text-center text-slate-400">Cargando grupos compartidos...</div>
         ) : !grupos || grupos.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-3">
-            <Users className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto" />
+          <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-3 flex flex-col items-center">
+            <ArdillaMascot mood="searching" size={80} />
             <h3 className="font-bold text-slate-700 dark:text-slate-200 text-lg">Sin grupos todavía</h3>
             <p className="text-slate-400 text-sm max-w-sm mx-auto">
               Crea un espacio para dividir gastos compartidos o únete al grupo de un amigo mediante su código.

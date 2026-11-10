@@ -18,6 +18,7 @@ import { NewTransactionModal } from '../components/NewTransactionModal';
 import { FadeIn, AnimatedNumber, AnimatedScalePressable } from '../components/Animations';
 import { useMobileRealtime } from '../context/RealtimeContext';
 import { ApicashLogo } from '../components/ApicashLogo';
+import { ArdillaMascot } from '../components/ArdillaMascot';
 import { TopBar } from '../components/TopBar';
 import { ChekeaTopBar } from '../components/ChekeaTopBar';
 import { QuickActionsGrid } from '../components/QuickActionsGrid';
@@ -217,12 +218,20 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
           />
         }
       >
-        {/* Tarjeta de Balance Total estilo Chekea */}
-        <FadeIn delay={50}>
-          <View style={[styles.chekeaCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
+          {/* Tarjeta de Balance Total con paleta oficial Apicash */}
+          <LinearGradient
+            colors={[colors.p600, colors.p800]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.chekeaCardGradient}
+          >
+            <View style={styles.watermarkArdilla}>
+              <ArdillaMascot mood="saving" size={120} />
+            </View>
+
             <View style={styles.chekeaCardTop}>
-              <Text style={styles.chekeaCardSub}>Balance Total</Text>
-              <Text style={[styles.chekeaCardCurrencies]}>
+              <Text style={[styles.chekeaCardSub, { color: colors.p100 }]}>Balance Total</Text>
+              <Text style={[styles.chekeaCardCurrencies, { color: colors.p200 }]}>
                 {balanceNeto?.tasa_usada ? `Bs. ${formatMoney(balanceNeto.tasa_usada)} / $` : 'USD / VES'}
               </Text>
             </View>
@@ -231,16 +240,15 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
               value={balanceNeto?.balance_neto ?? 0}
               formatter={(v) => `$${formatMoney(v)}`}
               duration={1200}
-              style={[styles.chekeaMainBalance, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}
+              style={[styles.chekeaMainBalance, { color: '#ffffff' }]}
             />
 
             {balanceNeto?.ves_total ? (
-              <Text style={styles.chekeaSecondaryBalance}>
+              <Text style={[styles.chekeaSecondaryBalance, { color: colors.p100 }]}>
                 ≈ Bs. {formatMoney(balanceNeto.ves_total)}
               </Text>
             ) : null}
-          </View>
-        </FadeIn>
+          </LinearGradient>
 
         {/* Bloque Ingresos y Gastos estilo Chekea (Dos cajas paralelas) */}
         <FadeIn delay={100}>
@@ -286,10 +294,10 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
         <View style={[styles.transactionsContainer, !isDarkMode && styles.cardLight]}>
           {transactions.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="swap-horizontal" size={40} color="#334155" />
+              <ArdillaMascot mood="searching" size={68} />
               <Text style={styles.emptyTitle}>Aún no hay transacciones para mostrar.</Text>
               <Text style={styles.emptySubtitle}>
-                Registre el primer movimiento para visualizar el historial aquí.
+                Registra el primer movimiento para visualizar el historial aquí.
               </Text>
             </View>
           ) : (
@@ -559,11 +567,18 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
-  chekeaCard: {
-    padding: 20,
-    borderRadius: 24,
-    borderWidth: 1,
-    marginBottom: 12,
+  chekeaCardGradient: {
+    padding: 22,
+    borderRadius: 28,
+    marginBottom: 14,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  watermarkArdilla: {
+    position: 'absolute',
+    right: -10,
+    bottom: -15,
+    opacity: 0.18,
   },
   chekeaCardTop: {
     flexDirection: 'row',

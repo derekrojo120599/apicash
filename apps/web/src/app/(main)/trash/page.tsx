@@ -11,6 +11,7 @@ import {
 import { useToast } from '@/hooks/useToast'
 import { ArrowLeft, Trash2, RotateCcw, AlertTriangle, Inbox } from 'lucide-react'
 import { FadeIn, StaggerContainer, AnimatedCard } from '@/components/animations'
+import { ArdillaMascot } from '@/components/ArdillaMascot'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,8 +102,8 @@ export default function TrashPage() {
           <div className="p-12 text-center text-slate-400">Cargando elementos en papelera...</div>
         ) : !transacciones || transacciones.length === 0 ? (
           <FadeIn delay={200}>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800">
-              <Inbox className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800 flex flex-col items-center">
+              <ArdillaMascot mood="searching" size={80} className="mb-3" />
               <h3 className="font-semibold text-slate-700 dark:text-slate-200 text-lg">La papelera está vacía</h3>
               <p className="text-slate-400 text-sm mt-1 max-w-sm mx-auto">
                 No tienes transacciones eliminadas pendientes de restaurar o purgar.

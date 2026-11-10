@@ -20,6 +20,7 @@ import {
   type Moneda
 } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
+import { ArdillaMascot } from '../components/ArdillaMascot';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
 
@@ -266,7 +267,7 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
               <ActivityIndicator size="small" color={colors.p500} style={{ marginVertical: 20 }} />
             ) : compras.length === 0 ? (
               <View style={[styles.emptyCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
-                <Ionicons name="bag-handle-outline" size={32} color="#94a3b8" />
+                <ArdillaMascot mood="saving" size={64} />
                 <Text style={styles.emptyText}>No tienes compras a crédito registradas.</Text>
               </View>
             ) : (
@@ -339,7 +340,7 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
               <ActivityIndicator size="small" color={colors.p500} style={{ marginVertical: 20 }} />
             ) : tarjetas.length === 0 ? (
               <View style={[styles.emptyCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
-                <Ionicons name="card-outline" size={32} color="#94a3b8" />
+                <ArdillaMascot mood="zen" size={64} />
                 <Text style={styles.emptyText}>No tienes tarjetas de crédito registradas.</Text>
               </View>
             ) : (
