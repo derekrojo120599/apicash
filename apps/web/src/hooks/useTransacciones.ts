@@ -181,9 +181,11 @@ export function useCrearTransaccion() {
     },
     onMutate: async (newTx: CreateTransactionParams) => {
       // 1. Cancel outgoing refetches to prevent race conditions
-      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
-      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
-      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: ['transacciones'] }),
+        queryClient.cancelQueries({ queryKey: ['cuentas'] }),
+        queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+      ])
 
       // 2. Snapshot previous state for rollback
       const previousCuentas = queryClient.getQueryData<Cuenta[]>(['cuentas'])
@@ -294,9 +296,11 @@ export function useCrearTransferencia() {
       return data
     },
     onMutate: async ({ cuenta_origen_id, cuenta_destino_id, monto, moneda, descripcion, tasa_cambio }: CreateTransferParams) => {
-      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
-      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
-      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: ['transacciones'] }),
+        queryClient.cancelQueries({ queryKey: ['cuentas'] }),
+        queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
+      ])
 
       const previousCuentas = queryClient.getQueryData<Cuenta[]>(['cuentas'])
       const sourceAccount = previousCuentas?.find(c => c.id === cuenta_origen_id)
@@ -410,9 +414,11 @@ export function useAnularTransaccion() {
       return data as Transaccion
     },
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
-      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
-      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: ['transacciones'] }),
+        queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] }),
+        queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      ])
 
       // Snapshot for rollback
       const previousTransacciones = queryClient.getQueriesData<Transaccion[]>({ queryKey: ['transacciones'] })
@@ -499,9 +505,11 @@ export function useRestaurarTransaccion() {
       return data as Transaccion
     },
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ['transacciones'] })
-      await queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] })
-      await queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: ['transacciones'] }),
+        queryClient.cancelQueries({ queryKey: ['ultimasTransacciones'] }),
+        queryClient.cancelQueries({ queryKey: ['cuentas'] })
+      ])
 
       const previousTransacciones = queryClient.getQueriesData<Transaccion[]>({ queryKey: ['transacciones'] })
       const previousUltimas = queryClient.getQueriesData<Transaccion[]>({ queryKey: ['ultimasTransacciones'] })

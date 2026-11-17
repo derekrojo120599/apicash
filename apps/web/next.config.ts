@@ -19,9 +19,15 @@ const withPWA = withPWAInit({
   },
 });
 
+// Build-identifiable version: package version + build date, so each deploy
+// shows a distinct value in Perfil without manual bumps.
+const appVersion = `${process.env.npm_package_version ?? "0.0.0"} - build ${new Date()
+  .toISOString()
+  .slice(0, 10)}`;
+
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version,
+    NEXT_PUBLIC_APP_VERSION: appVersion,
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts"],
