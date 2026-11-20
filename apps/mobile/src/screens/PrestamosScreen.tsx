@@ -16,7 +16,6 @@ import { formatMoney, type Moneda } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 
 export function PrestamosScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
@@ -154,7 +153,6 @@ export function PrestamosScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
             <ActivityIndicator size="small" color={colors.p500} style={{ marginVertical: 20 }} />
           ) : prestamos.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
-              <ArdillaMascot mood="zen" size={68} />
               <Text style={styles.emptyTitle}>Al día sin préstamos</Text>
               <Text style={styles.emptyText}>
                 {activeTab === 'otorgados' ? 'No tienes préstamos pendientes por cobrar.' : 'No tienes deudas con personas.'}

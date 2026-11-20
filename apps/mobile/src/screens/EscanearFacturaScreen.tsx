@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 import { formatMoney } from '@apicash/shared';
 import { TopBar } from '../components/TopBar';
 
@@ -64,7 +63,6 @@ export function EscanearFacturaScreen({ onBack }: { onBack: () => void }) {
               <View style={[styles.corner, styles.cornerBL, { borderColor: colors.p500 }]} />
               <View style={[styles.corner, styles.cornerBR, { borderColor: colors.p500 }]} />
 
-              <ArdillaMascot mood="searching" size={90} />
               <Text style={[styles.scanPrompt, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 Apunta la cámara a tu factura
               </Text>

@@ -18,7 +18,6 @@ import { NewTransactionModal } from '../components/NewTransactionModal';
 import { FadeIn, AnimatedNumber, AnimatedScalePressable } from '../components/Animations';
 import { useMobileRealtime } from '../context/RealtimeContext';
 import { ApicashLogo } from '../components/ApicashLogo';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 import { TopBar } from '../components/TopBar';
 import { ChekeaTopBar } from '../components/ChekeaTopBar';
 import { QuickActionsGrid } from '../components/QuickActionsGrid';
@@ -269,9 +268,6 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
             end={{ x: 1, y: 1 }}
             style={styles.chekeaCardGradient}
           >
-            <View style={styles.watermarkArdilla}>
-              <ArdillaMascot mood="saving" size={120} />
-            </View>
 
             <View style={styles.chekeaCardTop}>
               <Text style={[styles.chekeaCardSub, { color: colors.p100 }]}>Balance Total</Text>
@@ -338,7 +334,6 @@ export function DashboardScreen({ onOpenMenu, onNavigateTab }: DashboardScreenPr
         <View style={[styles.transactionsContainer, !isDarkMode && styles.cardLight]}>
           {transactions.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <ArdillaMascot mood="searching" size={68} />
               <Text style={styles.emptyTitle}>Aún no hay transacciones para mostrar.</Text>
               <Text style={styles.emptySubtitle}>
                 Registra el primer movimiento para visualizar el historial aquí.

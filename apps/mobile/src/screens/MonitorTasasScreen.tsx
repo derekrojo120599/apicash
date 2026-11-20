@@ -15,7 +15,6 @@ import { formatMoney, calcularBrechaCambiaria } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 
 interface TasaItem {
   fuente: string;
@@ -83,7 +82,6 @@ export function MonitorTasasScreen({ onBack }: { onBack: () => void }) {
                   +{brecha.porcentajeBrecha}%
                 </Text>
               </View>
-              <ArdillaMascot mood="saving" size={56} />
             </View>
 
             <View style={styles.ratesCompareRow}>

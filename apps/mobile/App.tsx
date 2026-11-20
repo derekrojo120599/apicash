@@ -3,7 +3,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { supabase } from './src/lib/supabase';
 import { ThemeProvider, useAppTheme } from './src/context/ThemeContext';
-import { MobileRealtimeProvider } from './src/context/RealtimeContext';
+import { MobileRealtimeProvider, useMobileRealtime } from './src/context/RealtimeContext';
 import { initNotificationsPermission } from './src/lib/notifications';
 import { checkAndApplyOTAUpdates } from './src/lib/otaUpdates';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -31,6 +31,7 @@ import { AppUpdateModal } from './src/components/AppUpdateModal';
 
 function MainApp() {
   const { colors, isDarkMode } = useAppTheme();
+  const { triggerLocalSync } = useMobileRealtime();
   const [session, setSession] = useState<any>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);

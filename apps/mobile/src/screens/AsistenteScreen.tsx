@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 import { FadeIn } from '../components/Animations';
 
 interface AsistenteScreenProps {
@@ -110,9 +109,6 @@ export function AsistenteScreen({ onBack }: AsistenteScreenProps) {
         {mensajes.length === 0 ? (
           // Vista inicial de bienvenida estilo Chekea
           <FadeIn style={styles.welcomeBox}>
-            <View style={styles.mascotWrap}>
-              <ArdillaMascot mood="zen" size={110} />
-            </View>
             <Text style={[styles.welcomeTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
               ¡Hola! Soy Cashy
             </Text>
@@ -149,11 +145,6 @@ export function AsistenteScreen({ onBack }: AsistenteScreenProps) {
                     isUser ? styles.msgRowUser : styles.msgRowCashy
                   ]}
                 >
-                  {!isUser && (
-                    <View style={styles.avatarMini}>
-                      <ArdillaMascot mood="saving" size={32} />
-                    </View>
-                  )}
                   <View
                     style={[
                       styles.msgBubble,
@@ -175,9 +166,6 @@ export function AsistenteScreen({ onBack }: AsistenteScreenProps) {
 
             {pensando && (
               <View style={[styles.msgRow, styles.msgRowCashy]}>
-                <View style={styles.avatarMini}>
-                  <ArdillaMascot mood="searching" size={32} />
-                </View>
                 <View style={[styles.bubbleCashy, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
                   <Text style={{ fontSize: 13, color: colors.p500, fontStyle: 'italic' }}>
                     Cashy está pensando...

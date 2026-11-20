@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { formatMoney, previewComision, ComisionConfig } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
+import { useMobileRealtime } from '../context/RealtimeContext';
 import { AnimatedSelect } from './AnimatedSelect';
 import { FinancialKeypad } from './FinancialKeypad';
 import { triggerSuccessNotification } from '../lib/notifications';
@@ -43,6 +44,7 @@ interface CategoriaItem {
 
 export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransactionModalProps) {
   const { colors, isDarkMode } = useAppTheme();
+  const { triggerLocalSync } = useMobileRealtime();
 
   const [tipo, setTipo] = useState<'gasto' | 'ingreso' | 'transferencia'>('gasto');
   const [cuentaId, setCuentaId] = useState('');
@@ -272,6 +274,9 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
         '🎉 ¡Felicitaciones! Registro exitoso',
         `Tu ${tipo} por ${simbolo}${formatMoney(numericMonto)} en ${selectedCuenta.nombre} fue validado y registrado.`
       );
+
+      // Refresco inmediato de todas las pantallas suscritas, sin depender del canal Realtime
+      triggerLocalSync();
 
       setMonto('');
       setDescripcion('');

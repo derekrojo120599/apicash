@@ -21,7 +21,6 @@ import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
 import { FinancialKeypad } from '../components/FinancialKeypad';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 
 export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
@@ -161,7 +160,6 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
             <ActivityIndicator size="small" color={colors.p500} style={{ marginVertical: 20 }} />
           ) : compras.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
-              <ArdillaMascot mood="saving" size={68} />
               <Text style={styles.emptyTitle}>Sin compras a cuotas</Text>
               <Text style={styles.emptyText}>Registra compras financiadas para llevar el cronograma de vencimientos.</Text>
             </View>

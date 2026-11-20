@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
-import { ArdillaMascot } from '../components/ArdillaMascot';
 import { formatMoney, parsearComprobanteTexto } from '@apicash/shared';
 import { TopBar } from '../components/TopBar';
 
@@ -155,10 +154,6 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {!comprobanteListo ? (
           <View style={[styles.uploadBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}>
-            <View style={styles.iconCircle}>
-              <ArdillaMascot mood="searching" size={84} />
-            </View>
-
             <Text style={[styles.uploadTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
               Sube tu comprobante o captura
             </Text>
