@@ -52,25 +52,36 @@ jobs:
           cd apps/mobile
           npx expo prebuild --platform android --no-install
 
-      - name: 8. Compilar APK Release con Gradle
+      - name: 8. Verificar que el APK tenga canal OTA configurado
+        run: |
+          MANIFEST=apps/mobile/android/app/src/main/AndroidManifest.xml
+          if ! grep -q 'expo-channel-name' "$MANIFEST"; then
+            echo "::error::El APK no tiene canal OTA. Los usuarios nunca recibirian eas update."
+            echo "Revisa updates.requestHeaders en apps/mobile/app.json."
+            exit 1
+          fi
+          echo "Canal OTA embebido correctamente:"
+          grep -o 'expo-channel-name[^}]*' "$MANIFEST" || true
+
+      - name: 9. Compilar APK Release con Gradle
         run: |
           cd apps/mobile/android
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
-      - name: 9. Preparar archivo APK
+      - name: 10. Preparar archivo APK
         run: |
           cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk apicash.apk
           ls -lh apicash.apk
 
-      - name: 10. Subir APK como artefacto de compilación
+      - name: 11. Subir APK como artefacto de compilación
         uses: actions/upload-artifact@v4
         with:
           name: apicash-apk
           path: apicash.apk
           retention-days: 30
 
-      - name: 11. Determinar Tag del Release
+      - name: 12. Determinar Tag del Release
         id: get_tag
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -79,7 +90,7 @@ jobs:
             echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
 
-      - name: 12. Publicar Release en GitHub con el APK adjunto
+      - name: 13. Publicar Release en GitHub con el APK adjunto
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}

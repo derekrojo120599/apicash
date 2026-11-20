@@ -38,4 +38,15 @@ Docs: https://docs.expo.dev/eas/index.md
 
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+
+## Shipping changes
+
+Before publishing anything, run `npm run ota:check` from the repo root. It classifies the change as JS-only (safe for OTA) or native (needs a new APK).
+
+- JS/UI/assets only: `npm run ota:publish -- -m "description"`
+- Native changes: build the APK, publish the release, then `node scripts/ota.mjs mark-apk --ref <commit> --channel production`
+
+The update channel is declared in `app.json` under `updates.requestHeaders`. Without it, a Gradle/prebuild APK falls back to the `default` channel and never receives updates.
+
+Full guide: `docs/ota-despliegue.md`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md

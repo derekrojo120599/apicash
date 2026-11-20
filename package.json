@@ -12,6 +12,10 @@
     "dev:mobile": "npm run start --workspace=apps/mobile",
     "build:web": "npm run build --workspace=apps/web",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "test:ota": "node --test scripts/ota.test.mjs",
+    "ota:status": "node scripts/ota.mjs status",
+    "ota:check": "node scripts/ota.mjs check",
+    "ota:publish": "node scripts/ota.mjs publish"
   }
 }
