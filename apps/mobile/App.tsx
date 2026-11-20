@@ -18,11 +18,13 @@ import { PresupuestoScreen } from './src/screens/PresupuestoScreen';
 import { CalculadoraScreen } from './src/screens/CalculadoraScreen';
 import { CreditoScreen } from './src/screens/CreditoScreen';
 import { CompartidasScreen } from './src/screens/CompartidasScreen';
-import { PrestamosScreen } from './src/screens/PrestamosScreen';
 import { SubirComprobanteScreen } from './src/screens/SubirComprobanteScreen';
 import { MonitorTasasScreen } from './src/screens/MonitorTasasScreen';
 import { GuiaScreen } from './src/screens/GuiaScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
+import { PapeleraScreen } from './src/screens/PapeleraScreen';
+import { PrivacidadScreen } from './src/screens/PrivacidadScreen';
+import { TerminosScreen } from './src/screens/TerminosScreen';
 import { SidebarDrawer, ScreenTab } from './src/components/SidebarDrawer';
 import { BottomFloatingBar } from './src/components/BottomFloatingBar';
 import { QuickActionsSheet } from './src/components/QuickActionsSheet';
@@ -101,6 +103,12 @@ function MainApp() {
         return <AhorrosScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'deudas':
         return <DeudasScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'trash':
+        return <PapeleraScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'privacidad':
+        return <PrivacidadScreen onOpenMenu={() => setSidebarOpen(true)} />;
+      case 'terminos':
+        return <TerminosScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'categorias':
         return <CategoriasScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'presupuesto':
@@ -111,8 +119,6 @@ function MainApp() {
         return <CreditoScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'compartidas':
         return <CompartidasScreen onOpenMenu={() => setSidebarOpen(true)} />;
-      case 'prestamos':
-        return <PrestamosScreen onOpenMenu={() => setSidebarOpen(true)} />;
       case 'subir_factura':
         return <SubirComprobanteScreen onBack={() => setCurrentTab('dashboard')} />;
       case 'monitor-tasas':

@@ -42,6 +42,8 @@ export interface CreateTransactionParams {
   es_fallida?: boolean
   tasa_cambio?: number | null
   fecha?: string
+  deuda_id?: string | null
+  meta_id?: string | null
   comision_override?: number | null
   asumir_comision_comercio?: boolean
 }
@@ -154,6 +156,8 @@ export function useCrearTransaccion() {
         user_id: string
         subtipo_operacion?: string
         tasa_al_momento?: number
+        deuda_id?: string
+        meta_id?: string
       } = {
         cuenta_id: newTx.cuenta_id,
         categoria_id: newTx.categoria_id,
@@ -167,6 +171,8 @@ export function useCrearTransaccion() {
 
       if (newTx.subtipo_operacion) insertPayload.subtipo_operacion = newTx.subtipo_operacion;
       if (newTx.tasa_cambio) insertPayload.tasa_al_momento = newTx.tasa_cambio;
+      if (newTx.deuda_id) insertPayload.deuda_id = newTx.deuda_id;
+      if (newTx.meta_id) insertPayload.meta_id = newTx.meta_id;
 
       const { data, error } = await supabase
         .from('transacciones')

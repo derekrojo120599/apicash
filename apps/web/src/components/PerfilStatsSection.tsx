@@ -46,7 +46,7 @@ export function PerfilStatsSection({ stats, isLoading }: PerfilStatsSectionProps
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <AnimatedCard className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
           <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalTransacciones}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Transacciones</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Movimientos</p>
         </AnimatedCard>
         <AnimatedCard className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
           <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalCuentas}</p>

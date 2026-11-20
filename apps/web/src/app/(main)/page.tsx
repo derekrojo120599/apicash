@@ -188,8 +188,8 @@ export default function DashboardPage() {
       {/* Recent Transactions */}
       <FadeIn delay={400} className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Transacciones Recientes</h3>
-          <Link href="/transacciones" className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">Ver todas</Link>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Movimientos Recientes</h3>
+          <Link href="/movimientos" className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">Ver todas</Link>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
           {loadingTx ? (

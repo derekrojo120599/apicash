@@ -48,10 +48,10 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: 'Transacciones',
+        name: 'Movimientos',
         short_name: 'Gastos',
         description: 'Registrar o revisar ingresos y gastos',
-        url: '/transacciones',
+        url: '/movimientos',
         icons: [{ src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }]
       },
       {

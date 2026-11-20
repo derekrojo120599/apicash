@@ -628,7 +628,7 @@ export default function PerfilPage() {
                 <p>Esta acción eliminará de forma permanente:</p>
                 <ul className="list-disc list-inside text-slate-500 dark:text-slate-400">
                   <li>Cuentas</li>
-                  <li>Transacciones</li>
+                  <li>Movimientos</li>
                   <li>Metas de ahorro y deudas</li>
                   <li>Categorías y presupuestos</li>
                 </ul>

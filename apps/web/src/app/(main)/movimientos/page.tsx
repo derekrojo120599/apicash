@@ -17,7 +17,7 @@ import { NewTransactionModal } from '@/components/NewTransactionModal'
 
 export const dynamic = 'force-dynamic';
 
-export default function TransaccionesPage() {
+export default function MovimientosPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedTx, setSelectedTx] = useState<Transaccion | null>(null)
@@ -100,7 +100,7 @@ export default function TransaccionesPage() {
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto pb-24 md:pb-8">
       <FadeIn as="header" className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transacciones</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Movimientos</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Registro y revisión de movimientos del mes</p>
         </div>
         <div className="flex items-center gap-3">

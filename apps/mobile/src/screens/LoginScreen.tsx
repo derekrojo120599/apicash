@@ -81,6 +81,11 @@ export function LoginScreen({ onSuccess }: LoginScreenProps) {
       return;
     }
 
+    if (isRegisterMode && password.length < 6) {
+      setErrorMessage('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
     try {
       setLoading(true);
       setErrorMessage('');

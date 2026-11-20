@@ -45,9 +45,9 @@ export function QuickActionsGrid({
       onPress: () => onNavigateTab('credito'),
     },
     {
-      id: 'prestamos',
-      name: 'Préstamos',
-      icon: 'cash-outline' as const,
+      id: 'deudas',
+      name: 'Deudas',
+      icon: 'receipt-outline' as const,
       color: '#06b6d4',
       onPress: () => onNavigateTab('deudas'),
     },

@@ -68,7 +68,7 @@ export default function TrashPage() {
       <FadeIn as="header" className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
-            href="/transacciones"
+            href="/movimientos"
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-400 transition-colors"
             title="Volver a transacciones"
           >

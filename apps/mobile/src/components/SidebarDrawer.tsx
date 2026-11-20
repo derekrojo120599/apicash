@@ -18,7 +18,6 @@ export type ScreenTab =
   | 'movimientos'
   | 'credito'
   | 'compartidas'
-  | 'prestamos'
   | 'subir_factura'
   | 'monitor-tasas'
   | 'calculadora'
@@ -26,7 +25,10 @@ export type ScreenTab =
   | 'categorias'
   | 'ahorros'
   | 'deudas'
+  | 'trash'
   | 'guia'
+  | 'privacidad'
+  | 'terminos'
   | 'perfil';
 
 interface SidebarDrawerProps {
@@ -43,7 +45,6 @@ const navItems: { id: ScreenTab; name: string; icon: keyof typeof Ionicons.glyph
   { id: 'movimientos', name: 'Movimientos', icon: 'swap-horizontal-outline' },
   { id: 'credito', name: 'Compras a Cuotas', icon: 'card-outline' },
   { id: 'compartidas', name: 'Compartidas', icon: 'people-outline' },
-  { id: 'prestamos', name: 'Préstamos', icon: 'cash-outline' },
   { id: 'subir_factura', name: 'Subir Comprobante', icon: 'cloud-upload-outline' },
   { id: 'monitor-tasas', name: 'Monitor de Tasas', icon: 'trending-up-outline' },
   { id: 'calculadora', name: 'Calculadora', icon: 'calculator-outline' },
@@ -51,7 +52,10 @@ const navItems: { id: ScreenTab; name: string; icon: keyof typeof Ionicons.glyph
   { id: 'categorias', name: 'Categorías', icon: 'folder-open-outline' },
   { id: 'ahorros', name: 'Ahorros y Metas', icon: 'cube-outline' },
   { id: 'deudas', name: 'Deudas', icon: 'receipt-outline' },
+  { id: 'trash', name: 'Papelera', icon: 'trash-outline' },
   { id: 'guia', name: 'Guía', icon: 'book-outline' },
+  { id: 'privacidad', name: 'Privacidad', icon: 'shield-outline' },
+  { id: 'terminos', name: 'Términos', icon: 'document-text-outline' },
   { id: 'perfil', name: 'Perfil', icon: 'person-outline' },
 ];
 

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { ApicashLogo } from '@/components/ApicashLogo'
-import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X, BookOpen, Calculator, Clock, Users } from 'lucide-react'
+import { LayoutDashboard, WalletCards, ArrowRightLeft, Target, PiggyBank, Receipt, User, LogOut, FolderOpen, Menu, X, BookOpen, Calculator, Clock, Users, UploadCloud, TrendingUp, Trash2, ShieldCheck, FileText } from 'lucide-react'
 import { logout } from '../(auth)/actions'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AnimatedNavLink, StaggerContainer, AnimatedButton } from '@/components/animations'
@@ -17,16 +17,21 @@ import { useRouter } from 'next/navigation'
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Cuentas', href: '/cuentas', icon: WalletCards },
-  { name: 'Movimientos', href: '/transacciones', icon: ArrowRightLeft },
+  { name: 'Mis Cuentas', href: '/cuentas', icon: WalletCards },
+  { name: 'Movimientos', href: '/movimientos', icon: ArrowRightLeft },
   { name: 'Compras a Cuotas', href: '/credito', icon: Clock },
   { name: 'Compartidas', href: '/compartidas', icon: Users },
+  { name: 'Subir Comprobante', href: '/comprobante', icon: UploadCloud },
+  { name: 'Monitor de Tasas', href: '/monitor-tasas', icon: TrendingUp },
   { name: 'Calculadora', href: '/calculadora', icon: Calculator },
   { name: 'Presupuesto', href: '/presupuesto', icon: Target },
   { name: 'Categorías', href: '/categorias', icon: FolderOpen },
-  { name: 'Ahorros', href: '/ahorros', icon: PiggyBank },
+  { name: 'Ahorros y Metas', href: '/ahorros', icon: PiggyBank },
   { name: 'Deudas', href: '/deudas', icon: Receipt },
+  { name: 'Papelera', href: '/trash', icon: Trash2 },
   { name: 'Guía', href: '/guia', icon: BookOpen },
+  { name: 'Privacidad', href: '/privacidad', icon: ShieldCheck },
+  { name: 'Términos', href: '/terminos', icon: FileText },
   { name: 'Perfil', href: '/perfil', icon: User },
 ]
 

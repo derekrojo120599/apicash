@@ -87,7 +87,7 @@ const guideSections: GuideSection[] = [
   },
   {
     id: 'transacciones',
-    title: 'Movimientos (Transacciones)',
+    title: 'Movimientos',
     subtitle: 'Registro continuo de ingresos, gastos y traspasos',
     icon: ArrowRightLeft,
     color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
@@ -97,7 +97,7 @@ const guideSections: GuideSection[] = [
       'Para pagos en bancos venezolanos calcula automáticamente comisiones bancarias (Pago Móvil, transferencias, punto de venta).',
       'Si el movimiento es en bolívares, guarda el equivalente en dólares con la tasa oficial del día.'
     ],
-    href: '/transacciones',
+    href: '/movimientos',
     extra: 'Registrar los consumos al instante previene el olvido de microgastos cotidianos que merman el balance general.'
   },
   {
