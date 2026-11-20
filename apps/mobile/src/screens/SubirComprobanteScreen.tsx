@@ -159,6 +159,7 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
             </Text>
             <Text style={styles.uploadSub}>
               Selecciona de tu galería la captura de pantalla de tu Pago Móvil, transferencia o ticket de compra.
+              {'\n'}La imagen no se almacena: solo se usa para leer los datos y luego se descarta.
             </Text>
 
             <TouchableOpacity

@@ -428,7 +428,7 @@ export default function ComprobantePage() {
               <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-3.5">
                 <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[11px] md:text-xs text-amber-800 dark:text-amber-300">
-                  El gasto se registrará como un movimiento en la cuenta seleccionada.
+                  El gasto se registrará como un movimiento en la cuenta seleccionada. La imagen no se almacena: solo se usa para leer los datos y luego se descarta.
                 </p>
               </div>
             </AnimatedCard>
