@@ -124,7 +124,7 @@ export function useEliminarCategoria() {
       
       if (txError) throw txError
 
-      const txActivas = transacciones?.filter((tx: any) => !tx.anulada) || []
+      const txActivas = transacciones?.filter((tx: { anulada: boolean | null }) => !tx.anulada) || []
 
       if (txActivas.length > 0) {
         throw new Error('No se puede eliminar: esta categoría tiene movimientos activos asociados.')
@@ -167,6 +167,40 @@ export function useEliminarCategoria() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] })
       queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+    }
+  })
+}
+
+// Official BCV rate ('Banco Central de Venezuela'). Used for credit installment
+// payments, which are always settled in VES regardless of the user's preferred rate source.
+export interface TasaBCV {
+  tasa: number | null
+  fecha: string | null
+}
+
+export function useTasaBCV() {
+  const supabase = createClient()
+
+  return useQuery<TasaBCV>({
+    queryKey: ['tasaBCV'],
+    queryFn: async (): Promise<TasaBCV> => {
+      const { data, error } = await supabase
+        .from('tasas_cambio')
+        .select('tasa, fecha')
+        .eq('fuente', 'Banco Central de Venezuela')
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        throw error
+      }
+
+      if (!data || data.tasa == null) {
+        return { tasa: null, fecha: null }
+      }
+
+      return { tasa: Number(data.tasa), fecha: data.fecha ?? null }
     }
   })
 }

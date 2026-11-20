@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useSyncExternalStore } from 'react'
-import { useComprasCredito, useCrearCompraCredito, type CompraCredito } from '@/hooks/useComprasCredito'
+import { useComprasCredito, useCrearCompraCredito, usePagarCuota, type CompraCredito } from '@/hooks/useComprasCredito'
 import { useCuentas } from '@/hooks/useCuentas'
-import { useCategorias, useTasaActual } from '@/hooks/useAuxiliares'
+import { useCategorias, useTasaActual, useTasaBCV } from '@/hooks/useAuxiliares'
 import { useToast } from '@/hooks/useToast'
 import {
   Clock,
@@ -11,7 +11,8 @@ import {
   Calendar,
   ShoppingBag,
   X,
-  ArrowRight
+  ArrowRight,
+  Wallet
 } from 'lucide-react'
 import {
   FadeIn,
@@ -24,11 +25,25 @@ import {
 } from '@/components/animations'
 import {
   generarCronogramaCuotas,
+  type CuotaCompraBase,
   type Moneda
 } from '@apicash/shared'
 import { ArdillaMascot } from '@/components/ArdillaMascot'
 
 export const dynamic = 'force-dynamic'
+
+type CuotaConCompra = CuotaCompraBase & { compra: CompraCredito }
+
+interface CuotaPagoSeleccion {
+  cuotaId: string
+  numeroCuota: number
+  totalCuotas: number
+  monto: number
+  moneda: Moneda
+  comercio: string
+  descripcion: string
+  categoriaId: string | null
+}
 
 export default function CreditoPage() {
   const mounted = useSyncExternalStore(
@@ -44,10 +59,17 @@ export default function CreditoPage() {
   const { data: cuentas } = useCuentas()
   const { data: categorias } = useCategorias()
   const { data: tasaActual } = useTasaActual()
+  const { data: tasaBCV } = useTasaBCV()
 
   // Mutations
   const { mutateAsync: crearCompra, isPending: creatingCompra } = useCrearCompraCredito()
+  const { mutateAsync: pagarCuota, isPending: pagandoCuota } = usePagarCuota()
   const { success: toastSuccess, error: toastError } = useToast()
+
+  // Pay installment state
+  const [cuotaPago, setCuotaPago] = useState<CuotaPagoSeleccion | null>(null)
+  const [cuentaPagoId, setCuentaPagoId] = useState('')
+  const [categoriaPagoId, setCategoriaPagoId] = useState('')
 
   // Compra Wizard State (Paso 1 y Paso 2)
   const [compraPaso, setCompraPaso] = useState<1 | 2>(1)
@@ -75,10 +97,49 @@ export default function CreditoPage() {
   const comprasActivasCount = compras?.filter(c => c.estado === 'activa').length || 0
 
   // Cuotas pendientes consolidadas
-  const todasLasCuotas = (compras || [])
+  const todasLasCuotas: CuotaConCompra[] = (compras || [])
     .flatMap(compra => (compra.cuotas_compra || []).map(cuota => ({ ...cuota, compra })))
-    .filter(c => c.estado === 'pendiente')
+    .filter(c => c.estado === 'pendiente' || c.estado === 'vencida')
     .sort((a, b) => new Date(a.fecha_vencimiento).getTime() - new Date(b.fecha_vencimiento).getTime())
+
+  // Cuentas en VES habilitadas para pagar cuotas
+  const cuentasVES = (cuentas || []).filter(c => c.moneda === 'VES' && c.activa)
+
+  const tasaBCVNumero = tasaBCV?.tasa ?? null
+
+  const abrirModalPago = (cuotaSeleccion: CuotaConCompra) => {
+    setCuotaPago({
+      cuotaId: cuotaSeleccion.id,
+      numeroCuota: cuotaSeleccion.numero_cuota,
+      totalCuotas: cuotaSeleccion.compra.numero_cuotas,
+      monto: cuotaSeleccion.monto,
+      moneda: cuotaSeleccion.compra.moneda,
+      comercio: cuotaSeleccion.compra.comercio,
+      descripcion: cuotaSeleccion.compra.descripcion,
+      categoriaId: cuotaSeleccion.compra.categoria_id || null
+    })
+    setCuentaPagoId('')
+    setCategoriaPagoId(cuotaSeleccion.compra.categoria_id || '')
+  }
+
+  const handlePagarCuota = async () => {
+    if (!cuotaPago || !cuentaPagoId) return
+    try {
+      await pagarCuota({
+        p_cuota_id: cuotaPago.cuotaId,
+        p_cuenta_id: cuentaPagoId,
+        p_categoria_id: categoriaPagoId || null
+      })
+      toastSuccess({
+        title: 'Cuota pagada',
+        message: `Cuota ${cuotaPago.numeroCuota} de ${cuotaPago.totalCuotas} registrada en bolivares a tasa BCV.`
+      })
+      setCuotaPago(null)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al pagar la cuota'
+      toastError({ title: 'Error', message: msg })
+    }
+  }
 
   // Handlers para Compra Wizard
   const handlePaso1Siguiente = (e: React.FormEvent) => {
@@ -241,7 +302,7 @@ export default function CreditoPage() {
                 const totalCuotas = compra.numero_cuotas || 3
                 const montoPagado = compra.monto_total - compra.saldo_pendiente
                 const porcentajePagado = compra.monto_total > 0 ? (montoPagado / compra.monto_total) * 100 : 0
-                const proximaCuota = (compra.cuotas_compra || []).find(c => c.estado === 'pendiente')
+                const proximaCuota = (compra.cuotas_compra || []).find(c => c.estado === 'pendiente' || c.estado === 'vencida')
 
                 return (
                   <AnimatedCard
@@ -287,6 +348,17 @@ export default function CreditoPage() {
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">¡Completada!</span>
                       )}
                     </div>
+
+                    {/* Pagar cuota */}
+                    {proximaCuota && (
+                      <AnimatedButton
+                        onClick={() => abrirModalPago({ ...proximaCuota, compra })}
+                        className="w-full"
+                      >
+                        <Wallet className="w-4 h-4" />
+                        Pagar cuota {proximaCuota.numero_cuota} de {totalCuotas}
+                      </AnimatedButton>
+                    )}
                   </AnimatedCard>
                 )
               })}
@@ -326,7 +398,7 @@ export default function CreditoPage() {
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-1.5">
                       <p className="font-bold text-slate-900 dark:text-white text-sm">
                         {formatMoney(c.monto, c.compra.moneda)}
                       </p>
@@ -335,6 +407,13 @@ export default function CreditoPage() {
                           ≈ {formatMoney(c.monto * tasaActual, 'VES')}
                         </p>
                       )}
+                      <button
+                        onClick={() => abrirModalPago(c)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 text-xs font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors"
+                      >
+                        <Wallet className="w-3.5 h-3.5" />
+                        Pagar
+                      </button>
                     </div>
                   </div>
                 )
@@ -578,6 +657,99 @@ export default function CreditoPage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: PAGAR CUOTA */}
+      {cuotaPago && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40">
+              <div>
+                <span className="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
+                  Cuota {cuotaPago.numeroCuota} de {cuotaPago.totalCuotas}
+                </span>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5 truncate max-w-[16rem]">
+                  {cuotaPago.comercio} • {cuotaPago.descripcion}
+                </h3>
+              </div>
+              <button
+                onClick={() => setCuotaPago(null)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 p-4 text-center">
+                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Monto a pagar
+                </span>
+                <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                  {formatMoney(cuotaPago.monto, cuotaPago.moneda)}
+                </p>
+                {cuotaPago.moneda === 'USD' && tasaBCVNumero && tasaBCVNumero > 0 && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    ≈ {formatMoney(cuotaPago.monto * tasaBCVNumero, 'VES')}
+                  </p>
+                )}
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                Las cuotas se pagan en bolivares a tasa BCV, aunque tu perfil prefiera otra fuente.
+              </p>
+
+              {cuentasVES.length === 0 ? (
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 text-sm rounded-2xl px-4 py-3 text-center">
+                  Necesitas una cuenta en bolivares para pagar la cuota
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <AnimatedSelect
+                    label="Cuenta en bolivares"
+                    value={cuentaPagoId}
+                    onChange={setCuentaPagoId}
+                    placeholder="Seleccionar cuenta..."
+                    options={[
+                      { value: '', label: 'Seleccionar cuenta...', disabled: true },
+                      ...cuentasVES.map(c => ({
+                        value: c.id,
+                        label: `${c.nombre} - Saldo: ${formatMoney(c.saldo_cache, c.moneda)}`
+                      }))
+                    ]}
+                  />
+
+                  <AnimatedSelect
+                    label="Categoría (opcional)"
+                    value={categoriaPagoId}
+                    onChange={setCategoriaPagoId}
+                    options={[
+                      { value: '', label: 'Sin categoría (usa la de la compra)' },
+                      ...(categorias || []).map(cat => ({ value: cat.id, label: `${cat.icono} ${cat.nombre}` }))
+                    ]}
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCuotaPago(null)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm"
+                >
+                  Cancelar
+                </button>
+                <AnimatedButton
+                  onClick={handlePagarCuota}
+                  disabled={cuentasVES.length === 0 || !cuentaPagoId || pagandoCuota}
+                  className="flex-1"
+                >
+                  {pagandoCuota ? 'Pagando...' : 'Confirmar pago'}
+                </AnimatedButton>
+              </div>
+            </div>
           </div>
         </div>
       )}

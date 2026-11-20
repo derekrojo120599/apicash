@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase';
 import {
   generarCronogramaCuotas,
   formatMoney,
+  calculateVesFromUsd,
   type Moneda
 } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
@@ -26,6 +27,14 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [compras, setCompras] = useState<any[]>([]);
+  const [cuentasVes, setCuentasVes] = useState<any[]>([]);
+  const [tasaBcv, setTasaBcv] = useState<number | null>(null);
+
+  // Modal Pago de cuota
+  const [modalPagoOpen, setModalPagoOpen] = useState(false);
+  const [cuotaPagar, setCuotaPagar] = useState<any>(null);
+  const [cuentaPagoId, setCuentaPagoId] = useState<string | null>(null);
+  const [savingPago, setSavingPago] = useState(false);
 
   // Modal Compra
   const [modalCompraOpen, setModalCompraOpen] = useState(false);
@@ -46,15 +55,38 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: comprasData, error } = await supabase
-        .from('compras_credito')
-        .select('*, cuotas_compra(*)')
-        .order('created_at', { ascending: false });
+      const [comprasRes, cuentasRes, tasaRes] = await Promise.all([
+        supabase
+          .from('compras_credito')
+          .select('*, cuotas_compra(*)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('cuentas')
+          .select('*')
+          .eq('user_id', user.id),
+        supabase
+          .from('tasas_cambio')
+          .select('tasa, fecha')
+          .eq('fuente', 'Banco Central de Venezuela')
+          .order('fecha', { ascending: false })
+          .limit(1)
+      ]);
 
-      if (error && error.code !== '42P01') {
-        console.warn('Error fetchCompras:', error);
+      if (comprasRes.error && comprasRes.error.code !== '42P01') {
+        console.warn('Error fetchCompras:', comprasRes.error);
       }
-      setCompras(comprasData || []);
+      setCompras(comprasRes.data || []);
+
+      // Only VES accounts can pay installments (RPC enforces this too)
+      if (cuentasRes.error && cuentasRes.error.code !== '42P01') {
+        console.warn('Error fetchCuentasVes:', cuentasRes.error);
+      }
+      setCuentasVes((cuentasRes.data || []).filter((c: any) => c.moneda === 'VES'));
+
+      if (tasaRes.error && tasaRes.error.code !== '42P01') {
+        console.warn('Error fetchTasaBcv:', tasaRes.error);
+      }
+      setTasaBcv(tasaRes.data && tasaRes.data.length > 0 ? Number(tasaRes.data[0].tasa) : null);
     } catch (e) {
       console.warn('Error al cargar compras:', e);
     } finally {
@@ -63,6 +95,7 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCompras();
   }, []);
 
@@ -129,6 +162,46 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
 
   const saldoPendienteTotal = compras.reduce((acc, c) => acc + (c.saldo_pendiente || 0), 0);
 
+  function openPagoModal(compra: any, cuota: any) {
+    setCuotaPagar({
+      ...cuota,
+      moneda_compra: compra.moneda,
+      comercio: compra.comercio,
+      numero_cuotas: compra.numero_cuotas
+    });
+    setCuentaPagoId(cuentasVes.length === 1 ? cuentasVes[0].id : null);
+    setModalPagoOpen(true);
+  }
+
+  function closePagoModal() {
+    setModalPagoOpen(false);
+    setCuotaPagar(null);
+    setCuentaPagoId(null);
+  }
+
+  async function handlePagarCuota() {
+    if (!cuotaPagar || !cuentaPagoId) return;
+
+    setSavingPago(true);
+    try {
+      const { error } = await supabase.rpc('pagar_cuota_compra', {
+        p_cuota_id: cuotaPagar.id,
+        p_cuenta_id: cuentaPagoId,
+        p_categoria_id: null
+      });
+
+      if (error) throw error;
+
+      Alert.alert('Éxito', 'Cuota pagada exitosamente.');
+      closePagoModal();
+      fetchCompras();
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'No se pudo pagar la cuota');
+    } finally {
+      setSavingPago(false);
+    }
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: isDarkMode ? '#020617' : '#f8fafc' }]}>
       <TopBar title="Compras a Cuotas" onOpenMenu={onOpenMenu} />
@@ -194,6 +267,36 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                   <Text style={styles.progressText}>
                     {Math.round(pct)}% pagado • {compra.numero_cuotas} cuotas cada {compra.intervalo_dias} días
                   </Text>
+
+                  {(compra.cuotas_compra || [])
+                    .filter((cuota: any) => cuota.estado === 'pendiente' || cuota.estado === 'vencida')
+                    .sort((a: any, b: any) => a.numero_cuota - b.numero_cuota)
+                    .map((cuota: any) => {
+                      const vencida = cuota.estado === 'vencida';
+                      const esVes = compra.moneda === 'VES';
+
+                      return (
+                        <View
+                          key={cuota.id}
+                          style={[styles.cuotaRow, { borderTopColor: isDarkMode ? '#1e293b' : '#e2e8f0' }]}
+                        >
+                          <View style={styles.cuotaRowInfo}>
+                            <Text style={[styles.cuotaRowTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
+                              Cuota {cuota.numero_cuota} • {esVes ? `Bs. ${formatMoney(cuota.monto)}` : `$${formatMoney(cuota.monto)}`}
+                            </Text>
+                            <Text style={[styles.cuotaRowSub, vencida && styles.cuotaRowVencida]}>
+                              {vencida ? 'Vencida' : 'Pendiente'} • Vence {String(cuota.fecha_vencimiento).split('T')[0]}
+                            </Text>
+                          </View>
+                          <TouchableOpacity
+                            style={[styles.pagarBtn, { backgroundColor: vencida ? '#ef4444' : colors.p500 }]}
+                            onPress={() => openPagoModal(compra, cuota)}
+                          >
+                            <Text style={styles.pagarBtnText}>Pagar</Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
                 </View>
               );
             })
@@ -297,6 +400,93 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
           </View>
         </View>
       </Modal>
+
+      {/* MODAL PAGAR CUOTA */}
+      <Modal visible={modalPagoOpen} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
+            {cuotaPagar && (
+              <>
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
+                    Pagar cuota {cuotaPagar.numero_cuota}/{cuotaPagar.numero_cuotas}
+                  </Text>
+                  <TouchableOpacity onPress={closePagoModal}>
+                    <Ionicons name="close" size={24} color="#94a3b8" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.formContainer}>
+                  {/* Amount: VES installment as-is, USD installment approximated at BCV rate */}
+                  <View style={[styles.pagoMontoBox, { backgroundColor: isDarkMode ? '#020617' : '#f8fafc' }]}>
+                    <Text style={[styles.pagoMontoText, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
+                      {cuotaPagar.moneda_compra === 'VES'
+                        ? `Bs. ${formatMoney(cuotaPagar.monto)}`
+                        : tasaBcv
+                          ? `≈ Bs. ${calculateVesFromUsd(cuotaPagar.monto, tasaBcv)}`
+                          : `$${formatMoney(cuotaPagar.monto)}`}
+                    </Text>
+                    {cuotaPagar.moneda_compra === 'USD' && tasaBcv && (
+                      <Text style={styles.pagoMontoAprox}>
+                        ≈ ${formatMoney(cuotaPagar.monto)} a tasa BCV
+                      </Text>
+                    )}
+                  </View>
+
+                  {cuentasVes.length === 0 ? (
+                    <Text style={styles.pagoAviso}>
+                      Necesitas una cuenta en bolivares para pagar la cuota
+                    </Text>
+                  ) : (
+                    <>
+                      <Text style={styles.inputLabel}>Pagar desde</Text>
+                      {cuentasVes.map((cta: any) => (
+                        <TouchableOpacity
+                          key={cta.id}
+                          style={[
+                            styles.cuentaOption,
+                            { borderColor: cuentaPagoId === cta.id ? colors.p500 : (isDarkMode ? '#1e293b' : '#cbd5e1') }
+                          ]}
+                          onPress={() => setCuentaPagoId(cta.id)}
+                        >
+                          <View style={styles.cuotaRowInfo}>
+                            <Text style={[styles.cuentaNombre, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
+                              {cta.nombre}
+                            </Text>
+                            <Text style={styles.cuentaSub}>{cta.tipo}</Text>
+                          </View>
+                          <Text style={styles.cuentaSub}>Bs. {formatMoney(cta.saldo_cache || 0)}</Text>
+                          {cuentaPagoId === cta.id && (
+                            <Ionicons name="checkmark-circle" size={18} color={colors.p500} />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </>
+                  )}
+
+                  <Text style={styles.pagoNota}>
+                    Las cuotas se pagan en bolivares a tasa BCV, aunque tu perfil prefiera otra fuente.
+                  </Text>
+
+                  {cuentasVes.length > 0 && (
+                    <TouchableOpacity
+                      style={[styles.modalSubmitBtn, { backgroundColor: colors.p500, opacity: cuentaPagoId ? 1 : 0.5 }]}
+                      disabled={savingPago || !cuentaPagoId}
+                      onPress={handlePagarCuota}
+                    >
+                      {savingPago ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text style={styles.modalSubmitBtnText}>Confirmar pago</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -323,6 +513,21 @@ const styles = StyleSheet.create({
   progressContainer: { height: 6, backgroundColor: '#334155', borderRadius: 3, marginVertical: 10, overflow: 'hidden' },
   progressBar: { height: '100%', borderRadius: 3 },
   progressText: { fontSize: 11, color: '#94a3b8' },
+  cuotaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth },
+  cuotaRowInfo: { flex: 1 },
+  cuotaRowTitle: { fontSize: 13, fontWeight: '700' },
+  cuotaRowSub: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  cuotaRowVencida: { color: '#ef4444', fontWeight: '700' },
+  pagarBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  pagarBtnText: { color: '#ffffff', fontWeight: '800', fontSize: 12 },
+  pagoMontoBox: { alignItems: 'center', paddingVertical: 12, borderRadius: 12, gap: 2 },
+  pagoMontoText: { fontSize: 24, fontWeight: '900' },
+  pagoMontoAprox: { fontSize: 12, color: '#94a3b8' },
+  pagoAviso: { fontSize: 13, color: '#94a3b8', textAlign: 'center', paddingVertical: 8 },
+  pagoNota: { fontSize: 12, color: '#94a3b8', textAlign: 'center', lineHeight: 18 },
+  cuentaOption: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  cuentaNombre: { fontSize: 14, fontWeight: '700' },
+  cuentaSub: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   modalBox: { borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 20 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },

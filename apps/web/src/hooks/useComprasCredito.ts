@@ -50,6 +50,35 @@ export function useComprasCredito() {
   })
 }
 
+export interface PagarCuotaParams {
+  p_cuota_id: string
+  p_cuenta_id: string
+  p_categoria_id?: string | null
+}
+
+export function usePagarCuota() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ p_cuota_id, p_cuenta_id, p_categoria_id }: PagarCuotaParams) => {
+      const { error } = await supabase.rpc('pagar_cuota_compra', {
+        p_cuota_id,
+        p_cuenta_id,
+        p_categoria_id: p_categoria_id || null
+      })
+      if (error) throw error
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['comprasCredito'] })
+      queryClient.invalidateQueries({ queryKey: ['cuentas'] })
+      queryClient.invalidateQueries({ queryKey: ['transacciones'] })
+      queryClient.invalidateQueries({ queryKey: ['balanceNeto'] })
+      queryClient.invalidateQueries({ queryKey: ['resumenMes'] })
+    }
+  })
+}
+
 export function useCrearCompraCredito() {
   const supabase = createClient()
   const queryClient = useQueryClient()
