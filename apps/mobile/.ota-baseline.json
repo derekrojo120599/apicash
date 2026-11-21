@@ -1,6 +1,6 @@
 {
-  "ref": "a3cbaaa",
-  "refFull": "a3cbaaa70f366ff4ac5a920a8f43724e22bef38e",
+  "ref": "0e79461",
+  "refFull": "0e79461e03ebd1e37264715b3841a5a03b988273",
   "runtimeVersion": "1.0.0",
   "channel": "production",
   "nativeFingerprint": "2a11d039c9f76cd3a479820e8c163c42059d493f43f9a65fa01bc8f0dc5a9a41",
@@ -64,6 +64,6 @@
       "react-native-url-polyfill": "^4.0.0"
     }
   },
-  "recordedAt": "2026-11-20T00:46:18.950Z",
-  "note": "APK publicado en release v1.0.0 (EAS build, version code 2)"
+  "recordedAt": "2026-11-21T00:07:23.803Z",
+  "note": "APK v3 (version code 3) instalada por el usuario"
 }
