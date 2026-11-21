@@ -11,6 +11,7 @@ import {
   RefreshControl,
   SafeAreaView,
   Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -20,6 +21,7 @@ import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedNumber, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
+import { FinancialKeypad } from '../components/FinancialKeypad';
 
 interface DeudasScreenProps {
   onOpenMenu: () => void;
@@ -57,12 +59,14 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
   const [moneda, setMoneda] = useState<'USD' | 'VES'>('USD');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showKeypadMontoTotal, setShowKeypadMontoTotal] = useState(true);
 
   // Modal Abono
   const [modalAbono, setModalAbono] = useState(false);
   const [selectedDeuda, setSelectedDeuda] = useState<Deuda | null>(null);
   const [cuentaAbonoId, setCuentaAbonoId] = useState('');
   const [montoAbono, setMontoAbono] = useState('');
+  const [showKeypadAbono, setShowKeypadAbono] = useState(true);
 
   async function fetchData() {
     try {
@@ -385,7 +389,10 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
       {/* Modal Crear Deuda */}
       <Modal visible={modalCreate} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 Nueva Deuda
@@ -407,17 +414,35 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
                 onChangeText={setNombre}
               />
 
-              <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
-                Monto total adeudado
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
+                  Monto total adeudado
+                </Text>
+                <TouchableOpacity onPress={() => setShowKeypadMontoTotal(prev => !prev)}>
+                  <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                    {showKeypadMontoTotal ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={[styles.textInput, !isDarkMode && styles.inputLight]}
                 placeholder="0.00"
                 placeholderTextColor="#64748b"
                 keyboardType="decimal-pad"
+                showSoftInputOnFocus={!showKeypadMontoTotal}
                 value={montoTotal}
                 onChangeText={setMontoTotal}
               />
+              {showKeypadMontoTotal && (
+                <View style={{ marginVertical: 8 }}>
+                  <FinancialKeypad
+                    value={montoTotal}
+                    onChangeValue={setMontoTotal}
+                    onConfirm={() => setShowKeypadMontoTotal(false)}
+                    confirmLabel="LISTO"
+                  />
+                </View>
+              )}
 
               <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>Moneda</Text>
               <View style={styles.chipRow}>
@@ -469,7 +494,7 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
@@ -500,18 +525,36 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
                 }))}
               />
 
-              <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
-                Monto del abono — Pendiente: {selectedDeuda?.moneda === 'USD' ? '$' : 'Bs. '}
-                {formatMoney(selectedDeuda?.saldo_pendiente || 0)}
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
+                  Monto del abono — Pendiente: {selectedDeuda?.moneda === 'USD' ? '$' : 'Bs. '}
+                  {formatMoney(selectedDeuda?.saldo_pendiente || 0)}
+                </Text>
+                <TouchableOpacity onPress={() => setShowKeypadAbono(prev => !prev)}>
+                  <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                    {showKeypadAbono ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={[styles.textInput, !isDarkMode && styles.inputLight]}
                 placeholder="0.00"
                 placeholderTextColor="#64748b"
                 keyboardType="decimal-pad"
+                showSoftInputOnFocus={!showKeypadAbono}
                 value={montoAbono}
                 onChangeText={setMontoAbono}
               />
+              {showKeypadAbono && (
+                <View style={{ marginVertical: 8 }}>
+                  <FinancialKeypad
+                    value={montoAbono}
+                    onChangeValue={setMontoAbono}
+                    onConfirm={() => setShowKeypadAbono(false)}
+                    confirmLabel="LISTO"
+                  />
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[

@@ -21,6 +21,7 @@ import { FadeIn, AnimatedProgressBar, AnimatedNumber } from '../components/Anima
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FinancialKeypad } from '../components/FinancialKeypad';
 
 interface PresupuestoScreenProps {
   onOpenMenu: () => void;
@@ -52,6 +53,7 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
   const [selectedCatId, setSelectedCatId] = useState('');
   const [montoPlaneado, setMontoPlaneado] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showKeypadMonto, setShowKeypadMonto] = useState(true);
 
   async function fetchPresupuesto() {
     try {
@@ -371,17 +373,35 @@ export function PresupuestoScreen({ onOpenMenu }: PresupuestoScreenProps) {
                 }))}
               />
 
-              <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
-                Monto límite mensual (USD)
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
+                  Monto límite mensual (USD)
+                </Text>
+                <TouchableOpacity onPress={() => setShowKeypadMonto(prev => !prev)}>
+                  <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                    {showKeypadMonto ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={[styles.textInput, !isDarkMode && styles.inputLight]}
                 placeholder="0.00"
                 placeholderTextColor="#64748b"
                 keyboardType="decimal-pad"
+                showSoftInputOnFocus={!showKeypadMonto}
                 value={montoPlaneado}
                 onChangeText={setMontoPlaneado}
               />
+              {showKeypadMonto && (
+                <View style={{ marginVertical: 8 }}>
+                  <FinancialKeypad
+                    value={montoPlaneado}
+                    onChangeValue={setMontoPlaneado}
+                    onConfirm={() => setShowKeypadMonto(false)}
+                    confirmLabel="LISTO"
+                  />
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[

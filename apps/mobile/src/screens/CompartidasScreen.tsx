@@ -9,7 +9,8 @@ import {
   Modal,
   Alert,
   ActivityIndicator,
-  Share
+  Share,
+  KeyboardAvoidingView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -217,7 +218,10 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
       {/* MODAL CREAR GRUPO */}
       <Modal visible={modalCrearOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 Crear grupo compartido
@@ -258,14 +262,17 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
       {/* MODAL UNIRSE POR CÓDIGO */}
       <Modal visible={modalUnirseOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 Unirse con código
@@ -298,7 +305,7 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>

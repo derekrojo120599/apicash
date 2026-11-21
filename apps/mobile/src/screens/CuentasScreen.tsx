@@ -10,6 +10,7 @@ import {
   TextInput,
   RefreshControl,
   SafeAreaView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -292,7 +293,10 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
       {/* Modal Crear / Editar Cuenta */}
       <Modal visible={modalMode !== null} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 {modalMode === 'edit' ? 'Editar Cuenta' : 'Nueva Cuenta'}
@@ -370,7 +374,7 @@ export function CuentasScreen({ onOpenMenu }: CuentasScreenProps) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>

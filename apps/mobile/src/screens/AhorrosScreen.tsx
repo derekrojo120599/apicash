@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   Alert,
   Switch,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -21,6 +22,7 @@ import { AnimatedSelect } from '../components/AnimatedSelect';
 import { FadeIn, AnimatedNumber, AnimatedProgressBar } from '../components/Animations';
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
+import { FinancialKeypad } from '../components/FinancialKeypad';
 
 interface AhorrosScreenProps {
   onOpenMenu: () => void;
@@ -58,6 +60,7 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
   const [moneda, setMoneda] = useState<'USD' | 'VES'>('USD');
   const [sinMetaFija, setSinMetaFija] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showKeypadObjetivo, setShowKeypadObjetivo] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Modal Aporte
@@ -66,12 +69,14 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
   const [cuentaAporteId, setCuentaAporteId] = useState('');
   const [montoAporte, setMontoAporte] = useState('');
   const [esFuenteExterna, setEsFuenteExterna] = useState(false);
+  const [showKeypadAporte, setShowKeypadAporte] = useState(true);
 
   // Modal Retiro
   const [modalRetiro, setModalRetiro] = useState(false);
   const [cuentaRetiroId, setCuentaRetiroId] = useState('');
   const [montoRetiro, setMontoRetiro] = useState('');
   const [descRetiro, setDescRetiro] = useState('');
+  const [showKeypadRetiro, setShowKeypadRetiro] = useState(true);
 
   async function fetchData() {
     try {
@@ -491,7 +496,10 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
       {/* Modal Crear Meta */}
       <Modal visible={modalCreate} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 Nueva Meta de Ahorro
@@ -526,17 +534,35 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
 
               {!sinMetaFija ? (
                 <>
-                  <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
-                    Monto objetivo
-                  </Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
+                      Monto objetivo
+                    </Text>
+                    <TouchableOpacity onPress={() => setShowKeypadObjetivo(prev => !prev)}>
+                      <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                        {showKeypadObjetivo ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                   <TextInput
                     style={[styles.textInput, !isDarkMode && styles.inputLight]}
                     placeholder="0.00"
                     placeholderTextColor="#64748b"
                     keyboardType="decimal-pad"
+                    showSoftInputOnFocus={!showKeypadObjetivo}
                     value={objetivo}
                     onChangeText={setObjetivo}
                   />
+                  {showKeypadObjetivo && (
+                    <View style={{ marginVertical: 8 }}>
+                      <FinancialKeypad
+                        value={objetivo}
+                        onChangeValue={setObjetivo}
+                        onConfirm={() => setShowKeypadObjetivo(false)}
+                        confirmLabel="LISTO"
+                      />
+                    </View>
+                  )}
                 </>
               ) : null}
 
@@ -590,7 +616,7 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
@@ -608,17 +634,35 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
             </View>
 
             <View style={styles.modalBody}>
-              <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
-                Monto ({selectedMeta?.moneda})
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
+                  Monto ({selectedMeta?.moneda})
+                </Text>
+                <TouchableOpacity onPress={() => setShowKeypadAporte(prev => !prev)}>
+                  <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                    {showKeypadAporte ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={[styles.textInput, !isDarkMode && styles.inputLight]}
                 placeholder="0.00"
                 placeholderTextColor="#64748b"
                 keyboardType="decimal-pad"
+                showSoftInputOnFocus={!showKeypadAporte}
                 value={montoAporte}
                 onChangeText={setMontoAporte}
               />
+              {showKeypadAporte && (
+                <View style={{ marginVertical: 8 }}>
+                  <FinancialKeypad
+                    value={montoAporte}
+                    onChangeValue={setMontoAporte}
+                    onConfirm={() => setShowKeypadAporte(false)}
+                    confirmLabel="LISTO"
+                  />
+                </View>
+              )}
 
               <View style={styles.switchRow}>
                 <Switch
@@ -671,7 +715,10 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
       {/* Modal Retiro */}
       <Modal visible={modalRetiro} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 Retirar de: {selectedMeta?.nombre}
@@ -682,17 +729,35 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
             </View>
 
             <View style={styles.modalBody}>
-              <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
-                Monto a retirar ({selectedMeta?.moneda})
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
+                  Monto a retirar ({selectedMeta?.moneda})
+                </Text>
+                <TouchableOpacity onPress={() => setShowKeypadRetiro(prev => !prev)}>
+                  <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                    {showKeypadRetiro ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <TextInput
                 style={[styles.textInput, !isDarkMode && styles.inputLight]}
                 placeholder="0.00"
                 placeholderTextColor="#64748b"
                 keyboardType="decimal-pad"
+                showSoftInputOnFocus={!showKeypadRetiro}
                 value={montoRetiro}
                 onChangeText={setMontoRetiro}
               />
+              {showKeypadRetiro && (
+                <View style={{ marginVertical: 8 }}>
+                  <FinancialKeypad
+                    value={montoRetiro}
+                    onChangeValue={setMontoRetiro}
+                    onConfirm={() => setShowKeypadRetiro(false)}
+                    confirmLabel="LISTO"
+                  />
+                </View>
+              )}
 
               <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
                 Cuenta Destino
@@ -734,7 +799,7 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>

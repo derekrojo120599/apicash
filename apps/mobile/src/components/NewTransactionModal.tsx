@@ -63,7 +63,7 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
   const [tasaActual, setTasaActual] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [showKeypad, setShowKeypad] = useState(false);
+  const [showKeypad, setShowKeypad] = useState(true);
 
   useEffect(() => {
     if (visible) {

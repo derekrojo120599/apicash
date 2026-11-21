@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
 import { formatMoney, parsearComprobanteTexto } from '@apicash/shared';
 import { TopBar } from '../components/TopBar';
+import { FinancialKeypad } from '../components/FinancialKeypad';
 
 export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
@@ -29,6 +30,7 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
   const [comercio, setComercio] = useState('');
   const [referencia, setReferencia] = useState('');
   const [monto, setMonto] = useState('');
+  const [showKeypadMonto, setShowKeypadMonto] = useState(true);
   const [moneda, setMoneda] = useState<'USD' | 'VES'>('VES');
   const [fecha, setFecha] = useState('');
   const [categoriaSugerida, setCategoriaSugerida] = useState('Alimentación y Compras');
@@ -210,13 +212,31 @@ export function SubirComprobanteScreen({ onBack }: { onBack: () => void }) {
 
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.fieldLabel}>Monto ({moneda})</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={styles.fieldLabel}>Monto ({moneda})</Text>
+                    <TouchableOpacity onPress={() => setShowKeypadMonto(prev => !prev)}>
+                      <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                        {showKeypadMonto ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                   <TextInput
                     style={[styles.inputEdit, { color: isDarkMode ? '#fff' : '#0f172a', borderColor: isDarkMode ? '#334155' : '#cbd5e1' }]}
                     keyboardType="numeric"
+                    showSoftInputOnFocus={!showKeypadMonto}
                     value={monto}
                     onChangeText={setMonto}
                   />
+                  {showKeypadMonto && (
+                    <View style={{ marginTop: 8 }}>
+                      <FinancialKeypad
+                        value={monto}
+                        onChangeValue={setMonto}
+                        onConfirm={() => setShowKeypadMonto(false)}
+                        confirmLabel="LISTO"
+                      />
+                    </View>
+                  )}
                 </View>
 
                 <View style={{ flex: 1 }}>

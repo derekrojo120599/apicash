@@ -11,6 +11,7 @@ import {
   RefreshControl,
   SafeAreaView,
   Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -308,7 +309,10 @@ export function CategoriasScreen({ onOpenMenu }: CategoriasScreenProps) {
       {/* Modal Crear / Editar */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 {editingCat ? 'Editar Categoría' : 'Nueva Categoría'}
@@ -387,7 +391,7 @@ export function CategoriasScreen({ onOpenMenu }: CategoriasScreenProps) {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>

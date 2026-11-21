@@ -8,7 +8,8 @@ import {
   TextInput,
   Modal,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  KeyboardAvoidingView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -307,7 +308,10 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
       {/* MODAL CREAR COMPRA CON FINANCIAL KEYPAD */}
       <Modal visible={modalCompraOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}
+          >
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 {compraPaso === 1 ? '¿Cuánto costó la compra?' : 'Plan de cuotas'}
@@ -359,15 +363,33 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
               </View>
             ) : (
               <View style={styles.formContainer}>
-                <Text style={styles.inputLabel}>Inicial pagada hoy ($)</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={styles.inputLabel}>Inicial pagada hoy ($)</Text>
+                  <TouchableOpacity onPress={() => setShowKeypad(prev => !prev)}>
+                    <Text style={{ fontSize: 11, color: colors.p500, fontWeight: '700' }}>
+                      {showKeypad ? '⌨️ Teclado estándar' : '🔢 Teclado financiero'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <TextInput
                   style={[styles.input, { color: isDarkMode ? '#fff' : '#000', borderColor: '#cbd5e1' }]}
                   placeholder="0.00"
                   placeholderTextColor="#94a3b8"
                   keyboardType="numeric"
+                  showSoftInputOnFocus={!showKeypad}
                   value={montoInicial}
                   onChangeText={setMontoInicial}
                 />
+                {showKeypad && (
+                  <View style={{ marginTop: 8 }}>
+                    <FinancialKeypad
+                      value={montoInicial}
+                      onChangeValue={setMontoInicial}
+                      onConfirm={() => setShowKeypad(false)}
+                      confirmLabel="LISTO"
+                    />
+                  </View>
+                )}
 
                 <Text style={styles.inputLabel}>Número de cuotas</Text>
                 <View style={styles.cuotasRow}>
@@ -397,7 +419,7 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                 </TouchableOpacity>
               </View>
             )}
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
