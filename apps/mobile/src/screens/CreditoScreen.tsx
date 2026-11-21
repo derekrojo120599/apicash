@@ -9,7 +9,6 @@ import {
   Modal,
   Alert,
   ActivityIndicator,
-  KeyboardAvoidingView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -23,6 +22,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
 import { FinancialKeypad } from '../components/FinancialKeypad';
+import { KeyboardSafeView } from '../components/KeyboardSafeView';
 
 export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
@@ -308,10 +308,7 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
       {/* MODAL CREAR COMPRA CON FINANCIAL KEYPAD */}
       <Modal visible={modalCompraOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}
-          >
+          <KeyboardSafeView style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 {compraPaso === 1 ? '¿Cuánto costó la compra?' : 'Plan de cuotas'}
@@ -322,7 +319,12 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
             </View>
 
             {compraPaso === 1 ? (
-              <View style={styles.formContainer}>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled
+                style={{ maxHeight: 420 }}
+                contentContainerStyle={styles.formContainer}
+              >
                 {/* Visualizador de Monto Táctil */}
                 <View style={styles.amountDisplayBox}>
                   <Text style={styles.amountDisplayCurrency}>{moneda === 'USD' ? '$' : 'Bs.'}</Text>
@@ -360,9 +362,14 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                   }}
                   confirmLabel="SIGUIENTE"
                 />
-              </View>
+              </ScrollView>
             ) : (
-              <View style={styles.formContainer}>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled
+                style={{ maxHeight: 420 }}
+                contentContainerStyle={styles.formContainer}
+              >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.inputLabel}>Inicial pagada hoy ($)</Text>
                   <TouchableOpacity onPress={() => setShowKeypad(prev => !prev)}>
@@ -417,9 +424,9 @@ export function CreditoScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                     <Text style={styles.modalSubmitBtnText}>Guardar Compra a Cuotas</Text>
                   )}
                 </TouchableOpacity>
-              </View>
+              </ScrollView>
             )}
-          </KeyboardAvoidingView>
+          </KeyboardSafeView>
         </View>
       </Modal>
 

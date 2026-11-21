@@ -11,7 +11,6 @@ import {
   RefreshControl,
   SafeAreaView,
   Alert,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -22,6 +21,7 @@ import { FadeIn, AnimatedNumber, AnimatedProgressBar } from '../components/Anima
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
 import { FinancialKeypad } from '../components/FinancialKeypad';
+import { KeyboardSafeView } from '../components/KeyboardSafeView';
 
 interface DeudasScreenProps {
   onOpenMenu: () => void;
@@ -389,10 +389,7 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
       {/* Modal Crear Deuda */}
       <Modal visible={modalCreate} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
-          >
+          <KeyboardSafeView style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 Nueva Deuda
@@ -402,7 +399,12 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalBody}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              style={{ maxHeight: 420 }}
+              contentContainerStyle={styles.modalBody}
+            >
               <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
                 Concepto o acreedor
               </Text>
@@ -493,8 +495,8 @@ export function DeudasScreen({ onOpenMenu }: DeudasScreenProps) {
                   <Text style={styles.submitButtonText}>Registrar Deuda</Text>
                 )}
               </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            </ScrollView>
+          </KeyboardSafeView>
         </View>
       </Modal>
 

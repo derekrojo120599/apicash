@@ -8,8 +8,6 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +16,7 @@ import { formatMoney, previewComision, ComisionConfig } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { useMobileRealtime } from '../context/RealtimeContext';
 import { AnimatedSelect } from './AnimatedSelect';
+import { KeyboardSafeView } from './KeyboardSafeView';
 import { FinancialKeypad } from './FinancialKeypad';
 import { triggerSuccessNotification } from '../lib/notifications';
 import { ApicashLogo } from './ApicashLogo';
@@ -294,10 +293,7 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.overlay}
-      >
+      <KeyboardSafeView style={styles.overlay}>
         <View style={[styles.modalCard, !isDarkMode && styles.cardLight]}>
           <View
             style={[
@@ -316,7 +312,11 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.formContent}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+            contentContainerStyle={styles.formContent}
+          >
             {/* Selector de Tipo (Gasto, Ingreso, Traspaso) */}
             <View style={styles.typeSelector}>
               {(['gasto', 'ingreso', 'transferencia'] as const).map((t) => {
@@ -587,7 +587,7 @@ export function NewTransactionModal({ visible, onClose, onSuccess }: NewTransact
             </TouchableOpacity>
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardSafeView>
     </Modal>
   );
 }

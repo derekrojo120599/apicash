@@ -12,7 +12,6 @@ import {
   SafeAreaView,
   Alert,
   Switch,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -23,6 +22,7 @@ import { FadeIn, AnimatedNumber, AnimatedProgressBar } from '../components/Anima
 import { ApicashLogo } from '../components/ApicashLogo';
 import { TopBar } from '../components/TopBar';
 import { FinancialKeypad } from '../components/FinancialKeypad';
+import { KeyboardSafeView } from '../components/KeyboardSafeView';
 
 interface AhorrosScreenProps {
   onOpenMenu: () => void;
@@ -496,10 +496,7 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
       {/* Modal Crear Meta */}
       <Modal visible={modalCreate} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
-          >
+          <KeyboardSafeView style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 Nueva Meta de Ahorro
@@ -509,7 +506,12 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalBody}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              style={{ maxHeight: 420 }}
+              contentContainerStyle={styles.modalBody}
+            >
               <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
                 Nombre del objetivo
               </Text>
@@ -615,8 +617,8 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
                   <Text style={styles.submitButtonText}>Crear Meta</Text>
                 )}
               </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            </ScrollView>
+          </KeyboardSafeView>
         </View>
       </Modal>
 
@@ -715,10 +717,7 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
       {/* Modal Retiro */}
       <Modal visible={modalRetiro} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalContainer, !isDarkMode && styles.cardLight]}
-          >
+          <KeyboardSafeView style={[styles.modalContainer, !isDarkMode && styles.cardLight]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalHeading, !isDarkMode && styles.textDark]}>
                 Retirar de: {selectedMeta?.nombre}
@@ -728,7 +727,12 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalBody}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              style={{ maxHeight: 420 }}
+              contentContainerStyle={styles.modalBody}
+            >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={[styles.inputLabel, !isDarkMode && styles.textDark]}>
                   Monto a retirar ({selectedMeta?.moneda})
@@ -798,8 +802,8 @@ export function AhorrosScreen({ onOpenMenu }: AhorrosScreenProps) {
                   <Text style={styles.submitButtonText}>Confirmar Retiro</Text>
                 )}
               </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            </ScrollView>
+          </KeyboardSafeView>
         </View>
       </Modal>
     </View>

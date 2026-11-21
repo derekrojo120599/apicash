@@ -10,7 +10,6 @@ import {
   Alert,
   ActivityIndicator,
   Share,
-  KeyboardAvoidingView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -18,6 +17,7 @@ import { formatMoney, type Moneda } from '@apicash/shared';
 import { useAppTheme } from '../context/ThemeContext';
 import { FadeIn } from '../components/Animations';
 import { TopBar } from '../components/TopBar';
+import { KeyboardSafeView } from '../components/KeyboardSafeView';
 
 export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { colors, isDarkMode } = useAppTheme();
@@ -218,10 +218,7 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
       {/* MODAL CREAR GRUPO */}
       <Modal visible={modalCrearOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}
-          >
+          <KeyboardSafeView style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 Crear grupo compartido
@@ -231,7 +228,12 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.formContainer}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              style={{ maxHeight: 420 }}
+              contentContainerStyle={styles.formContainer}
+            >
               <Text style={styles.inputLabel}>Nombre del grupo</Text>
               <TextInput
                 style={[styles.input, { color: isDarkMode ? '#fff' : '#000', borderColor: '#cbd5e1' }]}
@@ -261,18 +263,15 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                   <Text style={styles.modalSubmitBtnText}>Crear Grupo</Text>
                 )}
               </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            </ScrollView>
+          </KeyboardSafeView>
         </View>
       </Modal>
 
       {/* MODAL UNIRSE POR CÓDIGO */}
       <Modal visible={modalUnirseOpen} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}
-          >
+          <KeyboardSafeView style={[styles.modalBox, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: isDarkMode ? '#ffffff' : '#0f172a' }]}>
                 Unirse con código
@@ -282,7 +281,12 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.formContainer}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              style={{ maxHeight: 420 }}
+              contentContainerStyle={styles.formContainer}
+            >
               <Text style={styles.inputLabel}>Código de invitación</Text>
               <TextInput
                 style={[styles.input, { color: isDarkMode ? '#fff' : '#000', borderColor: '#cbd5e1', textAlign: 'center', letterSpacing: 2, fontWeight: 'bold' }]}
@@ -304,8 +308,8 @@ export function CompartidasScreen({ onOpenMenu }: { onOpenMenu: () => void }) {
                   <Text style={styles.modalSubmitBtnText}>Unirse al Grupo</Text>
                 )}
               </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
+            </ScrollView>
+          </KeyboardSafeView>
         </View>
       </Modal>
     </View>
