@@ -125,10 +125,10 @@ Deno.serve(async (req) => {
     const geminiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_VISION_API_KEY");
     let textoReconocido = "";
 
-    // 1. Si hay clave de Gemini API configurada, usamos Gemini 1.5 Flash Vision
+    // 1. Si hay clave de Gemini API configurada, usamos Gemini Flash Vision
     if (geminiKey) {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiKey}`;
         const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, "");
 
         const prompt = `Analiza esta imagen de un comprobante de pago o transferencia bancaria venezolana (Pago Móvil, Transferencia bancaria o Binance Pay).
