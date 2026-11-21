@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useSyncExternalStore } from 'react'
+import { useRef, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useCategorias } from '@/hooks/useAuxiliares'
 import { useCuentas } from '@/hooks/useCuentas'
@@ -22,25 +22,31 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+// Fields extracted from the receipt (only monto/moneda/fecha/referencia come from the AI)
 interface DatosComprobante {
-  beneficiario?: string
-  referencia?: string
   monto?: number | string
   moneda?: string
   fecha?: string
-  categoria?: string
+  referencia?: string
 }
 
 type MonedaComprobante = 'USD' | 'VES'
 type TipoVinculo = 'ninguno' | 'deuda' | 'meta'
+type TipoMovimiento = 'gasto' | 'ingreso'
+
+// Converts the date shown on receipts (dd/mm/yyyy) to ISO; falls back to now.
+function convertirFechaAISO(fecha: string): string {
+  const matchManual = fecha.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
+  if (matchManual) {
+    const [, dia, mes, anio] = matchManual
+    const date = new Date(`${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}T12:00:00`)
+    if (!isNaN(date.getTime())) return date.toISOString()
+  }
+  const parsed = new Date(fecha)
+  return isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString()
+}
 
 export default function ComprobantePage() {
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  )
-
   const inputArchivoRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -58,7 +64,8 @@ export default function ComprobantePage() {
   const [previewAmpliado, setPreviewAmpliado] = useState(false)
 
   // Fields extracted from the receipt
-  const [comercio, setComercio] = useState('')
+  const [tipoMovimiento, setTipoMovimiento] = useState<TipoMovimiento>('gasto')
+  const [descripcion, setDescripcion] = useState('')
   const [referencia, setReferencia] = useState('')
   const [monto, setMonto] = useState('')
   const [moneda, setMoneda] = useState<MonedaComprobante>('VES')
@@ -71,14 +78,15 @@ export default function ComprobantePage() {
   const [vinculoId, setVinculoId] = useState('')
   const [registrando, setRegistrando] = useState(false)
 
-  const categoriasGasto = (categorias ?? []).filter(c => c.tipo === 'gasto')
+  const categoriasFiltradas = (categorias ?? []).filter(c => c.tipo === tipoMovimiento)
 
   const resetearFormulario = () => {
     setArchivo(null)
     setPreviewUrl(null)
     setComprobanteListo(false)
     setPreviewAmpliado(false)
-    setComercio('')
+    setTipoMovimiento('gasto')
+    setDescripcion('')
     setReferencia('')
     setMonto('')
     setMoneda('VES')
@@ -88,6 +96,11 @@ export default function ComprobantePage() {
     setVinculoTipo('ninguno')
     setVinculoId('')
     if (inputArchivoRef.current) inputArchivoRef.current.value = ''
+  }
+
+  const cambiarTipoMovimiento = (nuevo: TipoMovimiento) => {
+    setTipoMovimiento(nuevo)
+    setCategoriaId('')
   }
 
   const handleSeleccionarArchivo = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,17 +134,12 @@ export default function ComprobantePage() {
       const edgeData = edgeRespuesta as DatosComprobante | null
 
       if (!edgeError && edgeData && Number(edgeData.monto) > 0) {
-        setComercio(edgeData.beneficiario || 'Comercio / Destinatario')
-        setReferencia(edgeData.referencia || 'S/REF')
+        setReferencia(edgeData.referencia || '')
         setMonto(String(edgeData.monto))
         setMoneda(edgeData.moneda === 'USD' ? 'USD' : 'VES')
         setFechaDetectada(edgeData.fecha || '')
-        const sugerida = edgeData.categoria
-        const coincidencia = categoriasGasto.find(c => c.nombre === sugerida)
-        setCategoriaId(coincidencia?.id ?? '')
-        toastSuccess({ title: 'Comprobante analizado', message: 'Verifica los datos antes de registrar el movimiento.' })
+        toastSuccess({ title: 'Comprobante analizado', message: 'Completa el nombre, la categoría y verifica los datos antes de registrar.' })
       } else {
-        setComercio('Comercio o Destinatario')
         setFechaDetectada('')
         toastWarning({
           title: 'Análisis automático no disponible',
@@ -141,7 +149,6 @@ export default function ComprobantePage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'No se pudo analizar la captura.'
       toastError({ title: 'Error al analizar', message: msg })
-      setComercio('Comercio o Destinatario')
       setFechaDetectada('')
     } finally {
       setProcesando(false)
@@ -156,9 +163,31 @@ export default function ComprobantePage() {
       toastError({ title: 'Monto inválido', message: 'Ingresa un monto mayor que cero.' })
       return
     }
-    if (!cuentaId) {
-      toastWarning({ title: 'Falta la cuenta', message: 'Selecciona la cuenta donde se registrará el gasto.' })
+    if (!descripcion.trim()) {
+      toastError({ title: 'Falta el nombre del movimiento', message: 'Escribe el concepto o nombre del movimiento antes de registrar.' })
       return
+    }
+    if (!cuentaId) {
+      toastWarning({ title: 'Falta la cuenta', message: 'Selecciona la cuenta donde se registrará el movimiento.' })
+      return
+    }
+
+    // Anti-duplicate guard: references shorter than 4 chars never block
+    const referenciaLimpia = referencia.trim()
+    if (referenciaLimpia.length >= 4) {
+      const { data: comprobanteExistente, error: dedupError } = await supabase
+        .from('comprobantes_procesados')
+        .select('id')
+        .eq('referencia', referenciaLimpia)
+        .maybeSingle()
+      if (dedupError) {
+        toastError({ title: 'Error al verificar', message: 'No se pudo validar la referencia. Intenta de nuevo.' })
+        return
+      }
+      if (comprobanteExistente) {
+        toastError({ title: 'Comprobante duplicado', message: `Ya registraste un comprobante con esta referencia: ${referenciaLimpia}.` })
+        return
+      }
     }
 
     setRegistrando(true)
@@ -166,22 +195,37 @@ export default function ComprobantePage() {
       const { data: userData, error: authError } = await supabase.auth.getUser()
       if (authError || !userData.user) throw new Error('Sesión no válida. Vuelve a iniciar sesión.')
 
-      // Mirrors the mobile flow: analyze and register the expense. No storage upload (parity with mobile).
-      await crearTransaccion({
+      // Mirrors the mobile flow: analyze and register the movement. No storage upload (parity with mobile).
+      const transaccionCreada = await crearTransaccion({
         cuenta_id: cuentaId,
         categoria_id: categoriaId || undefined,
-        tipo: 'gasto',
+        tipo: tipoMovimiento,
         monto_original: montoNum,
         moneda_original: moneda,
-        descripcion: comercio || 'Gasto',
-        fecha: new Date().toISOString(),
+        descripcion: descripcion.trim(),
+        fecha: convertirFechaAISO(fechaDetectada),
         deuda_id: vinculoTipo === 'deuda' && vinculoId ? vinculoId : null,
         meta_id: vinculoTipo === 'meta' && vinculoId ? vinculoId : null
       })
 
+      // Persist the used reference so the same receipt cannot be registered twice
+      const { error: comprobanteError } = await supabase
+        .from('comprobantes_procesados')
+        .insert([
+          { user_id: userData.user.id, referencia: referenciaLimpia, transaccion_id: transaccionCreada.id }
+        ])
+
+      if (comprobanteError && comprobanteError.code === '23505') {
+        // Roll back the freshly created transaction to keep state consistent
+        await supabase.from('transacciones').delete().eq('id', transaccionCreada.id)
+        toastError({ title: 'Comprobante duplicado', message: `Ya registraste un comprobante con esta referencia: ${referenciaLimpia}.` })
+        return
+      }
+      if (comprobanteError) throw new Error(comprobanteError.message)
+
       toastSuccess({
         title: 'Movimiento registrado',
-        message: 'El gasto se ha guardado correctamente en tu cuenta.'
+        message: 'El movimiento se ha guardado correctamente en tu cuenta.'
       })
       resetearFormulario()
     } catch (err: unknown) {
@@ -207,7 +251,7 @@ export default function ComprobantePage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Subir Comprobante</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-              Registra un gasto desde la captura de tu Pago Móvil, transferencia o ticket
+              Registra un gasto o ingreso desde la captura de tu Pago Móvil, transferencia o ticket
             </p>
           </div>
         </div>
@@ -223,6 +267,27 @@ export default function ComprobantePage() {
             <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-md leading-relaxed mb-6">
               Selecciona la captura de pantalla de tu Pago Móvil, transferencia o ticket de compra. La analizaremos automáticamente para extraer el monto y la referencia.
             </p>
+
+            {/* Tipo de movimiento: selector visible antes del análisis */}
+            <div className="w-full mb-4">
+              <label className={labelClass}>Tipo de movimiento</label>
+              <div className="grid grid-cols-2 gap-2 mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => cambiarTipoMovimiento('gasto')}
+                  className={`py-2.5 rounded-xl text-sm font-bold border transition-colors ${tipoMovimiento === 'gasto' ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400' : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'}`}
+                >
+                  Gasto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => cambiarTipoMovimiento('ingreso')}
+                  className={`py-2.5 rounded-xl text-sm font-bold border transition-colors ${tipoMovimiento === 'ingreso' ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400' : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'}`}
+                >
+                  Ingreso
+                </button>
+              </div>
+            </div>
 
             <input
               ref={inputArchivoRef}
@@ -272,14 +337,35 @@ export default function ComprobantePage() {
                 <span className="text-[11px] font-extrabold uppercase tracking-wide">Datos Extraídos de la Captura</span>
               </div>
 
+              {/* Tipo selector: still visible and editable after the analysis */}
               <div className="space-y-1.5">
-                <label className={labelClass} htmlFor="comprobante-comercio">Comercio o Destinatario</label>
+                <label className={labelClass}>Tipo de movimiento</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => cambiarTipoMovimiento('gasto')}
+                    className={`py-2.5 rounded-xl text-sm font-bold border transition-colors ${tipoMovimiento === 'gasto' ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400' : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'}`}
+                  >
+                    Gasto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cambiarTipoMovimiento('ingreso')}
+                    className={`py-2.5 rounded-xl text-sm font-bold border transition-colors ${tipoMovimiento === 'ingreso' ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400' : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'}`}
+                  >
+                    Ingreso
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className={labelClass} htmlFor="comprobante-descripcion">Nombre del movimiento</label>
                 <input
-                  id="comprobante-comercio"
+                  id="comprobante-descripcion"
                   className={inputClass}
-                  value={comercio}
-                  onChange={(e) => setComercio(e.target.value)}
-                  placeholder="Ej. Comercio o Destinatario"
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder="Ej. Pago móvil supermercado"
                 />
               </div>
 
@@ -330,24 +416,31 @@ export default function ComprobantePage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className={labelClass} htmlFor="comprobante-categoria">Categoría</label>
-                  <AnimatedSelect
-                    id="comprobante-categoria"
-                    value={categoriaId}
-                    onChange={setCategoriaId}
-                    placeholder="Sin categoría"
-                    options={[
-                      { value: '', label: 'Sin categoría' },
-                      ...categoriasGasto.map(c => ({ value: c.id, label: c.nombre }))
-                    ]}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label className={labelClass} htmlFor="comprobante-categoria">Categoría</label>
+                <AnimatedSelect
+                  id="comprobante-categoria"
+                  value={categoriaId}
+                  onChange={setCategoriaId}
+                  placeholder="Sin categoría"
+                  options={[
+                    { value: '', label: 'Sin categoría' },
+                    ...categoriasFiltradas.map(c => ({ value: c.id, label: c.nombre }))
+                  ]}
+                />
+              </div>
               </div>
 
-              {mounted && fechaDetectada && (
-                <p className="text-[11px] text-slate-400">Fecha detectada: {fechaDetectada}</p>
-              )}
+              <div className="space-y-1.5">
+                <label className={labelClass} htmlFor="comprobante-fecha">Fecha de la operación</label>
+                <input
+                  id="comprobante-fecha"
+                  className={inputClass}
+                  value={fechaDetectada}
+                  onChange={(e) => setFechaDetectada(e.target.value)}
+                  placeholder="Ej. 2026-11-21"
+                />
+              </div>
             </AnimatedCard>
           </FadeIn>
 
@@ -361,7 +454,7 @@ export default function ComprobantePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className={labelClass} htmlFor="comprobante-cuenta">Cuenta del gasto</label>
+                  <label className={labelClass} htmlFor="comprobante-cuenta">Cuenta del movimiento</label>
                   <AnimatedSelect
                     id="comprobante-cuenta"
                     value={cuentaId}
@@ -428,7 +521,7 @@ export default function ComprobantePage() {
               <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-3.5">
                 <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[11px] md:text-xs text-amber-800 dark:text-amber-300">
-                  El gasto se registrará como un movimiento en la cuenta seleccionada. La imagen no se almacena: solo se usa para leer los datos y luego se descarta.
+                  El movimiento se registrará en la cuenta seleccionada. La imagen no se almacena: solo se usa para leer los datos y luego se descarta.
                 </p>
               </div>
             </AnimatedCard>

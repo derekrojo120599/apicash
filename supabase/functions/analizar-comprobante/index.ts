@@ -9,27 +9,18 @@ interface OcrRequest {
   imageBase64: string; // Base64 encoded image (jpg/png)
 }
 
+// Extracts only monto, moneda, fecha and referencia from OCR text.
+// banco/beneficiario/categoria are deliberately not extracted anymore.
 function parsearComprobanteTexto(texto: string) {
-  let bancoEmisor = "Detectado";
-  let bancoDestino = "";
-  let beneficiario = "";
   let monto = "0.00";
   let moneda: "USD" | "VES" = "VES";
   let referencia = "";
   let fecha = "";
-  let categoria = "Gastos Generales";
 
   const lower = texto.toLowerCase();
 
-  // 1. Banco emisor
-  if (lower.includes("bancaribe")) bancoEmisor = "Bancaribe";
-  else if (lower.includes("banco de venezuela") || lower.includes("pagomóvilbdv") || lower.includes("bdv")) bancoEmisor = "Banco de Venezuela";
-  else if (lower.includes("banesco")) bancoEmisor = "Banesco";
-  else if (lower.includes("mercantil")) bancoEmisor = "Mercantil";
-  else if (lower.includes("provincial") || lower.includes("bbva")) bancoEmisor = "BBVA Provincial";
-  else if (lower.includes("bancamiga")) bancoEmisor = "Bancamiga";
-  else if (lower.includes("binance")) {
-    bancoEmisor = "Binance Pay";
+  // 1. Moneda (inherente al comprobante)
+  if (lower.includes("binance") || lower.includes("usdt") || lower.includes("usd") || lower.includes("$")) {
     moneda = "USD";
   }
 
@@ -39,10 +30,7 @@ function parsearComprobanteTexto(texto: string) {
                   texto.match(/(?:Monto|Importe|Total)[\s:]*(?:Bs\.?|VES|\$)?\s*([0-9\.\,]+)/i);
   const matchUsdt = texto.match(/([0-9]+(?:\.[0-9]{1,2})?)\s*(?:USDT|USD|\$)/i);
 
-  if (matchUsdt && !matchBs) {
-    monto = matchUsdt[1].trim();
-    moneda = "USD";
-  } else if (matchBs && matchBs[1]) {
+  if (matchBs && matchBs[1]) {
     let raw = matchBs[1].trim();
     if (raw.includes(".") && raw.includes(",")) {
       raw = raw.replace(/\./g, "").replace(",", ".");
@@ -51,6 +39,9 @@ function parsearComprobanteTexto(texto: string) {
     }
     monto = raw;
     moneda = "VES";
+  } else if (matchUsdt) {
+    monto = matchUsdt[1].trim();
+    moneda = "USD";
   }
 
   // 3. Referencia u Operación
@@ -59,51 +50,17 @@ function parsearComprobanteTexto(texto: string) {
     referencia = matchRef[1].trim();
   }
 
-  // 4. Beneficiario / Destino
-  const matchBenef = texto.match(/(?:Nombre del beneficiario|Beneficiario|Destinatario|A\s+Alias|Para)[\s:]+([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\.\s\-\@]{3,40})/i);
-  if (matchBenef && matchBenef[1]) {
-    beneficiario = matchBenef[1].split("\n")[0].trim();
-  }
-
-  // 5. Banco destino
-  const matchBancoDest = texto.match(/(?:Banco(?: del beneficiario| receptor| destino)?|Banco)[\s:]+(?:[0-9]{4}\s*-\s*)?([A-Za-z\s]{4,35})/i);
-  if (matchBancoDest && matchBancoDest[1]) {
-    bancoDestino = matchBancoDest[1].split("\n")[0].trim();
-  }
-
-  // 6. Teléfono destino si no hay nombre
-  const matchTel = texto.match(/(?:Celular de destino|Destino|Tel[eé]fono)[\s:]*([0-9]{10,12})/i);
-  if (!beneficiario && matchTel && matchTel[1]) {
-    beneficiario = `Pago Móvil ${matchTel[1].trim()}${bancoDestino ? ` (${bancoDestino})` : ""}`;
-  }
-
-  // 7. Fecha
+  // 4. Fecha
   const matchFecha = texto.match(/([0-9]{2}[-\/][0-9]{2}[-\/][0-9]{4}(?:\s+[0-9]{1,2}:[0-9]{2}(?:\s*[APap][Mm])?)?)/);
   if (matchFecha && matchFecha[1]) {
     fecha = matchFecha[1].trim();
   }
 
-  // 8. Categoría
-  const lowerTodo = `${texto} ${beneficiario}`.toLowerCase();
-  if (lowerTodo.includes("gas") || lowerTodo.includes("luz") || lowerTodo.includes("corpoelec") || lowerTodo.includes("agua") || lowerTodo.includes("cantv")) {
-    categoria = "Servicios Básicos";
-  } else if (lowerTodo.includes("farmacia") || lowerTodo.includes("farmatodo") || lowerTodo.includes("salud")) {
-    categoria = "Salud y Farmacia";
-  } else if (lowerTodo.includes("supermercado") || lowerTodo.includes("comida") || lowerTodo.includes("almuerzo")) {
-    categoria = "Alimentación";
-  } else if (lowerTodo.includes("gasolina") || lowerTodo.includes("transporte") || lowerTodo.includes("taller")) {
-    categoria = "Transporte";
-  }
-
   return {
-    bancoEmisor,
-    bancoDestino,
-    beneficiario: beneficiario || "Comercio / Destinatario",
     monto,
     moneda,
-    referencia: referencia || "S/REF",
+    referencia: referencia || "",
     fecha: fecha || new Date().toLocaleDateString("es-ES"),
-    categoria,
   };
 }
 
@@ -134,14 +91,10 @@ Deno.serve(async (req) => {
         const prompt = `Analiza esta imagen de un comprobante de pago o transferencia bancaria venezolana (Pago Móvil, Transferencia bancaria o Binance Pay).
 Devuelve ÚNICAMENTE un JSON válido (sin markdown ni comillas triples) con esta estructura exacta:
 {
-  "bancoEmisor": "nombre del banco emisor o app",
-  "bancoDestino": "nombre del banco receptor",
-  "beneficiario": "nombre del beneficiario o comercio",
   "monto": 123.45,
   "moneda": "VES" o "USD",
-  "referencia": "numero de referencia u operacion sin letras",
-  "fecha": "fecha de la operacion",
-  "categoria": "categoria sugerida (Alimentación, Servicios Básicos, Salud y Farmacia, Transporte, Gastos Generales)"
+  "fecha": "fecha de la operacion tal como aparece, preferiblemente ISO yyyy-mm-dd",
+  "referencia": "numero de referencia u operacion sin letras, string vacio si no aparece"
 }`;
 
         const resGemini = await fetch(geminiUrl, {
